@@ -1,0 +1,32 @@
+*** xsdynload.c.orig	Sun Oct 29 10:46:48 1989
+--- xsdynload.c	Fri Jan 19 14:18:12 1990
+***************
+*** 106,112 ****
+--- 106,119 ----
+    for (i = 0, data = x; i < a.size; i++) {
+      elem = getnextelement(&data, i);
+      if (a.type == IN) ((int *) a.addr)[i] = getfixnum(elem);
++ #if !(defined(ibm032) && defined(__HIGHC__))
+      else ((double *) a.addr)[i] = makedouble(elem);
++ #else /* avoid bug in hc 2.1n C compiler on IBM RT running AOS 4.3 */
++     else {
++       double *dbl = &((double *)a.addr)[i] ;
++       *dbl = makedouble(elem) ;
++     }
++ #endif
+    }
+    
+    xlpop();
+***************
+*** 364,371 ****
+--- 371,380 ----
+  
+  #ifdef STDBSD
+  #define SYMVALUE(sym) ((char *) ((sym).n_value))
++ #ifndef SYM_IS_GLOBAL_FUNCTION
+  #define SYM_IS_GLOBAL_FUNCTION(ldptr,symbol) \
+    (((symbol).n_type & N_TYPE) == N_TEXT  && ((symbol).n_type & N_EXT))
++ #endif /* SYM_IS_GLOBAL_FUNCTION */
+  #endif STDBSD
+  
+  /* DYN-LOAD function */

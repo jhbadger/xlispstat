@@ -1,0 +1,32 @@
+# Adapted from Tcl and Welch p. 545
+
+AC_INIT(Makefile.in)
+
+# Get the application library directory.
+AC_ARG_WITH(libdir,
+            [  --with-libdir=DIR       library directory for application],
+            [LIBDIR=$withval;INCDIR="$LIBDIR/include"],
+            [LIBDIR=`cd ../..; pwd`;INCDIR=$LIBDIR])
+if test ! -d $LIBDIR; then
+  AC_MSG_ERROR(library directory $LIBDIR does not exist)
+fi
+
+# Recover system configuration information.
+. $LIBDIR/shlibconfig.sh
+
+AC_CHECK_FUNC(regcomp,
+              REOBJS="",
+              REOBJS="regcomp.o regerror.o regexec.o regfree.o")
+
+# Register configuration variables for substitution.
+AC_SUBST(CC)
+AC_SUBST(SHLIB_CFLAGS)
+AC_SUBST(SHLIB_LD)
+AC_SUBST(SHLIB_SUFFIX)
+AC_SUBST(SHLIB_LD_LIBS)
+AC_SUBST(LIBDIR)
+AC_SUBST(INCDIR)
+AC_SUBST(REOBJS)
+
+# Output the Makefile
+AC_OUTPUT(Makefile)

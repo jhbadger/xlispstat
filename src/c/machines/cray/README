@@ -1,0 +1,24 @@
+configure got things to work on
+
+	uname -a => sf sf 7.C.3 06.16 CRAY Y-MP
+
+I compiled xlispstat on a Cray Y-MP with the settings
+
+GRAPHSYS = X11WINDOWS
+X11INCDIR_FLAG=
+X11LIBDIR_FLAG=
+
+UCFLAGS = -O -h tolerant -DHZ=CLK_TCK -DCRAYCC
+ULDFLAGS =
+
+EXTRALIBS=
+EXTRAOBJS=
+
+IEEE_FLAG=
+ANSI_FLAG=-DANSI
+
+FOREIGN_FLAG =
+FOREIGN_FILE = dummy-foreign.h
+
+CC = cc
+LDCC = $(CC)

@@ -1,0 +1,20 @@
+;module-definition file for Generic
+
+NAME LSPEDIT
+DESCRIPTION 'Sample Microsoft Windows Application'
+
+EXETYPE WINDOWS
+
+STUB 'WINSTUB.EXE'
+
+CODE MOVEABLE DISCARDABLE
+DATA MOVEABLE MULTIPLE
+
+HEAPSIZE	45055
+STACKSIZE	5120
+;STACKSIZE	1048576
+
+EXPORTS
+  MainWndProc	@1
+  About		@22
+  LEditWndProc  @5

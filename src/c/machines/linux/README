@@ -1,0 +1,35 @@
+configure set things up properly on a RedHat ELF box,
+
+	[luke@owasso]$ uname -a
+	Linux owasso.stat.umn.edu 1.2.13 #3 Thu Aug 15 06:54:53 CDT 1996 i486
+
+The parameters it produces are
+
+GRAPHSYS = X11WINDOWS
+X11INCDIR_FLAG = -I/usr/X11R6/include
+X11LIBDIR_FLAG = -L/usr/X11R6/lib
+
+UCFLAGS = -O
+ULDFLAGS =
+
+EXTRALIBS = -lieee -ldl
+EXTRAOBJS=
+
+IEEE_FLAG=-DIEEEFP
+ANSI_FLAG=-DANSI
+
+FOREIGN_FLAG =
+FOREIGN_FILE = sysvr4-foreign.h
+
+CC = cc
+LDCC = $(CC)
+
+Dynamic loading on ELF systems is done using shared libraries. To make
+the example in foo.c into a shared library, compile it with cc -c
+foo.c and then do
+
+	ld -shared -o libfoo.so foo.o
+
+You can then use (dyn-load "libfoo.so"). You may need to use
+"./libfoo.so" if the current directory isn't on your library search
+path.

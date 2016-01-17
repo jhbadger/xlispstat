@@ -1,0 +1,40 @@
+XLSDIR = ..\..
+WXLSDIR = $(XLSDIR)\msdos
+XLSLIB = vcwxls32.lib
+
+TOOLS = f:\devstudio\vc
+CC=$(TOOLS)\bin\cl.exe
+LINK32=link.exe
+LIB32=lib.exe
+
+DLL_CFLAGS=/nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_Windows" /FD \
+  /I $(WXLSDIR) /I $(XLSDIR) /D far=
+DLL_LDFLAGS=$(STDLIBS) /nologo /subsystem:windows /dll /incremental:no\
+ /machine:I386
+
+STDLIBS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib\
+ advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib\
+ odbccp32.lib wsock32.lib
+
+.c.obj:
+	$(CC) $(DLL_CFLAGS) -c $<
+{$(WXLSDIR)}.c.obj:
+	$(CC) $(DLL_CFLAGS) -c $<
+
+OBJECTS = dllstub.obj xlsock.obj sock.obj
+
+xlregexp.dll : $(OBJECTS) $(XLSLIB) vcxlsock.def
+    $(LINK32) @<<
+  $(DLL_LDFLAGS) /out:xlsock.dll /def:vcxlsock.def $(OBJECTS) $(XLSLIB)
+<<
+
+vcwxls32.lib: $(WXLSDIR)/wxls32.def
+   $(LIB32) /def:$(WXLSDIR)/wxls32.def /out:vcwxls32.lib
+
+clean :
+	-@erase *.obj
+	-@erase *.dll
+	-@erase *.exp
+	-@erase *.lib
+	-@erase *.exe
+	-@erase *.idb

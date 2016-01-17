@@ -1,0 +1,16 @@
+This directory contains a set of tests adapted from the `thorough'
+tests in new S.
+
+To run the tests on a UNIX system, run xlisp (not xlispstat) from ..
+and do
+
+	(load "tests/test")
+
+On a Macintosh, load the file test.lsp from the Tests folder.
+
+You may accasionally see a failure in "math" or "prob" because random
+data is used and I have not tuned things well enough yet to make these
+failures rare.
+
+To add new tests create a new file and add its name to the list defined
+at the top of tests.lsp.

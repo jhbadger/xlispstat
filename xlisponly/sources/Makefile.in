@@ -1,0 +1,58 @@
+UCFLAGS = @UCFLAGS@
+ULDFLAGS = @ULDFLAGS@
+EXTRALIBS = @EXTRALIBS@
+EXTRAOBJS = @EXTRAOBJS@
+CC = @CC@
+
+CFLAGS = -DXLISP_ONLY $(UCFLAGS)
+
+SRCDIR=../..
+
+SRC=xlisp.c xlbfun.c xlbignum.c xlcont.c xldbug.c xldmem.c xleval.c \
+xlfio.c xlglob.c xlimage.c xlinit.c xlio.c xljump.c xllist.c \
+xlobj.c xlpp.c xlprin.c xlread.c xlstr.c xlsubr.c \
+xlsym.c xlsys.c unixprim.c unixstuff.c xlseq.c xlstruct.c xlftab.c xlmath2.c \
+xlmath3.c xlarray.c xlrand.c xltvec.c xlbcode.c xlbcutil.c xlshlib.c \
+xlwrap.c xlmodule.c dummy.c
+
+INC=osdefs.h xlbcode.h xlftab.h xlisp.h osptrs.h xldmem.h xlglob.h xlmodule.h \
+version.h xlshlib.h xlwrap.h
+
+OBJ=xlisp.o xlbfun.o xlbignum.o xlcont.o xldbug.o xldmem.o xleval.o \
+xlfio.o xlglob.o xlimage.o xlinit.o xlio.o xljump.o xllist.o \
+xlobj.o xlpp.o xlprin.o xlread.o xlstr.o xlsubr.o \
+xlsym.o xlsys.o unixprim.o unixstuff.o xlseq.o xlstruct.o xlftab.o xlmath2.o \
+xlmath3.o xlarray.o xlrand.o xltvec.o xlbcode.o xlbcutil.o xlshlib.o \
+xlwrap.o xlmodule.o dummy.o
+
+OTHER=configure configure.in config machines shlibconfig.sh.in xlconfig.h.in \
+      Extras
+
+xlisp.bin: $(OBJ) $(EXTRAOBJS)
+	$(CC) -o xlisp.bin $(ULDFLAGS) $(OBJ) $(EXTRAOBJS) $(EXTRALIBS) -lm
+	-ln -s xlisp.bin xlisp
+
+xlisp.wks: xlisp.bin cmpload.lsp
+	rm -f xlisp.wks
+	(echo '(save "xlisp.wks") (exit)') | ./xlisp.bin cmpload
+
+
+$(OBJ): xlisp.h $(INC)
+
+
+# this is used if compiling in a subdirectory of the xlispstat tree
+$(SRC) $(INC):
+	ln -s $(SRCDIR)/$@ $@
+
+
+# this is used for creating the separate xlisp only distribution
+srcfiles:
+	(cd $(SRCDIR); tar cf - $(SRC) $(INC) $(OTHER)) | tar xf -
+
+
+clean:
+	rm -f *.o Make.log
+
+
+cleanall: clean
+	rm -f xlisp.bin

@@ -1,0 +1,336 @@
+AC_INIT(Makefile.in)
+AC_CONFIG_HEADER(src/include/xlconfig.h)
+AC_CONFIG_AUX_DIR(config)
+
+
+#
+# Determine host information
+#
+AC_CANONICAL_HOST
+
+
+#
+# Set some default values
+#
+LIBS=-lm
+${UCFLAGS:=-O}
+${ULDFLAGS:=}
+X11INCDIR_FLAG=
+X11LIBDIR_FLAG=
+${EXTRALIBS:=}
+EXTRAOBJS=
+FOREIGN_FILE=dummy-foreign.h
+
+
+#
+# Determine the C compiler to use and adjust its flags
+#
+
+# Use gcc only if specified using --with-gcc or CC environment variable
+AC_ARG_WITH(gcc, [  --with-gcc              use gcc compiler],
+            CC=gcc,[if test -z "$CC"; then CC=cc; fi])
+
+# Set a variable using_gcc to make checking for gcc easy below
+if test `$CC -v 2>&1 | grep -c gcc` != "0" ; then using_gcc=1; fi
+
+AC_PROG_CPP
+
+if test "$using_gcc"; then
+  # Adjust gcc flags
+  case $host in
+    *linux*)
+      # This may be needed on other systems using gnu ld
+      ULDFLAGS="$ULDFLAGS -export-dynamic"
+      ;;
+  esac
+  case $host in
+    i?86-*)
+      # Enable IEEE floating point comparisons.
+      UCFLAGS="$UCFLAGS -mieee-fp"
+      ;;
+    alpha*)
+      # This needs to be checked out. Something is needed to get
+      # divide by zero to produce a NaN instead of a SIGFPE.
+      UCFLAGS="$UCFLAGS -mieee"
+      ;;
+  esac
+else
+  # Adjust native cc flags
+  case $host in
+    *aix*)
+      # This needs to be checked out.
+      UCFLAGS="$UCFLAGS -qmaxmem=3000 -qlanglvl=ansi"
+      ;;
+    alpha-dec-osf*)
+      # This needs to be checked out.
+      UCFLAGS="$UCFLAGS -std -ieee_with_no_inexact -Olimit 2000"
+      ;;
+    *unicos*)
+      # This needs to be checked out.
+      UCFLAGS="$UCFLAGS -h tolerant -DCRAYCC"
+      ;;
+    *hpux*)
+      # Turn -Aa and -D_HPUX_SOURCE turn on ANSI compliance and some
+      # POSIX stuff. Drop limit on optimization to make sure byte code
+      # loop is optimized.
+      UCFLAGS="$UCFLAGS -Aa -D_HPUX_SOURCE +Onolimit"
+      ;;
+    mips-sgi-irix*)
+      # IRIX 6.4's cc uses -OPT:Olimit=n instead of -Olimit n. My
+      # guess is that it changed with 6.0, but I don't know for sure.
+      set `echo "$host_os" | sed 's/irix//' | tr '.' ' '`
+      os_major=$1
+      if test "$os_major" -ge 6; then
+        UCFLAGS="$UCFLAGS -OPT:Olimit=2000"
+      else
+        UCFLAGS="$UCFLAGS -Olimit 2000"
+      fi
+      ;;
+    mips*)
+      # Most compilers for the mips architecture use this flag to
+      # increase the optimization limit; this is needed for
+      # xlbcode.c:bcloop
+      UCFLAGS="$UCFLAGS -Olimit 2000"
+      ;;
+  esac
+fi
+
+
+#
+# Adjust libraries
+#
+case $host in
+  alpha-dec-osf*)
+    # This needs to be checked out.
+    EXTRALIBS="$EXTRALIBS -ldnet_stub"
+    ;;
+  *hpux9*|*hpux10*)
+    # Need this to bring in finite. Don't know if this is needed in hpux8.
+    # It isn't needed in hpux10.2 but may be in earlier hpux10's. Don't
+    # know about hpux11.
+    if test "$using_gcc"; then
+      LIBS="-L/lib/pa1.1 $LIBS"
+      EXTRALIBS="-L/lib/pa1.1 $EXTRALIBS"
+    fi
+    ;;
+  *linux*)
+    # Older Linux versions produce a SIGFPE on divide by zero unless
+    # ieee library is used.
+    AC_CHECK_LIB(ieee, main, [EXTRALIBS="$EXTRALIBS -lieee"])
+    ;;
+  *sun-solaris*)
+    # Recent Solaris versions seem to have moved socket functions out
+    # into the socket library
+    AC_CHECK_FUNC(socket,,
+      AC_CHECK_LIB(socket,socket,
+        EXTRALIBS="$EXTRALIBS -lsocket",
+        AC_MSG_ERROR(can't find socket functions)))
+    ;;
+esac
+
+
+#
+# Check for IEEE math support
+#
+case $host in
+  *sun-solaris*)
+    # Bring in finite and isnan on newer versions of solaris
+    CFLAGS="$CFLAGS -D__EXTENSIONS__"
+    UCFLAGS="$UCFLAGS -D__EXTENSIONS__"
+    ;;
+esac
+AC_CHECK_FUNCS(finite isnan)
+
+
+#
+# Check for some other functions
+#
+AC_CHECK_FUNCS(memmove difftime matherr)
+
+
+#
+# Check for POSIX sigsetjmp and friends. 
+# Use grep for sigjmp_buf since sigsetjmp/siglongjmp may be macros.
+#
+AC_EGREP_HEADER(sigjmp_buf, setjmp.h, AC_DEFINE(HAVE_SIGSETJMP))
+
+
+#
+# Determine the graphics system to use
+#
+AC_PATH_X
+if test "$no_x"; then
+  GRAPHSYS=GNUPLOT
+else
+  GRAPHSYS=X11WINDOWS
+  if test "$x_includes"; then X11INCDIR_FLAG="-I$x_includes"; fi
+  if test "$x_libraries"; then X11LIBDIR_FLAG="-L$x_libraries"; fi
+fi
+
+
+#
+# Check for dynamic loaing support
+#
+
+# First try for SysVR4-style dlfcn support
+AC_CHECK_FUNC(dlopen,[
+  FOREIGN_FILE="sysvr4-foreign.h"
+  foreign=1
+  AC_DEFINE(HAVE_DLOPEN)  # not sure why I need this but I seem to
+  AC_DEFINE(HAVE_FOREIGN)],
+  AC_CHECK_LIB(dl,dlopen,[
+    FOREIGN_FILE="sysvr4-foreign.h"
+    foreign=1
+    AC_DEFINE(HAVE_DLOPEN)  # not sure why I need this but I seem to
+    AC_DEFINE(HAVE_FOREIGN)
+    EXTRALIBS="$EXTRALIBS -ldl"]))
+
+# Next try some os-specific solutions
+if test ! "$foreign"; then
+  case $host in
+    *aix*)
+      # This needs to be checked
+      ULDFLAGS="$ULDFLAGS -bE:xlisp.exp -bM:SRE"
+      link_sources="$link_sources src/c/machines/aix/xlisp.exp"
+      link_sources="$link_sources src/cmachines/aix/dynload/dlfcn.c"
+      link_targets ="$link_targets src/c/xlisp.exp src/c/dlfcn.c"
+      FOREIGN_FILE="sysvr4-foreign.h";
+      AC_DEFINE(HAVE_FOREIGN)
+      AC_DEFINE(HAVE_DLOPEN)
+      UCFLAGS="$UCFLAGS -Imachines/aix/dynload"
+      EXTRAOBJS="$EXTRAOBJS dlfcn.o"
+      EXTRALIBS="$EXTRALIBS -lld"
+      foreign=1
+      ;;
+    *hpux*)
+      FOREIGN_FILE="sysvr4-foreign.h"
+      AC_DEFINE(HAVE_FOREIGN)
+      AC_DEFINE(HAVE_DLOPEN)
+      UCFLAGS="$UCFLAGS -Imachines/hpux/dlfcn"
+      EXTRAOBJS="$EXTRAOBJS dlfcn.o"
+      link_sources="$link_sources src/c/machines/hpux/dlfcn/dlfcn.c"
+      link_targets="$link_targets src/c/dlfcn.c"
+      EXTRALIBS="$EXTRALIBS -ldld"
+      ULDFLAGS="$ULDFLAGS -Wl,-E"
+      foreign=1
+      ;;
+    mips-dec-ultrix*)
+      FOREIGN_FILE="pmax-foreign.h"
+      AC_DEFINE(HAVE_FOREIGN)
+      ULDFLAGS="$ULDFLAGS -Wl,-D -Wl,c00000"
+      foreign=1
+      ;;
+    vax*)
+      FOREIGN_FILE="bsd-foreign.h"
+      AC_DEFINE(HAVE_FOREIGN)
+      foreign=1
+      ;;
+    *bsd*)
+      FOREIGN_FILE="bsd-foreign.h"
+      AC_DEFINE(HAVE_FOREIGN)
+      foreign=1
+      ;;
+  esac
+fi
+# As last resort try for GNU dld
+if test ! "$foreign"; then
+  AC_CHECK_LIB(dld,dld_init,[
+    FOREIGN_FILE="dld-foreign.h"
+    foreign=1
+    AC_DEFINE(HAVE_FOREIGN)
+    EXTRALIBS="$EXTRALIBS -ldld"])
+fi
+
+
+#
+# Determine how to create shared libraries -- adapted from Tcl 8.0
+#
+SHLIB_CFLAGS=""
+SHLIB_LD_LIBS=""
+case $host in
+  *aix*)  # **** this doesn't work yet
+    SHLIB_LD="$fullSrcDir/ldAix /bin/ld -bhalt:4 -bM:SRE -bE:lib.exp -H512 -T512 -bnoentry"
+    SHLIB_LD_LIBS='${LIBS}'
+    ;;
+  alpha-dec-osf*)
+    # check this out
+    SHLIB_LD='ld -shared -expect_unresolved "*"'
+    ;;
+  *hpux*)
+    SHLIB_CFLAGS="+z -Aa -D_HPUX_SOURCE"
+    SHLIB_LD="ld -b"
+    ;;
+  *irix*)
+    SHLIB_LD="ld -shared -rdata_shared"
+    ;;
+  *linux*)
+    SHLIB_CFLAGS="-fPIC"
+    SHLIB_LD="${CC} -shared"
+    ;;
+  *netbsd*|*freebsd*|*openbsd*)
+    SHLIB_CFLAGS="-fpic"
+    SHLIB_LD="ld -Bshareable -x"
+    ;;
+  *sunos*)
+    SHLIB_CFLAGS="-PIC"
+    SHLIB_LD="ld"
+    ;;
+  *solaris*)
+    SHLIB_CFLAGS="-KPIC"
+    SHLIB_LD="/usr/ccs/bin/ld -G -z text"
+    SHLIB_LD_LIBS='${LIBS}'
+    ;;
+  *)
+    AC_MSG_WARN(Don't know how to create shared libraries on this platform)
+esac
+
+# If we're running gcc, then change the C flags for compiling shared
+# libraries to the right flags for gcc, instead of those for the
+# standard manufacturer compiler.
+if test `$CC -v 2>&1 | grep -c gcc` != "0" ; then
+  case $system in
+    *aix*)
+      ;;
+    *irix*)
+      ;;
+    *netbsd*|*freebsd*|*openbsd*|*linux*)
+      ;;
+    *)
+      SHLIB_CFLAGS="-fPIC"
+      ;;
+  esac
+fi
+
+
+#
+# Register variables for substitution
+#
+AC_SUBST(GRAPHSYS)
+AC_SUBST(X11INCDIR_FLAG)
+AC_SUBST(X11LIBDIR_FLAG)
+AC_SUBST(UCFLAGS)
+AC_SUBST(ULDFLAGS)
+AC_SUBST(EXTRALIBS)
+AC_SUBST(EXTRAOBJS)
+AC_SUBST(FOREIGN_FILE)
+AC_SUBST(CC)
+AC_SUBST(CC)
+AC_SUBST(SHLIB_CFLAGS)
+AC_SUBST(SHLIB_LD)
+AC_SUBST(SHLIB_LD_LIBS)
+
+echo GRAPHSYS       = $GRAPHSYS
+echo X11INCDIR_FLAG = $X11INCDIR_FLAG
+echo X11LIBDIR_FLAG = $X11LIBDIR_FLAG
+echo UCFLAGS        = $UCFLAGS
+echo ULDFLAGS       = $ULDFLAGS
+echo EXTRALIBS      = $EXTRALIBS
+echo EXTRAOBJS      = $EXTRAOBJS
+echo FOREIGN_FILE   = $FOREIGN_FILE
+echo CC             = $CC
+echo SHLIB_CFLAGS   = $SHLIB_CFLAGS
+echo SHLIB_LD       = $SHLIB_LD
+echo SHLIB_LD_LIBS  = $SHLIB_LD_LIBS
+
+AC_LINK_FILES($link_sources,$link_targets)
+AC_OUTPUT(Makefile shlibconfig.sh src/c/Makefile)

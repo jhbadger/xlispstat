@@ -1,0 +1,6 @@
+These sources need to be merged with the unix sources in th directory
+above.  The result compiles with Borland C++ 4.0 and seems to work
+Because of the small system stack the byte code compiler cannot be
+compiled from scratch under MS Windows, but it can be compiled by
+starting with .fsl files created elsewhere.
+

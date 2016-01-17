@@ -1,0 +1,13 @@
+#!/bin/sh
+cat > $1 <<+++
+#!/bin/sh
+XLISPLIB=$2 export XLISPLIB
+if test -f xlisp.wks; then WKS="xlisp.wks";
+else WKS="\${XLISPLIB}/xlisp.wks";
+fi
+if test -f xlisp; then XLISP=xlisp;
+else XLISP="\${XLISPLIB}/xlisp"
+fi
+exec \${XLISP} -w\${WKS} \$*
++++
+

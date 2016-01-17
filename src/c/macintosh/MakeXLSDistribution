@@ -1,0 +1,61 @@
+If {#} != 1  OR  "{1}" == ""
+	Echo "### {0} - A version must be specified." > Dev:StdErr
+	Exit 1
+Else
+	set VERSION "{1}"
+End
+
+set LOCATION "Mac OS Classic:Desktop Folder"
+
+set XLSHOME "Transfer:xlispstat"
+
+set BINDIR "{XLSHOME}"
+set LSPDIR "{XLSHOME}:src:lsp"
+set CMPDIR "{LSPDIR}:compiler"
+set CDIR "{XLSHOME}:src:c"
+set INCDIR "{XLSHOME}:src:include"
+
+set FOLDER "{LOCATION}:XLISP-STAT {VERSION} Ä"
+
+set AUTOFSLFILES "{LSPDIR}:cmpload.fsl {LSPDIR}:oneway.fsl {LSPDIR}:nonlin.fsl ¶
+                  {LSPDIR}:maximize.fsl {LSPDIR}:bayes.fsl {LSPDIR}:stepper.fsl {LSPDIR}:glim.fsl"
+                  
+set SOURCES "{LSPDIR}:init.lsp {LSPDIR}:common.lsp {LSPDIR}:common2.lsp {LSPDIR}:common3.lsp ¶
+             {LSPDIR}:help.lsp {LSPDIR}:objects.lsp {LSPDIR}:stats.lsp {LSPDIR}:dialogs.lsp ¶
+             {LSPDIR}:graphics.lsp {LSPDIR}:graph2.lsp {LSPDIR}:graph3.lsp {LSPDIR}:regress.lsp ¶
+             {LSPDIR}:menus.lsp {LSPDIR}:loadfsl.lsp {LSPDIR}:conditns.lsp {LSPDIR}:pathname.lsp ¶
+             {LSPDIR}:cmpload.lsp {LSPDIR}:oneway.lsp {LSPDIR}:nonlin.lsp {LSPDIR}:maximize.lsp ¶
+             {LSPDIR}:bayes.lsp {LSPDIR}:stepper.lsp {LSPDIR}:glim.lsp {LSPDIR}:cmpsys.lsp ¶
+			 {LSPDIR}:shlib.lsp"
+			 
+set CMPSOURCES "{CMPDIR}:backquot.lsp {CMPDIR}:cmpmacro.lsp ¶
+                {CMPDIR}:convert.lsp {CMPDIR}:cells.lsp {CMPDIR}:simplify.lsp ¶
+				{CMPDIR}:lift.lsp {CMPDIR}:gencode.lsp {CMPDIR}:peephole.lsp ¶
+				{CMPDIR}:assemble.lsp {CMPDIR}:cmpfront.lsp"
+
+duplicate -y {AUTOFSLFILES} "{XLSHOME}:Autoload"
+
+NewFolder "{FOLDER}"
+NewFolder "{FOLDER}:Autoload"
+NewFolder "{FOLDER}:Compiler"
+NewFolder "{FOLDER}:Lisp Sources"
+NewFolder "{FOLDER}:Lisp Sources:Compiler"
+
+duplicate -y "{XLSHOME}:xlisp.hlp" "{FOLDER}"
+duplicate -y "{XLSHOME}:xlisp.wks" "{FOLDER}"
+duplicate -y "{CDIR}:macintosh:xlsx.h" "{INCDIR}:xlshlib.h" "{INCDIR}:xlwrap.h" "{FOLDER}"
+duplicate -y "{XLSHOME}:COPYING" "{FOLDER}"
+duplicate -y "{CDIR}:macintosh:README.mac" "{FOLDER}:README"
+
+duplicate -y "{XLSHOME}:Data" "{FOLDER}"
+duplicate -y "{XLSHOME}:Examples" "{FOLDER}"
+duplicate -y "{XLSHOME}:Autoload:_autoidx.lsp" "{XLSHOME}:Autoload:"Å.fsl "{FOLDER}:Autoload"
+duplicate -y "{CMPDIR}:"Å.fsl "{FOLDER}:Compiler"
+
+duplicate -y {SOURCES} "{FOLDER}:Lisp Sources"
+duplicate -y {CMPSOURCES} "{FOLDER}:Lisp Sources:Compiler"
+
+duplicate -y "{BINDIR}:XLSPPC"    "{LOCATION}:XLISP-STAT {VERSION} PPC"
+duplicate -y "{BINDIR}:XLS68KGEN" "{LOCATION}:XLISP-STAT {VERSION} GEN"
+duplicate -y "{BINDIR}:XLS68K020" "{LOCATION}:XLISP-STAT {VERSION} 020"
+duplicate -y "{BINDIR}:XLS68K881" "{LOCATION}:XLISP-STAT {VERSION} 881"

@@ -1,0 +1,4 @@
+#! ./xlisp
+xadd
+xadd1
+xmul

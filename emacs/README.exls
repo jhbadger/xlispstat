@@ -1,0 +1,37 @@
+NOTE: For emacs 19, use the file xlispstat19.el instead of xlispstat.el
+
+The exls shell script runs xlispstat.beta under GNU emacs. This
+provides parenthesis matching and indentation, by hitting the tab key.
+Two things may take some getting used to:
+
+	control characters, such as C-c (<CONTROL>-c), need an extra C-c
+	prefix. The main ones are
+
+		C-c C-c		interrupt (two C-c's instead of one)
+		C-c C-d		eof to quit (or use (exit))
+		C-c C-u		kill input line
+
+	xterm scrolling is not available, but you can scrollusing emacs
+	commands (here M-x means <ESCAPE> x):
+
+		M-v	back one screen
+		C-v	forward one screen
+		M-<	to beginning of buffer
+		M->	to end of buffer
+		
+		C-p	previous line
+		C-n	next line
+		C-f	forward one character
+		C-b	backward one character
+
+There are many other command available, but these should do for starters.
+A few emergency hints:
+
+	If you accidentally hit some key combination that confuses emacs, 
+	C-g will usually fix things again.
+
+	If the screen is split into several windows, C-xo moves to the next
+	window. C-x1 deletes all but the current window.
+
+	If all else fails, C-x C-c should kill emacs and let you out
+

@@ -1,0 +1,11 @@
+This directory contains some documentation files for XLISP and
+XLISP-STAT. Currently, these files are
+
+changes.tex	Changes from Release 2
+changes.ind	Index for changes.tex
+changes.ps	PostScript version of changes.tex
+glim.tex	Documentation for generalized linear models system
+xlispdoc.txt	Manual for XLISP 2.1g, text form
+xlispdoc.ps	Manual for XLISP 2.1g, PostScript form
+xlispins.doc	Documentation on XLISP internals
+

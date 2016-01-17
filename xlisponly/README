@@ -1,0 +1,80 @@
+[This directory is included in XLISP-STAT to allow building of a pure
+XLISP without the statistical code. It is also available separately.]
+
+This is a version of XLISP-PLUS 3.0 that includes a byte code
+compiler. This version is derived from XLISP-STAT 2.1 R3 by deleting
+the statistical code. I have only used the compiler options relevant
+to XLISP-STAT; other options may or may not work. There are also some
+other minor and/or gratuitous differences included to support the
+statistical code of XLISP-STAT.
+
+To build this system, start by running configure,
+
+	configure
+
+This creates a Makefile.  Look at the Makefile and check the variables
+BINDIR, LIBDIR, CFLAGS, and CC. by default, BINDIR and LIBDIR are
+
+	LIBDIR=$(prefix)/lib/xlisp
+	BINDIR=$(exec_prefix)/bin
+
+with prefix and exec_prefix set to /usr/local. You can give configure
+a different prefix by using
+
+	configure --prefix=/my/prefix/dir
+
+An alternate exec_prefix can be given similarly. You can specify gcc
+by using a
+
+	--with-gcc
+
+flag with configure (I have not tested this on all systems).
+
+
+After running configure, run
+
+	make
+
+This builds the executable, compiles some .lsp files to .fsl files,
+and creates a shell script and saved workspace. Doing
+
+	make install
+
+installs the shell script, executable, and workspace.
+
+The directories are
+
+	sources		C source code
+	lsp		.lsp files form Tom Almy's xlisp21f distribution
+	cmplsp		modified .lsp files for use with the compiler
+	compiler	the compiler code
+
+The interface to the compiler is through the functions
+
+	COMPILE
+	COMPILE-FILE
+
+These accept the arguments described in CLtL2. In addition,
+
+	COMPILE-FILE accepts the keyword :PRINT-SYMBOL-PACKAGE with
+	default value *COMPILE-PRINT-SYMBOL-PACKAGE*, initially NIL.
+	The .fsl files created by the compiler are text files that are
+	read with the standard reader.  Symbols are printed accrording
+	to the current package when this argument is NIL. That works
+	fine most of the time.  But if you do a lot of importing and
+	exporting things may get confused; in that case you can give
+	this keyword argument as T, or set the variable to T. The
+	resulting .fsl files should then contain fully qualified names
+	for all symbols.  This is safer but takes up more space.
+
+	The variable XLSCMP::*COMPILE-WARN-SPECIALS*, initially NIL,
+	determines whether the compiler issues warnings when it
+	encounters a reference to a global variable that is not
+	special. This is useful for debugging, but may get annoying if
+	classes are defined as in cmpclasses.lsp as non-special globals.
+
+Luke Tierney
+School of Statistics
+University of Minnesota
+Minneapolis, MN 55455
+luke@stat.umn.edu

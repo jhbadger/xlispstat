@@ -1,0 +1,138 @@
+(provide "regexp")
+
+(defpackage "REGULAR-EXPRESSIONS"
+  (:use "COMMON-LISP")
+  (:nicknames "REGEXP"))
+
+(in-package "REGEXP")
+
+(export '(REG_EXTENDED REG_NEWLINE REG_NOSUB REG_ICASE REG_NOTBOL REG_NOTEOL
+          regcomp regexec
+          regexp regsub url-decode))
+
+
+;;;;
+;;;; Lower-Level Component
+;;;;
+
+(wrap:c-lines "#include <sys/types.h>"
+              "#include <regex.h>")
+
+(wrap:c-constant REG_EXTENDED "REG_EXTENDED" :integer)
+(wrap:c-constant REG_NEWLINE "REG_NEWLINE" :integer)
+(wrap:c-constant REG_NOSUB "REG_NOSUB" :integer)
+(wrap:c-constant REG_ICASE "REG_ICASE" :integer)
+(wrap:c-constant REG_NOTBOL "REG_NOTBOL" :integer)
+(wrap:c-constant REG_NOTEOL "REG_NOTEOL" :integer)
+(wrap:c-constant REG_NOMATCH "REG_NOMATCH" :integer)
+
+(wrap:c-pointer "regex_t"
+           (:make make-regex-t)
+           (:get re-nsub "re_nsub" :integer))
+
+(wrap:c-pointer "regmatch_t"
+           (:make make-regmatch-t)
+           (:get rm-so "rm_so" :integer)
+           (:get rm-eo "rm_eo" :integer))
+
+(wrap:c-function base-regcomp "regcomp"
+  ((:cptr "regex_t") :string :integer) :integer)
+
+(wrap:c-function base-regexec "regexec"
+  ((:cptr "regex_t") :string :integer (:cptr "regmatch_t") :integer) :integer)
+
+(wrap:c-function regfree "regfree" ((:cptr "regex_t")) :void)
+
+(wrap:c-function regerror "regerror"
+  (:integer (:cptr "regex_t") :string :integer) :integer)
+
+(defstruct (regexp (:print-function print-regexp)
+                   (:constructor (make-regexp (ptr pat))))
+  ptr pat)
+
+(defun print-regexp (x s d)
+  (format s "#<Regular Expression ~s>" (regexp-pat x)))
+
+(defun regexp-free (x)
+  (without-interrupts
+   (let ((rex (regexp-ptr x)))
+     (unless (null rex)
+             (setf (regexp-ptr x) nil)
+             (regfree rex)))))
+
+(defun raise-regex-error (fun result rex)
+  (let ((size (regerror result rex "" 0))
+        (buf (make-string size)))
+    (regerror result rex buf size)
+    (error "~a in ~a" (subseq buf 0 (- size 1)) fun)))
+
+(defun regcomp (pat flags)
+  (system:without-interrupts
+    (let* ((rex (make-regex-t))
+           (result (base-regcomp rex pat flags))
+           (value (make-regexp rex pat)))
+      (unless (= result 0)
+              (raise-regex-error "regcomp" result rex))
+      (system:register-finalizer value #'regexp-free)
+      value)))
+
+(defun regexec (r str flags)
+  (let* ((rex (regexp-ptr r))
+         (nmatch (+ (re-nsub rex) 1))
+         (rm (make-regmatch-t nmatch))
+         (result (base-regexec rex str nmatch rm flags)))
+    (cond
+      ((= result 0) (let ((val nil))
+                      (dotimes (i nmatch (nreverse val))
+                        (let ((so (rm-so rm i))
+                              (eo (rm-eo rm i)))
+                          (push (if (or (= so -1) (= eo -1))
+                                    nil
+                                  (cons so eo))
+                                val)))))
+      ((= result REG_NOMATCH) nil)
+      (t (raise-regex-error "regexec" result rex)))))
+
+
+;;;;
+;;;; Higher-Level Component
+;;;;
+
+(defun get-substrings (str val)
+  (mapcar #'(lambda (x) (if x (subseq str (car x) (cdr x)) nil))
+          val))
+
+(defun regexp (pat str &key ignore-case (extended t) index-only)
+  (let* ((rex (let ((icase (if ignore-case REG_ICASE 0))
+                    (ext (if extended REG_EXTENDED 0)))
+                (regcomp pat (logior icase ext))))
+         (pairs (regexec rex str 0)))
+    (if index-only pairs (get-substrings str pairs))))
+
+(defun regsub (pat str sub &key ignore-case (extended t) all)
+  (let ((rex (let ((icase (if ignore-case REG_ICASE 0))
+                   (ext (if extended REG_EXTENDED 0)))
+               (regcomp pat (logior icase ext))))
+        (head "")
+        (tail str))
+    (loop
+     (let ((val (regexec rex tail 0)))
+       (unless val (return (concatenate 'string head tail)))
+       (let* ((sval (if (stringp sub)
+                        sub
+                      (apply sub (get-substrings tail val))))
+              (start (car (first val)))
+              (end (cdr (first val)))
+              (tail-head (subseq tail 0 start)))
+         (setf head (concatenate 'string head tail-head sval))
+         (setf tail (subseq tail end))))
+     (unless all (return (concatenate 'string head tail))))))
+
+(defun url-decode (url)
+  (flet ((parse-hex (s)
+           (let ((*read-base* 16))
+             (read-from-string s))))
+    (regsub "%([0-9a-hA-H][0-9a-hA-H])"
+            (regsub "\\+" url " " :all t)
+            #'(lambda (a b) (string (int-char (parse-hex b))))
+            :all t)))

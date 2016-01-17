@@ -1,0 +1,74 @@
+This stuff worked with 2.1R2. It probably can be made to work with
+newer versions, but I'm not able to do so or test it since I don't
+have access to such a system.
+
+Notes on compiling xlispstat on the IBM RT (AOS 4.3).
+	Bill Dunlap
+	Dept of Statistics, GN-22
+	University of Washington
+	Seattle, WA 98195
+	bill@stat.washington.edu
+	Fri Jan 19 14:27:18 PST 1990
+
+AOS a.out format is almost close enough to standard BSD to use the same
+foreign.h files as sun3 and vax.  However, there are problems in
+dynamic linking when xlisp scans the symbols table output by 'ld -A' to
+find new pointers to functions.
+
+Note that each function has two symbols: a text symbol, _.%s, which is
+the address of the code, and a data symbol _%s, which points to the
+address of the code.  A C pointer to function must have the value of
+this data symbol.  (The names match the BSD convention, but the types
+don't.)
+
+To find all symbols representing pointers to functions, start by
+scanning for all symbols of type "TEXT".  If the symbol has a name of
+the form "_.%s", then look for the symbol called "_%s".  If it is not
+of type "DATA", something is wrong.  If it is of type "DATA", enter it
+in the function pointer table along with the name %s.
+
+The compilers bf77, hf77, and pcc place the text symbol before the data
+symbol in the symbol table.  hc places the data symbol first.  There
+are often several other symbols between the matched ones.  'ld -A' does
+not change the order of the symbol tables.  Thus a linear search
+starting at the text symbol is not efficient; one should use a hashing
+scheme.  Perhaps, scan the symbol table once, hashing all data symbols
+and values in a temporary hash table, then scan the symbol table again
+looking for text symbols.  Whenever a text symbol is found, look for
+its mated data symbol in the temporary hash table.  If there is one,
+enter that data symbol in the (permanent) function pointer hash table.
+
+I took the lazy way out and just put all data symbols into the function
+pointer hash table, and let hell break loose if someone tried to call a
+bogus function.  xlisp alone has 6699 global data symbols and 6483
+global text symbols, leaving about 216 "real" data symbols, so this should
+be fairly safe.  The change was to redefine SYMBOL_IS_GLOBAL_FUNCTION
+from
+
+#define SYM_IS_GLOBAL_FUNCTION(ldptr,symbol) \
+  (((symbol).n_type & N_TYPE) == N_TEXT  && ((symbol).n_type & N_EXT))
+
+to
+
+#define SYM_IS_GLOBAL_FUNCTION(ldptr,symbol) \
+  (((symbol).n_type & N_TYPE) == N_DATA  && ((symbol).n_type & N_EXT))
+
+I made the redefinition in foreign.h and changed xsdyload.c so that
+the definition of SYM_IS_GLOBAL_FUNCTION there will not override
+the one in foreign.h.
+
+I compiled all of xlispstat with the C compiler called hc (cc is
+usually linked to hc), version 2.1n.  It does not deal properly with
+
+	((double *)a.addr)[i] = makedouble(arg) ;
+
+so I changed a line of that form to
+
+	{ double *dbl = &((double *)a.addr)[i] ; *dbl = makedouble(arg) ; }
+
+(I #ifdef'ed this part of the code so it is used only on an IBM RT with
+the HighC compiler.)  This problem does not occur with the pcc
+compiler, but that generally produces slower code than hc.
+
+Both of these changes were in xsdynload.c.  A patch file is in this
+directory (machines/ibmrt_bsd/xsdynload.patch).

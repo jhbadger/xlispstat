@@ -1,0 +1,85 @@
+			  Quick Installation
+
+If your system is one of the supported systems with a subdirectory in
+the machines directory you should be able to build and install the
+system by executing
+
+	configure
+	make
+	make install
+
+at the shell level in the main source directory. If your system is not
+one of the supported ones this may still work. If not, look at the
+Makefile produced by `configure' (or at Makefile.in if configure
+fails) and see if you can choose parameters that work. If configure
+does not work for you, please let me know so I can fix it so it does.
+
+
+			     More Details
+
+1. Configuration
+
+The `configure' script was created with GNU autoconf. It tries to
+figure out a few things about your system and uses that information to
+create a Makefile. After running configure you should look at the
+Makefile produced by configure to see if the configuration parameters
+make sense. The README files in the src/c/machines subdirectories give
+some values for these parameters I have used.
+
+By default, the XLISP-STAT library files will be put into the the
+directory XLSLIB=/usr/local/lib/xlispstat, and the executable will be
+put into BINDIR=/usr/local/bin.  You will need write permission for
+these directories to install XLISP-STAT.  If you want to use alternate
+locations for the executable and library, you can run configure as
+
+	configure --prefix=/my/dir/prefix
+
+The default is equivalent to
+
+	configure --prefix=/usr/local
+
+You can specify alternate X11 includes and libraries with, for example,
+
+	--x-includes=/usr/openwin/include
+and
+	--x-libraries=/usr/openwin/lib
+
+options. To use gcc, add
+
+	--with-gcc
+
+I have not tested this on all available systems, so it may need some
+extra work.
+
+An alternate C compiler can be specified by setting the CC environment
+variable to the compiler. From csh, for example,
+
+	(setenv CC /bin/c89; configure)
+
+should do it. 
+
+
+2. Make
+
+The make should build the executable, byte compile the lisp files, and
+create a saved memory image.
+
+After the make you can do
+
+	xlisp tests/test
+
+to run a minimal set of tests. These tests use random data and there
+may be a failure or two in the math tests -- usually in 5 or 6 and in
+22-25. This is usually not a problem. But you should not see lots of
+failures.
+
+I will work on these tests to make them not fail unless there is
+reason to worry.
+
+
+3. Make Install
+
+This step installs a shell script in BINDIR and the executable,
+workspace and lisp files in XLSLIB. The script will try to create all
+directories it needs, so it either needs permission to do that or the
+directories need to exist.

@@ -1,0 +1,32 @@
+(provide "tour")
+
+(defun sphere-rand (n)
+  (loop (let* ((x (- (* 2 (uniform-rand n)) 1))
+               (nx2 (sum (^ x 2))))
+          (if (< nx2 1) (return (/ x (sqrt nx2)))))))
+
+
+(defun tour-plot (&rest args)
+  (let ((p (apply #'spin-plot args)))
+    (send p :add-slot 'tour-count -1)
+    (send p :add-slot 'tour-trans nil)
+    (defmeth p :do-idle () (send self :tour-step) (pause 2))
+    (defmeth p :tour-step ()
+      (when (< (slot-value 'tour-count) 0)
+            (let ((vars (send self :num-variables))
+                  (angle (abs (send self :angle))))
+              (setf (slot-value 'tour-count) 
+                    (random (floor (/ pi (* 2 angle)))))
+              (setf (slot-value 'tour-trans) 
+                    (make-rotation (sphere-rand vars) 
+                                   (sphere-rand vars)
+                                   angle))))
+      (send self :apply-transformation (slot-value 'tour-trans))
+      (setf (slot-value 'tour-count) (- (slot-value 'tour-count) 1)))
+    (defmeth p :tour-on (&rest args) (apply #'send self :idle-on args))
+    (let ((item (send graph-item-proto :new "Touring" p
+                      :tour-on :tour-on :toggle t)))
+      (send item :key #\T)
+      (send (send p :menu) :append-items item))
+    p))
+    

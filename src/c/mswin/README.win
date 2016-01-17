@@ -1,0 +1,75 @@
+This is the MS Windows distribution of XLISP-STAT Release 3. The
+16-bit version is in the file WXLSZIP.EXE. The 32-bit vesion is in
+WXLS32ZP.EXE.
+
+Some information on the changes since Release 2 is given in the file
+pub/xlispstat/doc/changes.ps.
+
+To install either distribution, go through the following steps:
+
+	1. Transfer the self-extracting ZIP archive file 
+	to a suitable location. This is a binary file -- be sure to use
+	binary mode when transfering it.
+
+	2. Create a directory on your hard disk where you want the
+	executables and support files to live, CD to this directory,
+	and copy the archive to this directory.
+
+	3. Extract the archive using the command
+
+		ARCHIVE.EXE -d
+
+	where WRCHIVE is either WXLSZIP of WXLS32ZP. Be SURE to use
+	the -d flage -- this preserves the directory structure.
+
+	4. Execute
+
+		DIR\APP config
+
+	where APP is either WXLS.EXE or WXLS32.EXE and DIR is the
+	directory containing the extracted executable. This will
+	install a wxls.ini file and add group and program items
+	to the program manager. (At least that is what it does under
+	3.1 and NT 3.51 -- I assume something similar happens with
+	Win95 and NT 4.0.)
+
+You may also wish to add associations for .lsp, .fsl, or .wks files.
+
+If you want to include any of the 'Autoload' files in the startup
+workspace, load them into a running application and do
+
+	(save-workspace "newxlisp.wks")
+
+This creates a new workspace file and exits. You can then double click
+on this workspace, or you can rename it 'xlisp.wks' to make it the
+default startup workspace (keep a copy of the original one). To load
+the compiler, load the file 'cmpload.fsl' in the 'Autoload' folder.
+
+The lisp sources can be compiled by loading the 'cmpsys.lsp' file in
+the 'Lisp Sources' folder. This will recompile any .lsp file whose
+corresponding .fsl file does not esist or has an earlier modification
+date.
+
+The files xlsx.c and xlsx.h are for use in creating DLL's.
+
+This implementation is fairly close to the Macintosh implementation;
+the file wxls.tex contains a more complete description of the
+differences between this version and other versions.
+
+Source code for the Windows version is included in the UNIX
+distribution.
+
+The 32-bit version requires Win32s to run on Windows 3.1. Win32s is
+available from ftp://ftp.microsoft.com/Softlib/Mslfiles/PW1118.EXE.
+
+A minimal runtime system needs the application and the initial
+workspace, 'xlisp.wks', and any of the files in the Autoload folder
+you want to use. The application, initial workspace, and Autoload
+folder must be placed in the same folder. You can add the 'xlisp.hlp'
+file if you want documentation to be available.
+
+Luke Tierney
+School of Statistics
+University of Minnesota
+Minneapolis, MN 55455
+luke@stat.umn.edu

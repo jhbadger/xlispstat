@@ -1,0 +1,19 @@
+It may be possible to make this code work with the current version of
+xlispstat -- we no longer have one of these systems for me to test
+things on.
+
+This directory contains the foreign function calling include file for
+an Encore Multimacs (or whatever it is called). This system does not
+have ld -A but it does have its own dynloading routine. To compile with
+this stuff 
+
+	1) add -lld to the EXTRALIBS make variable
+	2) add -Dhash=HXSH to the UCFLAGS variable
+
+The second item is neeeded because the ld library contains a global
+function called hash which conflicts with the global hash function in
+xlisp.
+
+You may also want to edit the foreign.h file to include your own libraries
+to search in the loading process. At present there is no easy way to
+specify a library from the Lisp level; I will add this sometime.

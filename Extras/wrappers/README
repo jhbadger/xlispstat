@@ -1,0 +1,47 @@
+This directory includes a mechanism for generating C interfaces and a
+simple pointer interface library for xlispstat. For more information
+see
+
+	http://stat.umn.edu/~luke/xls/projects/wrappers/wrappers.html
+
+Files:
+
+	Makefile.in	Makefile configure template
+	README		this file
+	_autoidx.lsp	autoload index
+	configure	configuration script
+	configure.in	autoconf input for making configure
+	makefile.bc	makefile for Win32, Borland C++ 5.0
+	wrap.lsp	C wrapper generation code
+	wrapptr.wrp	pointer wrapper library
+	wrapptr.def	export definition for Win32, Borland C++ 5.0
+	wrapptr.exp	export definition for MacPPC, CW Pro 2
+	wrapptrs.mu.sit.hqx project file for MacPPC, CW Pro 2
+
+UNIX:
+
+	Executing 
+
+		configure
+		make install
+
+	should make the library and install it in the Autoload
+	directory of the source tree.
+
+Macintosh, CW Pro 2:
+
+	Make the wrappers with (wrap:make-wrappers "wrapptrs.wrp").
+	Get the project file from 
+
+		http://stat.umn.edu/~luke/xls/projects/wrappers/MacPPC
+
+	Build and manually install in the Autoload folder
+
+Windows, Borland C++:
+
+	Make the wrappers with (wrap:make-wrappers "wrapptrs.wrp").
+	Adjust the defines at the top of makefile.bc and
+
+		make -f makefile.bc
+
+	Then manually install in Autoload directory.

@@ -1,0 +1,33 @@
+This is for systems without dynamic loading support. Use
+
+FOREIGN_FLAG=
+FOREIGN_FILE=dummy-foreign.h
+
+For generic systems you should only need to decide whether to turn on
+the ANSI and IEEE flags. If your system has an ansi C compiler, use
+
+ANSI_FLAG = -DANSI
+
+Otherwise use
+
+ANSI_FLAG = 
+
+If your system has IEEE 754 arithmetic and provides the functions
+`finite' and `isnan' in its math library (or some other library),
+use
+
+IEEE_FLAG = -DIEEEFP
+
+Otherwise use
+
+IEEE_FLAG =
+
+The configure script may be able to set this up for you.
+
+If you want dynamic loading and have a system that is not directly
+supported in the machines directory, check whether your system has
+shared libraries and, if so, whether there is a programmer's interface
+that let's you load a library and find a symbol's address in the
+library. If so, it should not be too hard. Look at what is done for
+hpux and for alpha, irix and solaris.
+

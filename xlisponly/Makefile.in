@@ -1,0 +1,37 @@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+LIBDIR=$(prefix)/lib/xlisp
+BINDIR=$(exec_prefix)/bin
+
+SRCDIR=..
+
+all:
+	(cd sources; $(MAKE) xlisp.bin)
+	(cd compiler; $(MAKE))
+	(cd cmplsp; $(MAKE))
+	(cd sources; $(MAKE) xlisp.wks)
+	sed "s:LIBDIR:./sources:" xlisp.sh > xlisp
+	chmod +x xlisp
+
+
+install:
+	-mkdir -p $(BINDIR)
+	-mkdir -p $(LIBDIR)
+	cp sources/xlisp.bin $(LIBDIR)
+	cp sources/xlisp.wks $(LIBDIR)
+	sed "s:LIBDIR:$(LIBDIR):" xlisp.sh > $(BINDIR)/xlisp
+	chmod +x $(BINDIR)/xlisp
+
+
+clean:
+	(cd sources; $(MAKE) clean)
+	(cd cmplsp; $(MAKE) clean)
+	(cd compiler; $(MAKE) clean)
+
+
+# this is used for creating the separate xlisp only distribution
+srcfiles:
+	(cd sources; $(MAKE) -f Makefile.in SRCDIR=$(SRCDIR) srcfiles)
+	(cd cmplsp; $(MAKE) SRCDIR=$(SRCDIR) srcfiles)
+	(cd compiler; $(MAKE) SRCDIR=$(SRCDIR) srcfiles)

@@ -1,0 +1,51 @@
+This is a simple regular expression library for xlispstat. For more
+information see
+
+	http://stat.umn.edu/~luke/xls/projects/regexp/regexp.html
+
+Files:
+
+	Makefile.in	Makefile configure template
+	README		this file
+	_autoidx.lsp	autoload index
+	configure	configuration script
+	configure.in	autoconf input for making configure
+	makefile.bc	makefile for Win32, Borland C++ 5.0
+	makefile.vc	makefile for Win32, Microsoft VC++ 5.0
+	regex		Spencer library for systems w/o their own
+	regexp.wrp	lisp and wrapper code for the library
+	rtest.c		simple stand-alone test for system regular expressions
+	sys%2ftypes.h	fake sys/types.h for MacPPC, CW Pro 2
+	vcregexp.def	export definition for Win32, Microsoft VC++ 5.0
+	regexp.def	export definition for Win32, Borland C++ 5.0
+	regexp.exp	export definition for MacPPC, CW Pro 2
+
+UNIX:
+
+	Executing 
+
+		configure
+		make install
+
+	should make the library and install it in the Autoload
+	directory of the source tree. After configure, make rtest will
+	make the little stand-alone test.
+
+Macintosh, CW Pro 2:
+
+	Make the wrappers with (wrap:make-wrappers "regexp.wrp").
+	Get the project file from 
+
+		http://stat.umn.edu/~luke/xls/projects/regexp/MacPPC
+
+	Rename sys%2ftypes.h to sys/types.h and build. Manually
+	install in the Autoload folder
+
+Windows, Borland C++:
+
+	Make the wrappers with (wrap:make-wrappers "regexp.wrp").
+	Adjust the defines at the top of makefile.bc and
+
+		make -f makefile.bc
+
+	Then manually install in Autoload directory.

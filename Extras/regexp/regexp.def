@@ -1,0 +1,2 @@
+EXPORTS
+	regexp__init=_regexp__init

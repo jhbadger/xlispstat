@@ -1,0 +1,4 @@
+AC_INIT(Makefile.in)
+AC_CONFIG_AUX_DIR(sources/config)
+AC_CONFIG_SUBDIRS(sources)
+AC_OUTPUT(Makefile)

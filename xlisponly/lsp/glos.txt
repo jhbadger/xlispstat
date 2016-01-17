@@ -1,0 +1,3200 @@
+.nil -  represents empty list  and the boolean  value for "false".  The
+     value of NIL is  NIL, and cannot be changed  (it is a constant).  (car
+     NIL) and (cdr NIL) are also defined to be NIL.
+
+.t - boolean value "true" is constant with value t.
+
+.self -  within a method  context, the  current object
+     otherwise initially unbound.
+
+.object - constant, value is the class 'Object.'
+THE 'Object' CLASS 
+Object  THE TOP OF THE CLASS HEIRARCHY
+Messages:
+     :show                              SHOW AN OBJECT'S INSTANCE VARIABLES
+               returns   the object
+     :class                                   RETURN THE CLASS OF AN OBJECT
+               returns   the class of the object
+     :prin1 [<stream>]                                     PRINT THE OBJECT
+               <stream>  T is *terminal-io*, NIL and default is  *standard-
+                         output*
+               returns   the object
+     :isnew                       THE DEFAULT OBJECT INITIALIZATION ROUTINE
+               returns   the object
+     :superclass                           GET THE SUPERCLASS OF THE OBJECT
+               returns   NIL
+               (Defined in classes.lsp, see :superclass below)
+     :ismemberof <class>                                   CLASS MEMBERSHIP
+               <class>   class name
+               returns   T if object member of class, else NIL
+               (defined in classes.lsp)
+     :iskindof <class>                                     CLASS MEMBERSHIP
+               <class>   class name
+               returns   T  if object member of class or subclass of class,
+                         else NIL
+               (defined in classes.lsp)
+     :respondsto <sel>                                   SELECTOR KNOWLEDGE
+               <sel>     message selector
+               returns   T if  object responds  to  message selector,  else
+                         NIL.
+               (defined in classes.lsp)
+     :storeon                                           READ REPRESENTATION
+               returns   a list, that  when executed will create  a copy of
+                         the  object. Only  works  for  members of  classes
+                         created with defclass.
+               (defined in classes.lsp)
+
+.class - constant, value is the class 'Class'.
+THE 'Class' CLASS
+Class   THE CLASS OF ALL OBJECT CLASSES (including itself)
+Messages:
+     :new                                  CREATE A NEW INSTANCE OF A CLASS
+               returns   the new class object
+     :isnew <ivars> [<cvars> [<super>]]              INITIALIZE A NEW CLASS
+               <ivars>   the list of instance variable symbol
+               <cvars>   the list of class variable symbols
+               <super>   the superclass (default is Object)
+               returns   the new class object
+     :answer <msg> <fargs> <code>                  ADD A MESSAGE TO A CLASS
+               <msg>     the message symbol
+               <fargs>   the formal argument list (lambda list)
+               <code>    a list of executable expressions
+               returns   the object
+     :superclass                           GET THE SUPERCLASS OF THE OBJECT
+               returns   the superclass (of the class)
+               (defined in classes.lsp)
+     :messages                        GET THE LIST OF MESSAGES OF THE CLASS
+               returns   association list of message selectors and closures
+                         for messages.
+               (defined in classes.lsp)
+     :storeon                                           READ REPRESENTATION
+               returns   a  list,  that when  executed  will re-create  the
+                         class and its methods.
+               (defined in classes.lsp)
+When a new instance of a class is created by sending the message  ':new' to
+an  existing class,  the message ':isnew'  followed by  whatever parameters
+were passed  to the  ':new' message  is sent to  the newly  created object.
+Therefore, when a new class  is created by sending ':new' to  class 'Class'
+the message ':isnew' is sent to Class automatically. To create a new class,
+a function of the following format is used:
+    (setq <newclassname> (send Class :new <ivars> [<cvars> [<super>]]))
+When  a new  class  is created,  an  optional  parameter may  be  specified
+indicating the superclass  of the new class. If  this parameter is omitted,
+the new class will be a subclass of 'Object'. A class inherits all instance
+variables,  and methods  from its  super-class. Only  class variables  of a
+method's class are accessable.
+
+.internal-time-units-per-second  - integer constant  to divide returned
+     times by to get time in seconds.
+
+.pi - floating  point aproximation  of pi (constant  defined when  math
+     extension is compiled).
+
+.*obarray* - the  object hash table. Length  of array is  a compilation
+     option. Objects are hashed using the hash function and are placed on a
+     list in the appropriate array slot. This variable does note exist when
+     the package feature is compiled in.
+
+.*package*  - the current  package. Do not  alter. Part of  the package
+     feature.
+
+.*terminal-io* - stream bound to keyboard and display. Do not alter.
+
+.*standard-input*  - the  standard  input stream,  initially stdin.  If
+     stdin is not  redirected on  the command line,  then *terminal-io*  is
+     used so that all interactive i/o uses the same stream.
+
+.*standard-output* -  the standard output stream,  initially stdout. If
+     stdout is not  redirected on  the command line  then *terminal-io*  is
+     used so that all interactive i/o uses the same stream.
+
+.*error-output* - the error output stream (used by all error messages),
+     initially same as *terminal-io*.
+
+.*trace-output* - the trace output stream (used by the trace function),
+     initially same as *terminal-io*.
+
+.*debug-io*   -  the  break   loop  i/o   stream,  initially   same  as
+     *terminal-io*. System messages  (other than error messages) also print
+     out on this stream.
+
+.*breakenable* -  flag controlling entering  break loop on  errors.
+
+.*tracelist* -  list of names  of functions to  trace, as set  by trace
+     function.
+
+.*tracenable* - enable trace back printout on errors.
+
+.*tracelimit*  - number of levels  of trace back  information.
+
+.*evalhook* - user substitute  for the evaluator function
+
+.*applyhook* -  user substitute for  function application
+
+.*readtable* - the current readtable
+
+.*gc-flag*  - controls  the printing  of gc  messages. When  non-NIL, a
+     message  is printed  after each  garbage collection  giving  the total
+     number of nodes and the number of nodes free.
+
+.*gc-hook* - function to call after garbage collection
+
+.*integer-format* - format for  printing integers (when not bound  to a
+     string,  defaults  to  "%d"  or "%ld"  depending  on  implementation).
+     Variable not used when bignum extension installed.
+
+.*float-format*  -  format for  printing floats  (when  not bound  to a
+     string, defaults to "%g")
+
+.*readtable-case*  - symbol  read  and output  case.
+
+.*read-base*  - When  bound to  a  fixnum in  the range  2 through  36,
+     determines the default radix used when reading  rational numbers. Part
+     of bignum extension.
+
+.*print-base*  - When  bound to  a fixnum  in the  range 2  through 36,
+     determines the  radix used when  printing rational numbers  with prin1
+     and princ. Part of bignum extension.
+
+.*print-case*  -  symbol output  case when  printing.
+
+.*print-level* - When bound to a number, list  levels beyond this value
+     are printed as '#'. Used by all printing functions. Good precaution to
+     avoid getting caught in circular lists.
+
+.*print-length* - When  bound to a number, lists longer than this value
+     are  printed as '...'. Used by all printing functions. Good precaution
+     to avoid getting caught in circular lists.
+
+.*dos-input* - When not NIL, uses dos line input function for read
+
+.*displace-macros* -  When  not  NIL,  macros  are  replaced  by  their
+     expansions when exectuted
+
+.*random-state* - the default random-state used by the random function.
+
+.*features* - list of features, initially (:xlisp), used  for #+ and #-
+     reader macros.
+
+.*startup-functions* -  list of functions to be executed when workspace
+     started
+
+.*command-line*  - the  xlisp command line,  in the  form of  a list of
+     strings, one string per argument.
+
+.*load-file-arguments*  - When not  NIL, file arguements  are loaded at
+     startup.
+
+.*top-level-loop* - Top  level loop to utilize,  defaults to TOP-LEVEL-
+     LOOP. Note that this  function can only be restarted by executing TOP-
+     LEVEL, and it never exits.
+
+.*read-suppress*  - When  not NIL,  inhibits certain parts  of reading.
+     Used by the #+ and #- macroes.
+
+.+ 
+.++ 
+.+++ 
+.* 
+.** 
+.*** 
+There  are several  symbols  maintained by  the  read/eval/print loop.  The
+symbols  '+', '++',  and '+++'  are bound  to the  most recent  three input
+expressions.  The symbols '*', '**' and '***'  are bound to the most recent
+three results.  The symbol '-'  is bound to the  expression currently being
+evaluated. It becomes the value of '+' at the end of the evaluation.
+
+(eval <expr>)                                  EVALUATE AN XLISP EXPRESSION
+     <expr>    the expression to be evaluated
+     returns   the result of evaluating the expression
+
+(apply <fun> <arg>...<args>)        APPLY A FUNCTION TO A LIST OF ARGUMENTS
+     <fun>     the function to apply (or function symbol). May not be macro
+               or fsubr.
+     <arg>     initial arguments, which are CONSed to...
+     <args>    the argument list
+     returns   the result of applying the function to the arguments
+
+(funcall <fun> <arg>...)                     CALL A FUNCTION WITH ARGUMENTS
+     <fun>     the  function to call (or function symbol). May not be macro
+               or fsubr.
+     <arg>     arguments to pass to the function
+     returns   the result of calling the function with the arguments
+
+(quote <expr>)                             RETURN AN EXPRESSION UNEVALUATED
+     fsubr
+     <expr>    the expression to be quoted (quoted)
+     returns   <expr> unevaluated
+
+(function <expr>)                         GET THE FUNCTIONAL INTERPRETATION
+     fsubr
+     <expr>    the symbol or lambda expression (quoted)
+     returns   the functional interpretation
+
+(complement <fun>)                            MAKE A COMPLEMENTARY FUNCTION
+     This  function is intended to eliminate the need for -IF-NOT functions
+     and :TEST-NOT keys by providing a way to make complementary functions.
+     <fun>     the function or closure (not macro or fsubr)
+     returns   a new function closure that returns NOT of the result of the
+               original function.
+
+(identity <expr>)                                     RETURN THE EXPRESSION
+     <expr>    the expression
+     returns   the expression
+
+(backquote <expr>)                                       FILL IN A TEMPLATE
+     fsubr. Note: an improved backquote facility, which works properly when
+     nested, is available by loading the file backquot.lsp.
+     <expr>    the template (quoted)
+     returns   a copy  of the template with comma  and comma-at expressions
+               expanded.
+
+(comma <expr>)                                             COMMA EXPRESSION
+     (Never  executed)  As  the  object  of  a  backquote   expansion,  the
+     expression is evaluated and becomes an object in the enclosing list.
+
+(comma-at <expr>)                                       COMMA-AT EXPRESSION
+     (Never  executed)   As  the  object  of  a  backquote  expansion,  the
+     expression is  evaluated (and  must evaluate  to a  list) and is  then
+     spliced into the enclosing list.
+
+(lambda <args> <expr>...)                           MAKE A FUNCTION CLOSURE
+     fsubr
+     <args>    formal argument list (lambda list) (quoted)
+     <expr>    expressions of the function body (quoted)
+     returns   the function closure
+
+(get-lambda-expression <closure>)                 GET THE LAMBDA EXPRESSION
+     <closure> the closure
+     returns   the original  lambda expression, or  NIL if  not a  closure.
+               Second return  value  is  T  if  closure  has  a  non-global
+               environment, and the third  return value is the name  of the
+               closure.
+
+(macroexpand <form>)                         RECURSIVELY EXPAND MACRO CALLS
+     <form>    the form to expand
+     returns   the macro expansion
+
+(macroexpand-1 <form>)                                  EXPAND A MACRO CALL
+     <form>    the macro call form
+     returns   the macro expansion
+
+(multiple-value-bind <varlist> <vform> [<form>...])
+                                      BIND RETURN VALUES INTO LOCAL CONTEXT
+     defined as macro in common.lsp
+     <vform>   form to be evaluated
+     <varlist> list of variables to bind to return values of vform
+     <form>    forms  evaluated   sequentially,  as  in  LET,  using  local
+               bindings
+     returns   values of last form evaluated, or NIL if no forms
+
+(multiple-value-call <fun> <form> ...)    COLLECT VALUES AND APPLY FUNCTION
+     fsubr
+     <fun>     function to apply
+     <form>    forms, which are evaluated, with result values collected
+     returns   result of applying fun to all of  the returned values of the
+               forms
+
+(multiple-value-list <form>)   COLLECT MULTIPLE RETURNED VALUES INTO A LIST
+     defined as macro in common.lsp
+     <form>    form to be evaluated
+     returns   list of returned values
+
+(multiple-value-prog1 <form> [<form> ...])      RETURN VALUES OF FIRST FORM
+     fsubr
+     <form>    one or more forms, which are evaluated sequentially
+     returns   the result values of the first form
+
+(multiple-value-setq <varlist> <form>)      BIND RETURN VALUES TO VARIABLES
+     defined as macro in common.lsp
+     <form>    form to be evaluated
+     <varlist> list of variables to bind to return values of form
+     returns   (undefined, implementation dependent)
+
+(nth-value <index> <form>)                           EXTRACT A RETURN VALUE
+     fsubr
+     <index>   index into return values
+     <form>    form which gets evaluated
+     returns   the nth result value of exectuing the form
+
+(values [<expr>])                                    RETURN MULTIPLE VALUES
+     <expr>    expression(s) to be evaluated
+     returns   each argument as a separate value
+
+(values-list <list>)                       RETURN MULTIPLE VALUES FROM LIST
+     defined in common.lsp
+     <list>    a list
+     returns   each list element as a separate value
+
+(set <sym> <expr>)                         SET THE GLOBAL VALUE OF A SYMBOL
+     You can also use (setf (symbol-value <sym>) <expr>)
+     <sym>     the symbol being set
+     <expr>    the new value
+     returns   the new value
+
+(setq [<sym> <expr>]...)                          SET THE VALUE OF A SYMBOL
+     fsubr. You can also use (setf <sym> <expr>)
+     <sym>     the symbol being set (quoted)
+     <expr>    the new value
+     returns   the last new value or NIL if no arguments
+
+(psetq [<sym> <expr>]...)                          PARALLEL VERSION OF SETQ
+     fsubr. All  expressions are evaluated before  any assignments are
+     made.
+     <sym>     the symbol being set (quoted)
+     <expr>    the new value
+     returns   NIL
+
+(defun <sym> <fargs> <expr>...)                           DEFINE A FUNCTION
+(defmacro <sym> <fargs> <expr>...)                           DEFINE A MACRO
+     fsubr
+     <sym>     symbol being defined (quoted)
+     <fargs>   formal argument list (lambda list) (quoted)
+     <expr>    expressions constituting the body of the function (quoted)
+     returns   the function symbol
+
+(gensym [<tag>])                                          GENERATE A SYMBOL
+     <tag>     string or number
+     returns   the new symbol, uninterned
+
+(intern <pname> [<package>])                        MAKE AN INTERNED SYMBOL
+     <pname>   the symbol's print name string
+     <package> the package (defaults to current package)
+     returns   the new symbol. A second  value is returned which is NIL  if
+               the symbol did not pre-exist, :internal if it is an internal
+               symbol, :external if it is an external symbol, or :inherited
+               if it inherited via USE-PACKAGE.
+
+(make-symbol <pname>)                             MAKE AN UNINTERNED SYMBOL
+     <pname>   the symbol's print name string
+     returns   the new symbol
+
+(symbol-name <sym>)                          GET THE PRINT NAME OF A SYMBOL
+     <sym>     the symbol
+     returns   the symbol's print name
+
+(symbol-value <sym>)                              GET THE VALUE OF A SYMBOL
+     May be used as a place form.
+     <sym>     the symbol
+     returns   the symbol's value
+
+(symbol-function <sym>)                GET THE FUNCTIONAL VALUE OF A SYMBOL
+     May be used as a place form.
+     <sym>     the symbol
+     returns   the symbol's functional value
+
+(symbol-plist <sym>)                      GET THE PROPERTY LIST OF A SYMBOL
+     May be used as a place form.
+     <sym>     the symbol
+     returns   the symbol's property list
+
+(hash <expr> <n>)                                    COMPUTE THE HASH INDEX
+     <expr>    the object to hash
+     <n>       the table size (positive fixnum less than 32768)
+     returns   the hash index (fixnum 0 to n-1)
+
+(makunbound <sym>)                           MAKE A SYMBOL VALUE BE UNBOUND
+     You cannot unbind constants.
+     <sym>     the symbol
+     returns   the symbol
+
+(fmakunbound <sym>)                       MAKE A SYMBOL FUNCTION BE UNBOUND
+     <sym>     the symbol
+     returns   the symbol
+
+(unintern <sym> [<package>])                              UNINTERN A SYMBOL
+     Defined in common.lsp if package extension not compiled.
+     <sym>     the symbol
+     <package> the package to look in for the symbol
+     returns   t if successful, NIL if symbol not interned
+
+(defconstant <sym> <val> [<comment>])                     DEFINE A CONSTANT
+     fsubr.
+     <sym>     the symbol
+     <val>     the value
+     <comment> optional comment string (ignored)
+     returns   the value
+
+(defparameter <sym> <val> [<comment>])                   DEFINE A PARAMETER
+     fsubr.
+     <sym>     the symbol (will be marked "special")
+     <val>     the value
+     <comment> optional comment string (ignored)
+     returns   the value
+
+(defvar <sym> [<val> [<comment>]])                        DEFINE A VARIABLE
+     fsubr. Variable only initialized if not previously defined.
+     <sym>     the symbol (will be marked "special")
+     <val>     the initial value, or NIL if absent.
+     <comment> optional comment string (ignored)
+     returns   the current value
+
+(mark-as-special <sym> [<flag>])                      SET SPECIAL ATTRIBUTE
+     Also see definition of PROCLAIM and DECLARE.
+     <sym>     symbol to mark
+     <flag>    non-nil to make into a constant
+     returns   nil,  with  symbol  marked  as  special  and  possibly as  a
+               constant.
+
+(declare [<declaration> ...])                   DECLARE ARGUMENT ATTRIBUTES
+     Macro  in  common.lsp  provided  to  assist  in  porting  Common  Lisp
+     applications to XLISP-PLUS.
+     <declaration>       list of local variable and attributes
+     returns   nil, produces an error message if attribute SPECIAL is used.
+
+(proclaim <proc>)                         PROCLAIM GLOBAL SYMBOL ATTRIBUTES
+     Function in  common.lsp  provided to  assist  in porting  Common  Lisp
+     applications to XLISP-PLUS.
+     <proc>    a list of  symbols. If the CAR of the  list is SPECIAL, then
+               the remaining symbols are marked as special variables.
+
+(copy-symbol <sym> [<flag>])                        MAKE A COPY OF A SYMBOL
+     Function in common2.lsp
+     <sym>     symbol to copy
+     <flag>    if present  and non-nil,  copy value, function  binding, and
+               property list.
+     returns   un-interned copy of <sym>
+
+(setf [<place> <expr>]...)                         SET THE VALUE OF A FIELD
+     fsubr
+     <place> the field specifier
+     <expr>  the new value
+     returns the last new value, or NIL if no arguments
+
+(psetf [<place> <expr>]...)                        PARALLEL VERSION OF SETF
+     fsubr. All  expressions are evaluated  and macro place  forms expanded
+     before any assignments are made.
+     <place>   the field specifier
+     <expr>    the new value
+     returns   NIL
+
+(defsetf <sym> <fcn>)                         DEFINE A SETF FIELD SPECIFIER
+(defsetf <sym> <fargs> (<value>) <expr>...)
+     Defined  as macro  in common.lsp.  Convenient, Common  Lisp compatible
+     alternative to setting *setf* or *setf-lambda* property directly.
+     <sym>     field specifier symbol (quoted)
+     <fcn>     function  to  use  (quoted  symbol)  which  takes  the  same
+               arguments as the field specifier plus an additional argument
+               for the value. The value must be returned.
+     <fargs>   formal  argument list of unevaluated arguments (lambda list)
+               (quoted)
+     <value>   symbol bound to value to store (quoted).
+     <expr>    The last expression  must an expression  to evaluate in  the
+               setf  context.In this  respect, defsetf  works like  a macro
+               definition.
+     returns   the field specifier symbol
+
+(push  <expr> <place>)                                      CONS TO A FIELD
+     Defined as macro  in common.lsp. Only  evaluates place form  arguments
+     one time. It is recommended that *displace-macros* be non-NIL for best
+     performance.
+     <place>   field specifier being modified (see setf)
+     <expr>    value to cons to field
+     returns   the new value which is (CONS <expr> <place>)
+
+(pushnew <expr> <place> &key :test :test-not :key)      CONS NEW TO A FIELD
+     Defined  as macro in  common.lsp. Only evaluates  place form arguments
+     one time. It is recommended that *displace-macros* be non-NIL for best
+     performance.
+     <place>   field specifier being modified (see setf)
+     <expr>    value to cons to field, if not already MEMBER of field
+     :test     the test function (defaults to eql)
+     :test-not the test function (sense inverted)
+     :key      function to  apply to test function  list argument (defaults
+               to identity)
+     returns   the new value which is (CONS <expr> <place>) or <place>
+
+(pop <place>)                               REMOVE FIRST ELEMENT OF A FIELD
+     Defined as  macro in common.lsp.  Only evaluates place  form arguments
+     one time. It is recommended that *displace-macros* be non-NIL for best
+     performance.
+     <place>   the field being modified (see setf)
+     returns   (CAR <place>), field changed to (CDR <place>)
+
+(incf <place> [<value>])                                  INCREMENT A FIELD
+(decf <place> [<value>])                                  DECREMENT A FIELD
+     Defined as macro  in common.lsp. Only  evaluates place form  arguments
+     one time. It is recommended that *displace-macros* be non-NIL for best
+     performance.
+     <place>   field specifier being modified (see setf)
+     <value>   Numeric value (default 1)
+     returns   the new value  which is  (+ <place> <value>)  or (-  <place>
+               <value>)
+
+(apropos <string> [<package>])                SEARCH SYMBOLS FOR NAME MATCH
+(apropos-list <string> [<package>])
+     Functions in common.lsp.
+     <string>  find symbols which contain this string as substring of print
+               name
+     <package> package to search, if absent, or NIL, search all packages
+     returns   apropos-list  returns list of  symbols, apropos prints them,
+               along with some information, and returns nothing.
+
+(defpackage <package> [<option>...])                   (RE)DEFINE A PACKAGE
+     Macro in common.lsp. Use to define a package, or redefine a package.
+     <package> the name of the package to (re)define
+     <option>  any one or more of the following, none evaluated, applied in
+               this order:
+     (:shadow <symbol>...)
+               one or more symbols to shadow, as in function SHADOW
+     (:shadowing-import-from <symbol>...)
+               one   or   more   symbols   to  shadow,   as   in   function
+               SHADOWING-IMPORT
+     (:use <package>...)
+               one or more packages to "use", as in function USE-PACKAGE
+     (:import-from <package> <symbol>...)
+               one  or more  symbols  to import  from  the package,  as  in
+               function IMPORT
+     (:intern <symbol>...)
+               one  or  more  symbols to  be  located  or  created in  this
+               package, as in function INTERN
+     (:export <symbol>...)
+               one or more symbols to be exported  from this package, as in
+               function EXPORT
+     returns   the new or redefined package
+
+(delete-package <package>)                                 DELETE A PACKAGE
+     Deletes  a package  by uninterning  all its  symbols and  removing the
+     package.
+     <package> package to delete
+     returns   T if successful
+
+(do-symbols (<var> [<package> [<result>]]) <expr>...)) ITERATE OVER SYMBOLS
+(do-external-symbols (<var> [<package> [<result>]]) <expr>...)
+(do-all-symbols (<var> [<result>]) <expr>...)
+     Implemented  as macros  in  common.lsp. DO-SYMBOLS  iterates over  all
+     symbols in  a single  package, DO-EXTERNAL-SYMBOLS iterates  only over
+     the  external symbols, and DO-ALL-SYMBOLS iterates over all symbols in
+     all packages.
+     <var>     variable to bind to symbol
+     <package> the package to search
+     <result>  a single result form
+     <expr>    expressions to evaluate (implicit tag-body)
+     returns   result of result form, or NIL if not specified
+
+(export <symbols> [<package>])                     DECLARE EXTERNAL SYMBOLS
+     <symbols> symbols to declare as external
+     <package> package symbol is in
+     returns   T
+
+(find-all-symbols <string>)                FIND SYMBOLS WITH SPECIFIED NAME
+     <string>  string or symbol (if latter, print name string is used)
+     returns   list of all symbols having that print-name
+
+(find-package <package>)                   FIND PACKAGE WITH SPECIFIED NAME
+     <package> package to find
+     returns   package with name or nickname <package>, or NIL if not found
+
+(find-symbol <string> [<package>])                         LOOK UP A SYMBOL
+     <string>  print name to search for
+     <package> package to search in
+     returns   two values, the first being the symbol, and the second being
+               :internal  if  the  symbol   is  internal  in  the  package,
+               :external  if  it  is  external,  or  :inherited  if  it  is
+               inherited via USE-PACKAGE. If the symbol was not found, then
+               both return values are NIL.
+
+(import <symbols> [<package>])                IMPORT SYMBOLS INTO A PACKAGE
+     <symbols> symbols to import (fully qualified names)
+     <package> package to import symbols into
+     returns   T
+
+(in-package <package>)                                  SET CURRENT PACKAGE
+     FSUBR which sets the current package until next call or end of current
+     LOAD.
+     <package> the package to enter
+     returns   the package
+
+(list-all-packages)                                   GET ALL PACKAGE NAMES
+     returns   list of all currently existing packages
+
+(make-package <package> &key :nicknames :use)            MAKE A NEW PACKAGE
+     <package> name of new package to create
+     :nicknames          list of package nicknames
+     :use      list of packages to use (as in USE-PACKAGE)
+     returns   the new package
+
+(package-name <package>)                            GET PACKAGE NAME STRING
+     <package> package name
+     returns   package name string
+
+(package-nicknames <package>)                  GET PACKAGE NICKNAME STRINGS
+     <package> package name
+     returns   list of package nickname strings
+
+(package-obarray <package> [<external>])                     GET AN OBARRAY
+     <package> package to use
+     <external>   non-nil  for  external obarray (default),  else  internal
+                  obarray
+     returns   the obarray (array of lists of symbols in package)
+
+(package-shadowing-symbols <package>)         GET LIST OF SHADOWING SYMBOLS
+     <package> the package
+     returns   list of shadowing symbols in package
+
+(package-use-list <package>)                 GET PACKAGES USED BY A PACKAGE
+     <package> the package
+     returns   list of packages used by this package (as in USE-PACKAGE)
+
+(package-used-by-list <package>)         GET PACKAGES THAT USE THIS PACKAGE
+     <package> the package
+     returns   list of packages that use this package (as in USE-PACKAGE)
+
+(package-valid-p <package>)                         IS THIS A GOOD PACKAGE?
+     <package> object to check
+     returns   T if a valid package, else NIL
+
+(rename-package <package> <new> [<nick>])                  RENAME A PACKAGE
+     <package> original package
+     <new>     new package name (may be same as original name)
+     <nick>    list of new package nicknames
+     returns   the new package
+
+(shadow <symbols> [<package>])                       MAKE SHADOWING SYMBOLS
+     If a symbol is not already in  the package, it is interned. The symbol
+     is placed in the shadowing symbols list for the package.
+     <symbols> the symbol or symbols to shadow
+     <package> package to put symbols in
+     returns   T
+
+(shadowing-import <symbols> [<package>])          IMPORT SYMBOLS AND SHADOW
+     If a  symbol exists in the package, it is first uninterned. The symbol
+     is imported, and then made shadowing.
+     <symbols> the symbol or symbols to import and shadow
+     <package> package to put symbols in
+     returns   T
+
+(symbol-package <symbol>)                      FIND THE PACKAGE OF A SYMBOL
+     <symbol>  the symbol
+     returns   the home package of the symbol, or NIL if none
+
+(unexport <symbols> [<package>])           MAKE SYMBOLS INTERNAL TO PACKAGE
+     <symbols> symbol or symbols to make internal
+     <package> package for symbols
+     returns   T
+
+(unuse-package <pkgs> [<package>])            REMOVE PACKAGES FROM USE LIST
+     <pkgs>    A single package or list of packages
+     <package> Package  in which  to  un-use packages  (default is  current
+               package)
+     returns   T
+
+(use-package <pkgs> [<package>])                   ADD PACKAGES TO USE LIST
+     <pkgs>    A single package or list of packages
+     <package> Package  in which  to  use packages  in (default  is current
+               package)
+     returns   T
+
+(get <sym> <prop> [<dflt>])            GET THE VALUE OF A SYMBOL'S PROPERTY
+     Use as a place form (with SETF) to add or change properties.
+     <sym>     the symbol
+     <prop>    the property name
+     <dflt>    value to return if property not found, default is NIL
+     returns   the property value or <dflt> if property doesn't exist.
+
+(getf <place> <prop> [<dflt>])                  GET THE VALUE OF A PROPERTY
+     Use GETF as a place form with SETF to add or change properties. (NOTE-
+     -when used  with SETF,  <place> must  be a valid  place form.  It gets
+     executed twice, contrary to Common Lisp standard.)
+     <place>   where the property list is stored
+     <prop>    the property name
+     <dflt>    value to return if property not found, default is NIL
+     returns   the property value or <dflt> if property doesn't exist.
+
+(putprop <sym> <val> <prop>)            PUT A PROPERTY ONTO A PROPERTY LIST
+     Modern practice is to use (SETF (GET...)...) rather than PUTPROP.
+     <sym>     the symbol
+     <val>     the property value
+     <prop>    the property name
+     returns   the property value
+
+(remf <place> <prop>)                                     DELETE A PROPERTY
+     Defined as a macro in COMMON.LSP
+     <place>   where the property list is stored
+     <prop>    the property name
+     returns   T if property existed, else NIL
+
+(remprop <sym> <prop>)                           DELETE A SYMBOL'S PROPERTY
+     <sym>     the symbol
+     <prop>    the property name
+     returns   NIL
+
+(make-hash-table &key :size :test)                        MAKE A HASH TABLE
+     :size     fixnum  size  of hash  table --  should  be a  prime number.
+               Default is 31.
+     :test     comparison function. Defaults to eql.
+     returns   the hash table
+
+(gethash <key> <table> [<def>])                     EXTRACT FROM HASH TABLE
+     May be used as place form.
+     <key>     hash key
+     <table>   hash table
+     <def>     value to return on no match (default is NIL)
+     returns   associated data, if found, or <def> if not found.
+
+(remhash <key> <table>)                              DELETE FROM HASH TABLE
+     <key>     hash key
+     <table>   hash table
+     returns   T if deleted, NIL if not in table
+
+(clrhash <table>)                                      CLEAR THE HASH TABLE
+     <table>   hash table
+     returns   NIL, all entries cleared from table
+
+(hash-table-count <table>)                  NUMBER OF ENTRIES IN HASH TABLE
+     <table>   hash table
+     returns   integer number of entries in table
+
+(maphash <fcn> <table>)                     MAP FUNCTION OVER TABLE ENTRIES
+     <fcn>     the function or function name, a function of two  arguments,
+               the first is  bound to the key, and the  second the value of
+               each table entry in turn.
+     <table>   hash table
+     returns   NIL
+
+(aref <array> <n>)                          GET THE NTH ELEMENT OF AN ARRAY
+     May be used as a place form
+     <array>   the array (or string)
+     <n>       the array index (fixnum, zero based)
+     returns   the value of the array element
+
+(make-array <size> &key :initial-element :initial-contents)  MAKE A NEW ARRAY
+     <size>    the size of the new array (fixnum)
+     :initial-element
+               value to initialize all array elements, default NIL
+     :initial-contents
+               sequence used to initialize  all array elements, consecutive
+               sequence  elements  are used  for  each  array element.  The
+               length  of the sequence must be the  same as the size of the
+               array
+     returns   the new array
+
+(vector <expr>...)                               MAKE AN INITIALIZED VECTOR
+     <expr>    the vector elements
+     returns   the new vector
+
+(concatenate <type> <expr> ...)                       CONCATENATE SEQUENCES
+     If result type is string, sequences must contain only characters.
+     <type>    result type, one of CONS, LIST, ARRAY, or STRING
+     <expr>    zero or more sequences to concatenate
+     returns   a  sequence  which is  the  concatenation  of the  arguement
+               sequences
+
+(elt <expr> <n>)                          GET THE NTH ELEMENT OF A SEQUENCE
+     May be used as a place form
+     <expr>    the sequence
+     <n>       the index of element to return
+     returns   the element if the index is in bounds, otherwise error
+
+(map <type> <fcn> <expr> ...)         APPLY FUNCTION TO SUCCESSIVE ELEMENTS
+(map-into <target> <fcn> [<expr> ...])
+     <type>    result type, one of CONS, LIST, ARRAY, STRING, or NIL
+     <target>  destination sequence to modify
+     <fcn>     the function or function name
+     <expr>    a sequence for each argument of the function
+     returns   a  new sequence  of type  <type> for  MAP, and  <target> for
+               MAP-INTO.
+
+(every <fcn> <expr> ...)             APPLY FUNCTION TO ELEMENTS UNTIL FALSE
+(notevery <fcn> <expr> ...)
+     <fcn>     the function or function name
+     <expr>    a sequence for each argument of the function
+     returns   every returns last evaluated function result
+               notevery returns T if  there is a NIL function  result, else
+               NIL
+
+(some <fcn> <expr> ...)               APPLY FUNCTION TO ELEMENTS UNTIL TRUE
+(notany <fcn> <expr> ...)
+     <fcn>     the function or function name
+     <expr>    a sequence for each argument of the function
+     returns   some returns first non-NIL function result, or NIL
+               notany returns  NIL if there  is a non-NIL  function result,
+               else T
+
+(length <expr>)                               FIND THE LENGTH OF A SEQUENCE
+     Note that  a circular list causes an error. To detect a circular list,
+     use LIST-LENGTH.
+     <expr>    the list, vector or string
+     returns   the length of the list, vector or string
+
+(reverse <expr>)                                         REVERSE A SEQUENCE
+(nreverse <expr>)                          DESTRUCTIVELY REVERSE A SEQUENCE
+     <expr>    the sequence to reverse
+     returns   a new sequence in the reverse order
+
+(subseq <seq> <start> [<end>])                        EXTRACT A SUBSEQUENCE
+     <seq>     the sequence
+     <start>   the starting position (zero origin)
+     <end>     the ending position + 1 (defaults to end) or NIL  for end of
+               sequence
+     returns   the sequence between <start> and <end>
+
+(sort <seq> <test> &key :key)                 DESTRUCTIVELY SORT A SEQUENCE
+(stable-sort <seq> <test> &key :key)                STABLE DESTRUCTIVE SORT
+     <seq>     the sequence to sort
+     <test>    the comparison  function,  must return  T only  if its first
+               argument is strictly to the left of its second argument.
+     :key      function to apply to comparison function arguments (defaults
+               to identity)
+     returns   the sorted sequence
+
+(search <seq1> <seq2> &key :test :test-not :key :start1 :end1 :start2 :end2)
+                                                        SEARCH FOR SEQUENCE
+     <seq1>    the sequence to search for
+     <seq2>    the sequence to search in
+     :test     the test function (defaults to eql)
+     :test-not the test function (sense inverted)
+     :key      function to  apply to  test function arguments  (defaults to
+               identity)
+     :start1   starting index in <seq1>
+     :end1     index of end+1 in <seq1> or NIL for end of sequence
+     :start2   starting index in <seq2>
+     :end2     index of end+1 in <seq2> or NIL for end of sequence
+     returns   position of first match
+
+(remove <expr> <seq>  &key  :test :test-not :key :start :end :count :from-end)
+(remove-if <test> <seq> &key :key :start :end :count :from-end)
+(remove-if-not <test> <seq> &key :key :start :end :count :from-end)
+                                            REMOVE ELEMENTS FROM A SEQUENCE
+     <expr>    the element to remove
+     <test>    the test predicate, applied to each <seq> element in turn
+     <seq>     the sequence
+     :test     the test function (defaults to eql)
+     :test-not the test function (sense inverted)
+     :key      function  to  apply  to  each  <seq>  element  (defaults  to
+               identity)
+     :start    starting index
+     :end      index of end+1, or NIL for (length <seq>)
+     :count    maximum  number  of  elements  to  remove,  negative  values
+               treated as zero, NIL same as default -- unlimited.
+     :from-end if  non-nil, behaves  as  though elements  are removed  from
+               right end. This only has an affect when :count is used.
+     returns   copy  of  sequence  with  matching/non-matching  expressions
+               removed
+
+(count <expr> <seq> &key :test :test-not :key :start :end :from-end)
+(count-if <test> <seq> &key :key :start :end :from-end)
+(count-if-not <test> <seq> &key :key :start :end :from-end)
+                                      COUNT MATCHING ELEMENTS IN A SEQUENCE
+     <expr>    element to count
+     <test>    the test predicate, applied to each <seq> element in turn
+     <seq>     the sequence
+     :test     the test function (defaults to eql)
+     :test-not the test function (sense inverted)
+     :key      function  to  apply  to  each  <seq>  element  (defaults  to
+               identity)
+     :start    starting index
+     :end      index of end+1, or NIL for (length <seq>)
+     :from-end this argument is ignored
+     returns   count of matching/non-matching elements
+
+(find <expr> <seq> &key :test :test-not :key :start :end :from-end)
+(find-if <test> <seq> &key :key :start :end :from-end)
+(find-if-not <test> <seq> &key :key :start :end :from-end)
+                                                   FIND ELEMENT IN SEQUENCE
+     <expr>    element to search for
+     <test>    the test predicate, applied to each <seq> element in turn
+     <seq>     the sequence
+     :test     the test function (defaults to eql)
+     :test-not the test function (sense inverted)
+     :key      function  to  apply  to  each  <seq>  element  (defaults  to
+               identity)
+     :start    starting index
+     :end      index of end+1, or NIL for (length <seq>)
+     :from-end if non-nil search is done for last element
+     returns   first matching/non-matching element of sequence, or NIL
+
+(position <expr> <seq> &key :test :test-not :key :start :end :from-end)
+(position-if <test> <seq> &key :key :start :end :from-end)
+(position-if-not <test> <seq> &key :key :start :end :from-end)
+                        FIND POSITION OF FIRST MATCHING ELEMENT IN SEQUENCE
+     <expr>    element to search for
+     <test>    the test predicate, applied to each <seq> element in turn
+     <seq>     the sequence
+     :test     the test function (defaults to eql)
+     :test-not the test function (sense inverted)
+     :key      function  to  apply  to  each  <seq>  element  (defaults  to
+               identity)
+     :start    starting index
+     :end      index of end+1, or NIL for (length <seq>)
+     :from-end if non-nil search is made for last element
+     returns   position of first matching/non-matching element of sequence,
+               or NIL
+
+(delete <expr> <seq> &key :key :test :test-not :start :end :count :from-end)
+(delete-if <test> <seq> &key :key :start :end :count :from-end)
+(delete-if-not <test> <seq> &key :key :start :end :count :from-end)
+                                            DELETE ELEMENTS FROM A SEQUENCE
+     <expr>    the element to delete
+     <test>    the test predicate, applied to each <seq> element in turn
+     <seq>     the sequence
+     :test     the test function (defaults to eql)
+     :test-not the test function (sense inverted)
+     :key      function  to  apply  to  each  <seq>  element  (defaults  to
+               identity)
+     :start    starting index
+     :end      index of end+1, or NIL for (length <seq>)
+     :count    maximum  number  of  elements  to  remove,  negative  values
+               treated as zero, NIL same as default -- unlimited.
+     :from-end if  non-nil, behaves  as  though elements  are removed  from
+               right end. This only has an affect when :count is used.
+     returns   <seq> with the matching/non-matching expressions deleted
+
+(substitute <r> <e> <s> &key :key :test :test-not :start :end :count :from-end)
+(substitute-if <r> <test> <s> &key :key :start :end :count :from-end)
+(substitute-if-not <r> <test> <s> &key :key :start :end :count :from-end)
+                                          SUBSTITUTE ELEMENTS IN A SEQUENCE
+     <r>       the replacement expression
+     <e>       the element to replace
+     <test>    the test predicate, applied to each <s> element in turn
+     <s>       the sequence
+     :test     the test function (defaults to eql)
+     :test-not the test function (sense inverted)
+     :key      function to apply to each <s> element (defaults to identity)
+     :start    starting index
+     :end      index of end+1, or NIL for (length <s>)
+     :count    maximum  number  of  elements  to  remove,  negative  values
+               treated as zero, NIL same as default -- unlimited.
+     :from-end if  non-nil, behaves  as  though elements  are removed  from
+               right end. This only has an affect when :count is used.
+     returns   copy  of  <s>  with  the  matching/non-matching  expressions
+               substituted
+
+(nsubstitute <r><e><s> &key :key :test :test-not :start :end :count :from-end)
+(nsubstitute-if <r> <test> <s> &key :key :start :end :count :from-end)
+(nsubstitute-if-not <r> <test> <s> &key :key :start :end :count :from-end)
+                            DESTRUCTIVELY SUBSTITUTE ELEMENTS IN A SEQUENCE
+     <r>       the replacement expression
+     <e>       the element to replace
+     <test>    the test predicate, applied to each <s> element in turn
+     <s>       the sequence
+     :test     the test function (defaults to eql)
+     :test-not the test function (sense inverted)
+     :key      function to apply to each <s> element (defaults to identity)
+     :start    starting index
+     :end      index of end+1, or NIL for (length <s>)
+     :count    maximum  number  of  elements  to  remove,  negative  values
+               treated as zero, NIL same as default -- unlimited.
+     :from-end if  non-nil, behaves  as  though elements  are removed  from
+               right end. This only has an affect when :count is used.
+     returns   <s> with the matching/non-matching expressions substituted
+
+(reduce <fcn> <seq> &key :initial-value :start :end)
+                                            REDUCE SEQUENCE TO SINGLE VALUE
+     <fcn>     function (of two arguments)  to apply to result of  previous
+               function application  (or first element) and  each member of
+               sequence.
+     <seq>     the sequence
+     :initial-value      value to  use as first argument  in first function
+                         application rather than using the first element of
+                         the sequence.
+     :start    starting index
+     :end      index of end+1, or NIL for (length <seq>)
+     returns   if  sequence is empty and there is no initial value, returns
+               result of applying function to  zero arguements. If there is
+               a single element, returns the element. Otherwise returns the
+               result of the last function application.
+
+(remove-duplicates <seq> &key :test :test-not :key :start :end)
+(delete-duplicates <seq> &key :test :test-not :key :start :end)
+                                            DELETE DUPLICATES FROM SEQUENCE
+     Delete-duplicates defined in common2.lsp.
+     <seq>     the sequence
+     :test     comparison function (default eql)
+     :test-not comparison function (sense inverted)
+     :key      function to  apply to  test function arguments  (defaults to
+               identity)
+     :start    starting index
+     :end      index of end+1, or NIL for (length <seq>)
+     returns   copy  of sequence  with  duplicates removed,  or <seq>  with
+               duplicates deleted (destructive).
+
+(fill <seq> <expr> &key :start :end)              REPLACE ITEMS IN SEQUENCE
+     Defined in common.lsp
+     <seq>     the sequence
+     <expr>    new value to place in sequence
+     :start    starting index
+     :end      index of end+1, or NIL for (length <seq>)
+     returns   sequence with items replaced with new item
+
+(replace <seq1> <seq2> &key :start1 :end1 :start2 :end2)
+                                    REPLACE ITEMS IN SEQUENCE FROM SEQUENCE
+     Defined in common.lsp
+     <seq1>    the sequence to modify
+     <seq2>    sequence with new items
+     :start1   starting index in <seq1>
+     :end1     index of end+1 in <seq1> or NIL for end of sequence
+     :start2   starting index in <seq2>
+     :end2     index of end+1 in <seq2> or NIL for end of sequence
+     returns   first sequence with items replaced
+
+(make-sequence <type> <size> &key :initial-element)         MAKE A SEQUENCE
+     Defined in common2.lsp.
+     <type>    type of sequence to create: CONS LIST ARRAY or STRING
+     <size>    size of sequence (non-negative integer)
+     :initial-element
+               initial value of all elements in sequence
+     returns   the new sequence
+
+(copy-seq <seq>)                                            COPY A SEQUENCE
+     Defined in common2.lsp
+     <seq>     sequence to copy
+     returns   copy  of the sequence, sequence elements are eq those in the
+               original sequence.
+
+(merge <type> <seq1> <seq2> <pred> &key :key)           MERGE TWO SEQUENCES
+     Defined in common2.lsp. Non-destructive,  although may be  destructive
+     in Common Lisp.
+     <type>    type of result sequence: CONS LIST ARRAY or STRING
+     <seq1>    first sequence to merge
+     <seq2>    second sequence to merge
+     <pred>    function of  two arguments which  returns true if  its first
+               argument should precede its second
+     :key      optional function  to apply to each  sequence element before
+               applying predicate function (defaults to identity)
+     returns   new sequence containing all the elements of  seq1 (in order)
+               merged  with  all the  elements  of seq2,  according  to the
+               predicate function
+
+(mismatch <s1> <s2> &key :test :test-not :key :start1 :end1 :start2 :end2)
+                                      FIND DIFFERENCE BETWEEN TWO SEQUENCES
+     Defined in common2.lsp.
+     <s1>      first sequence
+     <s2>      second sequence
+     :test     the test function (defaults to eql)
+     :test-not the test function (sense inverted)
+     :key      function  to  apply  to  to  each  sequence  element  before
+               applying test function (defaults to identity)
+     :start1   starting index in <s1>
+     :end1     index of end+1 in <s1> or NIL for end of sequence
+     :start2   starting index in <s2>
+     :end2     index of end+1 in <s2> or NIL for end of sequence
+     returns   integer index of first mismatch in s1, or NIL if no mismatch
+
+(car <expr>)                                  RETURN THE CAR OF A LIST NODE
+     May be used as a place form.
+     <expr>    the list node
+     returns   the car of the list node
+
+(cdr <expr>)                                  RETURN THE CDR OF A LIST NODE
+     May be used as a place form.
+     <expr>    the list node
+     returns   the cdr of the list node
+
+(caar <expr>)					  NESTED CAR/CDR EXPRESSIONS
+(cadr <expr>)
+(cdar <expr>)
+(cddr <expr>)
+(caaar <expr>)
+(caadr <expr>)
+(cadar <expr>)
+(caddr <expr>)
+(cdaar <expr>)
+(cdadr <expr>)
+(cddar <expr>)
+(cdddr <expr>)
+(caaaar <expr>)
+(caaadr <expr>)
+(caadar <expr>)
+(caaddr <expr>)
+(cadaar <expr>)
+(cadadr <expr>)
+(caddar <expr>)
+(cadddr <expr>)
+(cdaaar <expr>)
+(cdaadr <expr>)
+(cdadar <expr>)
+(cdaddr <expr>)
+(cddaar <expr>)
+(cddadr <expr>)
+(cdddar <expr>)
+(cddddr <expr>)
+	Applied from right to left: cadr means take the cdr then take the car.
+
+(first <expr>)                                            A SYNONYM FOR CAR
+(second <expr>)                                          A SYNONYM FOR CADR
+(third <expr>)                                          A SYNONYM FOR CADDR
+(fourth <expr>)                                        A SYNONYM FOR CADDDR
+(fifth <expr>)                                           FIFTH LIST ELEMENT
+(sixth <expr>)                                           SIXTH LIST ELEMENT
+(seventh <expr>)                                       SEVENTH LIST ELEMENT
+(eighth <expr>)                                         EIGHTH LIST ELEMENT
+(ninth <expr>)                                           NINTH LIST ELEMENT
+(tenth <expr>)                                           TENTH LIST ELEMENT
+(rest <expr>)                                             A SYNONYM FOR CDR
+     May  be used  as place  forms when  COMMON2.LSP loaded.  fifth through
+     tenth defined in COMMON2.LSP.
+
+(cons <expr1> <expr2>)                            CONSTRUCT A NEW LIST NODE
+     <expr1>   the car of the new list node
+     <expr2>   the cdr of the new list node
+     returns   the new list node
+
+(acons <expr1> <expr2> <alist>)                  ADD TO FRONT OF ASSOC LIST
+     defined in common.lsp
+     <expr1>   key of new association
+     <expr2>   value of new association
+     <alist>   association list
+     returns   new association list, which  is (cons (cons <expr1> <expr2>)
+               <expr3>))
+
+(list <expr>...)                                    CREATE A LIST OF VALUES
+(list* <expr> ... <list>)
+     <expr>    expressions to be combined into a list
+     returns   the new list
+
+(append <expr>...)                                             APPEND LISTS
+     <expr>    lists whose elements are to be appended
+     returns   the new list
+
+(revappend <expr1> <expr2>)                             APPEND REVERSE LIST
+     Defined in common2.lsp
+     <expr1>   first list
+     <expr2>   second list
+     returns   new list comprised of reversed first list appended to second
+               list
+
+(list-length <list>)                              FIND THE LENGTH OF A LIST
+     <list>    the list
+     returns   the length of the list or NIL if the list is circular
+
+(last <list>)                           RETURN THE LAST LIST NODE OF A LIST
+     <list>    the list
+     returns   the last list node in the list
+
+(tailp <sublist> <list>)                  IS ONE LIST A SUBLIST OF ANOTHER?
+     Defined in common2.lsp
+     <sublist> list to search for
+     <list>    list to search in
+     returns   T if sublist is EQ one of the top level conses of list
+
+(butlast <list> [<n>])                  RETURN COPY OF ALL BUT LAST OF LIST
+(nbutlast <list> [<n>])                        DELETE LAST ELEMENTS OF LIST
+     nbutlast defined in common2.lsp
+     <list>    the list
+     <n>       count of elements to omit (default 1)
+     returns   copy of list with last element(s) absent,  or, for nbutlast,
+               the list with the last elements deleted (destructive).
+
+(nth <n> <list>)                           RETURN THE NTH ELEMENT OF A LIST
+     May be used as a place form
+     <n>       the number of the element to return (zero origin)
+     <list>    the list
+     returns   the nth element or NIL if the list isn't that long
+
+(nthcdr <n> <list>)                            RETURN THE NTH CDR OF A LIST
+     <n>       the number of the element to return (zero origin)
+     <list>    the list
+     returns   the nth cdr or NIL if the list isn't that long
+
+(member <expr> <list> &key :test :test-not :key)  FIND AN EXPRESSION IN A LIST
+(member-if <test> <list> &key :key)               FIND ELEMENT PASSING TEST
+(member-if-not <test> <list> &key :key)           FIND ELEMENT FAILING TEST
+     Functions member-if and member-if-not defined in common2.lsp
+     <expr>    the expression to find
+     <test>    the test predicate
+     <list>    the list to search
+     :test     the test function (defaults to eql)
+     :test-not the test function (sense inverted)
+     :key      function to  apply to test function  list argument (defaults
+               to identity)
+     returns   the remainder  of the list  starting with the  expression or
+               element passing/failing the test predicate
+
+(assoc <expr> <alist> &key :test :test-not :key) FIND EXPRESSION IN AN A-LIST
+(assoc-if <test> <alist> &key :key)     FIND ELEMENT IN A-LIST PASSING TEST
+(assoc-if-not <test> <alist> &key :key) FIND ELEMENT IN A-LIST FAILING TEST
+(rassoc <expr> <alist> &key :test :test-not :key) FIND EXPRESSION IN AN A-LIST
+(rassoc-if <test> <alist> &key :key)    FIND ELEMENT IN A-LIST PASSING TEST
+(rassoc-if-not <test> <alist> &key :key)FIND ELEMENT IN A-LIST FAILING TEST
+     All functions but assoc defined  in common2.lsp. The rassoc  functions
+     match the cdrs of the a-list elements  while the assoc functions match
+     the cars.
+     <expr>    the expression to find
+     <test>    the test predicate
+     <alist>   the association list
+     :test     the test function (defaults to eql)
+     :test-not the test function (sense inverted)
+     :key      function to apply to a-list argument (defaults to identity)
+     returns   the alist entry or NIL
+
+(mapc <fcn> <list1> <list>...)            APPLY FUNCTION TO SUCCESSIVE CARS
+(mapcar <fcn> <list1> <list>...)          APPLY FUNCTION TO SUCCESSIVE CARS
+(mapcan <fcn> <list1> <list>...)          APPLY FUNCTION TO SUCCESSIVE CARS
+(mapl <fcn> <list1> <list>...)            APPLY FUNCTION TO SUCCESSIVE CDRS
+(maplist <fcn> <list1> <list>...)         APPLY FUNCTION TO SUCCESSIVE CDRS
+(mapcon <fcn> <list1> <list>...)          APPLY FUNCTION TO SUCCESSIVE CDRS
+     <fcn>     the function or function name
+     <listn>   a list for each argument of the function
+     returns   the first list  of arguments (mapc  or mapl), a list  of the
+               values  returned (mapcar  or maplist),  or list  or returned
+               values nconc'd together (mapcan or mapcon).
+
+(subst <to> <from> <expr> &key :test :test-not :key)
+(nsubst <to> <from> <expr> &key :test :test-not :key)
+(nsubst-if <to> <test> <expr> &key :key)
+(nsubst-if-not <to> <test> <expr> &key :key)
+                                                     SUBSTITUTE EXPRESSIONS
+     SUBST does minimum  copying as required by Common Lisp.  NSUBST is the
+     destructive version.
+     <to>      the new expression
+     <from>    the  old  expression (match  to  part of  <expr>  using test
+               function
+     <test>    test predicate
+     <expr>    the expression in which to do the substitutions
+     :test     the test function (defaults to eql)
+     :test-not the test function (sense inverted)
+     :key      function  to  apply  to  subtree  test  function  expression
+               argument (defaults to identity)
+     returns   the expression with substitutions
+
+(sublis <alist> <expr> &key :test :test-not :key)
+(nsublis <alist> <expr> &key :test :test-not :key)
+                                                  SUBSTITUTE WITH AN A-LIST
+     SUBLIS does minimum copying as required by Common Lisp. NSUBLIS is the
+     destructive version.
+     <alist>   the association list
+     <expr>    the expression in which to do the substitutions
+     :test     the test function (defaults to eql)
+     :test-not the test function (sense inverted)
+     :key      function  to  apply  to  subtree  test  function  expression
+               argument (defaults to identity)
+     returns   the expression with substitutions
+
+(pairlis <keys> <values> [<alist>])          BUILD AN A-LIST FROM TWO LISTS
+     In file common.lsp
+     <keys>    list of association keys
+     <values>  list of association values, same length as keys
+     <alist>   existing association list, default NIL
+     returns   new association list
+
+(make-list <size> &key :initial-element)                        MAKE A LIST
+     In file common2.lsp
+     <size>    size of list (non-negative integer)
+     :initial-element
+               initial value for each element, default NIL
+     returns   the new list
+
+(copy-list <list>)                             COPY THE TOP LEVEL OF A LIST
+     In file common.lsp
+     <list>    the list
+     returns   a copy of the list (new cons cells in top level)
+
+(copy-alist <alist>)                               COPY AN ASSOCIATION LIST
+     In file common.lsp
+     <alist>   the association list
+     returns   a copy of the association list (keys and values not copies)
+
+(copy-tree <tree>)                                              COPY A TREE
+     In file common.lsp
+     <tree>    a tree structure of cons cells
+     returns   a copy of the tree structure
+
+(intersection <list1> <list2> &key :test :test-not :key)      SET FUNCTIONS
+(union <list1> <list2> &key :test :test-not :key)
+(set-difference <list1> <list2> &key :test :test-not :key)
+(set-exclusive-or <list1> <list2> &key :test :test-not :key)
+(nintersection <list1> <list2> &key :test :test-not :key)
+(nunion <list1> <list2> &key :test :test-not :key)
+(nset-difference <list1> <list2> &key :test :test-not :key)
+(nset-exclusive-or <list1> <list2> &key :test :test-not :key)
+     set-exclusive-or and nset-exclusive-or defined in  common.lsp. nunion,
+     nintersection,    and   nset-difference    are   aliased    to   their
+     non-destructive counterparts in common.lsp.
+     <list1>   first list
+     <list2>   second list
+     :test     the test function (defaults to eql)
+     :test-not the test function (sense inverted)
+     :key      function to  apply to  test function arguments  (defaults to
+               identity)
+     returns   intersection: list of all elements in both lists
+               union: list of all elements in either list
+               set-diference: list of all elements in first list but not in
+               second list
+               set-exclusive-or: list of all elements in only one list
+               "n" versions are potentially destructive.
+
+(adjoin <expr> <list> :test :test-not :key)              ADD UNIQUE TO LIST
+     <expr>    new element to add
+     <list>    the list
+     :test     the test function (defaults to eql)
+     :test-not the test function <sense inverted)
+     :key      function to  apply to  test function arguments  (defaults to
+               identity)
+     returns   if  element not  in  list then  (cons  <expr> <list>),  else
+               <list>.
+
+(ldiff <list> <sublist>)                       GET INITIAL ELEMENTS OF LIST
+     In file common2.lsp
+     <list>    list to get elements of
+     <sublist> list to search for in <list> (uses tailp)
+     returns   copy of list up to match with sublist.
+
+(rplaca <list> <expr>)                       REPLACE THE CAR OF A LIST NODE
+     Modern practice is to use (setf (car <list>) <expr>)
+     <list>    the list node
+     <expr>    the new value for the car of the list node
+     returns   the list node after updating the car
+
+(rplacd <list> <expr>)                       REPLACE THE CDR OF A LIST NODE
+     Modern practice is to use (setf (cdr <list>) <expr>)
+     <list>    the list node
+     <expr>    the new value for the cdr of the list node
+     returns   the list node after updating the cdr
+
+(nconc <list>...)                           DESTRUCTIVELY CONCATENATE LISTS
+     <list>    lists to concatenate
+     returns   the result of concatenating the lists
+
+(nreconc <list1> <list2>)                   DESTRUCTIVELY CONCATENATE LISTS
+     Defined in common2.lsp
+     <list1>   first list
+     <list2>   second list
+     returns   second  list concantenated  to  the end  of the  first list,
+               which has been destructively reversed.
+
+(truncate <expr> <denom>)                             TRUNCATES TOWARD ZERO
+(round <expr> <denom>)                   ROUNDS TOWARD NEAREST EVEN INTEGER
+(floor <expr> <denom>)                   TRUNCATES TOWARD NEGATIVE INFINITY
+(ceiling <expr> <denom>)                          TRUNCATES TOWARD INFINITY
+     Round,  floor, and ceiling, and  the second argument  of truncate, are
+     part of the math extension. Integers are returned as is.
+     <expr>    the real number
+     <denom>   real number to divide <expr> by before converting
+     returns   the  integer result  of  converting the  number,  and, as  a
+               second return value, the remainder of the operation, defined
+               as  expr  -  result*denom.  The  type is  flonum  if  either
+               argument is flonum, otherwise it is rational.
+
+(float <expr>)               CONVERTS AN INTEGER TO A FLOATING POINT NUMBER
+     <expr>    the real number
+     returns   the number as a flonum
+
+(rational <expr>)                      CONVERTS A REAL NUMBER TO A RATIONAL
+     Rational numbers are returned as is. Part of the bignum extension.
+     <expr>    the real number
+     returns   the number as a ratio or integer. 
+
+(+ [<expr>...])                                       ADD A LIST OF NUMBERS
+     With no arguments returns addition identity, 0 (integer)
+     <expr>    the numbers
+     returns   the result of the addition
+
+(- <expr>...)          SUBTRACT A LIST OF NUMBERS OR NEGATE A SINGLE NUMBER
+     <expr>    the numbers
+     returns   the result of the subtraction
+
+(* [<expr>...])                                  MULTIPLY A LIST OF NUMBERS
+     With no arguments returns multiplication identity, 1
+     <expr>    the numbers
+     returns   the result of the multiplication
+
+(/ <expr>...)            DIVIDE A LIST OF NUMBERS OR INVERT A SINGLE NUMBER
+     With  the bignum extension, division  of integer numbers  results in a
+     rational quotient,  rather than integer. To  perform integer division,
+     use TRUNCATE.
+     <expr>    the numbers
+     returns   the result of the division
+
+(1+ <expr>)                                             ADD ONE TO A NUMBER
+     <expr>    the number
+     returns   the number plus one
+
+(1- <expr>)                                      SUBTRACT ONE FROM A NUMBER
+     <expr>    the number
+     returns   the number minus one
+
+(rem <expr>...)                              REMAINDER OF A LIST OF NUMBERS
+     With the math extension, only two arguments allowed.
+     <expr>    the real numbers (must be integers, without math extension)
+     returns   the  result  of  the  remainder  operation  (remainder  with
+               truncating division)
+
+(mod <expr1> <expr2>)                          NUMBER MODULO ANOTHER NUMBER
+     Part of math extension.
+     <expr1>   real number
+     <expr2>   real number divisor (may not be zero)
+     returns   the  remainder  after  dividing  <expr1>  by  <expr2>  using
+               flooring  division, thus  there is  no discontinuity  in the
+               function around zero.
+
+(min <expr>...)                           THE SMALLEST OF A LIST OF NUMBERS
+     <expr>    the real numbers
+     returns   the smallest number in the list
+
+(max <expr>...)                            THE LARGEST OF A LIST OF NUMBERS
+     <expr>    the real numbers
+     returns   the largest number in the list
+
+(abs <expr>)                                 THE ABSOLUTE VALUE OF A NUMBER
+     <expr>    the number
+     returns   the  absolute  value of  the number,  which is  the floating
+               point magnitude for complex numbers.
+
+(signum <expr>)                                    GET THE SIGN OF A NUMBER
+     Defined in common.lsp
+     <expr>    the number
+     returns   zero if number is zero, one  if positive, or negative one if
+               negative.  Numeric type  is  same as  number. For  a complex
+               number, returns unit magnitude but same phase as number.
+
+(float-sign <expr1> [<expr2>])                       APPLY SIGN TO A NUMBER
+     Defined in common2.lsp
+     <expr1>   the real number
+     <expr2>   another real number, defaults to 1.0
+     returns   the number <expr2> with the sign of <expr1>
+
+(gcd [<n>...])                          COMPUTE THE GREATEST COMMON DIVISOR
+     With no arguments returns 0, with one argument returns the argument.
+     <n>       The number(s) (integer)
+     returns   the greatest common divisor
+
+(lcm <n>...)                              COMPUTE THE LEAST COMMON MULTIPLE
+     Part  of math  extension.  A result  which would  be  larger than  the
+     largest integer causes an error.
+     <n>       The number(s) (integer)
+     returns   the least common multiple
+
+(random <n> [<state>])                       COMPUTE A PSEUDO-RANDOM NUMBER
+     <n>       the real number upper bound
+     <state>   a random-state (default is *random-state*)
+     returns   a random number in range [0,n)
+
+(make-random-state [<state>])                         CREATE A RANDOM-STATE
+     <state>   a  random-state,   t,  or  NIL  (default   NIL).  NIL  means
+               *random-state*
+     returns   If  <state> is t, a random random-state, otherwise a copy of
+               <state>
+
+(sin <expr>)                                   COMPUTE THE SINE OF A NUMBER
+(cos <expr>)                                 COMPUTE THE COSINE OF A NUMBER
+(tan <expr>)                                COMPUTE THE TANGENT OF A NUMBER
+(asin <expr>)                              COMPUTE THE ARC SINE OF A NUMBER
+(acos <expr>)                            COMPUTE THE ARC COSINE OF A NUMBER
+     <expr>    the floating point number
+     returns   the  sine, cosine, tangent, arc  sine, or arc  cosine of the
+               number
+
+(atan <expr> [<expr2>])                 COMPUTE THE ARC TANGENT OF A NUMBER
+     <expr>    the floating point number (numerator)
+     <expr2>   the denominator,  default 1. May  only be specified  if math
+               extension installed
+     returns   the arc tangent of <expr>/<expr2>
+
+(sinh <expr>)                       COMPUTE THE HYPERBOLIC SINE OF A NUMBER
+(cosh <expr>)                     COMPUTE THE HYPERBOLIC COSINE OF A NUMBER
+(tanh <expr>)                    COMPUTE THE HYPERBOLIC TANGENT OF A NUMBER
+(asinh <expr>)                  COMPUTE THE HYPERBOLIC ARC SINE OF A NUMBER
+(acosh <expr>)                COMPUTE THE HYPERBOLIC ARC COSINE OF A NUMBER
+(atanh <expr>)               COMPUTE THE HYPERBOLIC ARC TANGENT OF A NUMBER
+     Defined in common.lsp
+     <expr>    the number
+     returns   the hyperbolic sine, cosine,  tangent, arc sine, arc cosine,
+               or arc tangent of the number.
+
+(expt <x-expr> <y-expr>)                           COMPUTE X TO THE Y POWER
+     <x-expr>  the number 
+     <y-expr>  the exponent 
+     returns   x to the y power. If  y is an integer, then the  result type
+               is the same as the type of x.
+
+(exp <x-expr>)                                     COMPUTE E TO THE X POWER
+     <x-expr>  the floating point number 
+     returns   e to the x power
+
+(cis <x-expr>)                                      COMPUTE COSINE + I SINE
+     Defined in common.lsp
+     <x-expr>  the number
+     returns   e to the ix power
+
+(log <expr> [<base>])                                  COMPUTE THE LOGRITHM
+     Part of the math extension
+     <expr>    the number
+     <base>    the base, default is e
+     returns   log base <base> of <expr>
+
+(sqrt <expr>)                           COMPUTE THE SQUARE ROOT OF A NUMBER
+     <expr>    the number 
+     returns   the square root of the number
+
+(isqrt <expr>)                 COMPUTER THE INTEGER SQUARE ROOT OF A NUMBER
+     Defined in common2.lsp
+     <expr>    non-negative integer
+     returns   the integer square root, either exact or the largest integer
+               less than the exact value.
+
+(numerator <expr>)                            GET THE NUMERATOR OF A NUMBER
+     Part of bignum extension
+     <expr>    rational number
+     returns   numerator of number (number if integer)
+
+(denominator <expr>)                        GET THE DENOMINATOR OF A NUMBER
+     Part of bignum extension
+     <expr>    rational number
+     returns   denominator of number (1 if integer)
+
+(complex <real> [<imag>])                         CONVERT TO COMPLEX NUMBER
+     Part of math extension
+     <real>    real number real part
+     <imag>    real number imaginary part (default 0)
+     returns   the complex number
+
+(realpart <expr>)                             GET THE REAL PART OF A NUMBER
+     Part of the math extension
+     <expr>    the number
+     returns   the real part of a complex number, or the number itself if a
+     real number
+
+(imagpart <expr>)                        GET THE IMAGINARY PART OF A NUMBER
+     Part of the math extension
+     <expr>    the number
+     returns   the imaginary part of a complex number, or  zero of the type
+               of the number if a real number.
+
+(conjugate <expr>)                            GET THE CONJUGATE OF A NUMBER
+     Part of the math extension
+     <expr>    the number
+     returns   the conjugate of a complex number, or the number itself if a
+     real number.
+
+(phase <expr>)                                    GET THE PHASE OF A NUMBER
+     Part of the math extension
+     <expr>    the number
+     returns   the  phase  angle,  equivalent  to  (atan (imagpart  <expr>)
+               (realpart <expr>))
+
+(< <n1> <n2>...)                                         TEST FOR LESS THAN
+(<= <n1> <n2>...)                            TEST FOR LESS THAN OR EQUAL TO
+(= <n1> <n2>...)                                          TEST FOR EQUAL TO
+(/= <n1> <n2>...)                                     TEST FOR NOT EQUAL TO
+(>= <n1> <n2>...)                         TEST FOR GREATER THAN OR EQUAL TO
+(> <n1> <n2>...)                                      TEST FOR GREATER THAN
+     <n1>      the first real number to compare
+     <n2>      the second real number to compare
+     returns   the result of comparing <n1> with <n2>...
+
+(logand [<expr>...])                  THE BITWISE AND OF A LIST OF INTEGERS
+     With no arguments returns identity -1
+     <expr>    the integers
+     returns   the result of the and operation
+
+(logior [<expr>...])         THE BITWISE INCLUSIVE OR OF A LIST OF INTEGERS
+     With no arguments returns identity 0
+     <expr>    the integers
+     returns   the result of the inclusive or operation
+
+(logxor [<expr>...])         THE BITWISE EXCLUSIVE OR OF A LIST OF INTEGERS
+     With no arguments returns identity 0
+     <expr>    the integers
+     returns   the result of the exclusive or operation
+
+(logeqv [<expr>...])          THE BITWISE EQUIVALENCE OF A LIST OF INTEGERS
+     With no arguments returns identity -1
+     <expr>    the integers
+     returns   the result of the equivalence operation
+
+(lognand <expr1> <expr2>)                         BITWISE LOGICAL FUNCTIONS
+(logandc1 <expr1> <expr2>)
+(logandc2 <expr1> <expr2>)
+(lognor <expr1> <expr2>)
+(logorc1 <expr1> <expr2>)
+(logorc2 <expr1> <expr2>)
+     Part  of the bignums extension, the remaining logical functions of two
+     integers.
+     <expr1>   the first integer
+     <expr2>   the second integer
+     returns   lognand: (lognot (logand <expr1> <expr2>))
+               logandc1: (logand (lognot <expr1>) <expr2>)
+               logandc2: (logand <expr1> (lognot <expr2>))
+               lognor: (lognot (logor <expr1> <expr2>))
+               logorc1: (logor (lognot <expr1>) <expr2>)
+               logorc2: (logor <expr1> (lognot <expr2>))
+
+(lognot <expr>)  THE BITWISE NOT OF A INTEGER
+     <expr>    the integer
+     returns   the bitwise inversion of integer
+
+(logtest <expr1> <expr2>)                  TEST BITWISE AND OF TWO INTEGERS
+     Defined in common.lsp when bignum extension not loaded
+     <expr1>   the first integer
+     <expr2>   the second integer
+     returns   T if the result of the and operation is non-zero, else NIL
+
+(logbitp <pos> <expr>)                                  TEST BIT OF INTEGER
+     Part of bignums extension
+     <pos>     non-negative fixnum bit position, as in (expt 2 <pos>)
+     <expr>    integer to test
+     returns   T if the bit is "1", else NIL.
+
+(logcount <expr>)                                  COUNT BITS IN AN INTEGER
+     Part of bignums extension
+     <expr>    integer
+     returns   if  <expr> is negative, returns  the number of  0 bits, else
+               returns the number of 1 bits
+
+(integer-length <expr>)                      CALCULATE LENGTH OF AN INTEGER
+     Part of bignums extension
+     <expr>    integer
+     returns   the  minimum  number  of  bits necessary  to  represent  the
+               integer, excluding any sign bit.
+
+(ash <expr1> <expr2>)                                      ARITHMETIC SHIFT
+     Part of math extension
+     <expr1>   integer to shift
+     <expr2>   number of bit positions to shift (positive is to left)
+     returns   shifted integer
+
+(byte <size> <pos>)                                 CREATE A BYTE SPECIFIER
+(byte-size <spec>)                                 GET SPECIFIER SIZE FIELD
+(byte-position <spec>)                         GET SPECIFIER POSITION FIELD
+     Defined  in common2.lsp. A "byte  specifier" is implemented  as a CONS
+     cell with the CAR being the size and the CDR being the position. These
+     functions are aliases for CONS, CAR, and CDR, respectively.
+     <size>    size of byte field (non-negative integer)
+     <pos>     starting  position  of  byte field  (non-negative  integer),
+               which is position with least bit weight
+     <spec>    byte specifier (a CONS cell)
+     returns   BYTE  returns  the  specifier,  BYTE-SIZE  returns the  size
+               field, and BYTE-POSITION returns the starting position
+
+(ldb <spec> <int>)                                                LOAD BYTE
+     Defined in  common2.lsp. LDB can be  used with SETF, in  which case it
+     performs a STB followed by a SETF into the field.
+     <spec>    specifier of byte to extract
+     <int>     integer to extract byte from
+     returns   the extracted byte, a non-negative integer
+
+(ldb-test <spec> <int>)                                         TEST A BYTE
+     Defined in common2.lsp
+     <spec>    specifier of byte to test
+     <int>     integer containing byte to test
+     returns   T if byte is zero, else NIL
+
+(mask-field <spec> <int>)                                EXTRACT UNDER MASK
+     Defined in common2.lsp.  MASK-FIELD can  be used with  SETF, in  which
+     case it performs a DEPOSIT-FIELD followed by a SETF into the field.
+     <spec>    specified byte to extract
+     <int>     integer to extract byte from
+     returns   the extracted byte  in the same  bit position as  it was  in
+               <int>
+
+(dpb <new> <spec> <int>)                                       DEPOSIT BYTE
+     Defined in common2.lsp
+     <new>     integer byte to insert
+     <spec>    specifier of position and size of byte
+     <int>     integer to insert byte into
+     returns   <int> with <new> in the bit positions specified by <spec>
+
+(deposit-field <new> <spec> <int>)                        INSERT UNDER MASK
+     Defined in common2.lsp
+     <new>     integer containing byte field to insert
+     <spec>    specifier of position and size of byte
+     <int>     integer to insert byte into
+     returns   <new> at <spec> replacing bits at <spec> in <int>
+
+(string <expr>)                   MAKE A STRING FROM AN INTEGER ASCII VALUE
+     <expr>    an  integer  (which  is   first  converted  into  its  ASCII
+               character value), string, character, or symbol
+     returns   the string representation of the argument
+
+(string-trim <bag> <str>)                        TRIM BOTH ENDS OF A STRING
+     <bag>     a string containing characters to trim
+     <str>     the string to trim
+     returns   a trimed copy of the string
+
+(string-left-trim <bag> <str>)                TRIM THE LEFT END OF A STRING
+     <bag>     a string containing characters to trim
+     <str>     the string to trim
+     returns   a trimed copy of the string
+
+(string-right-trim <bag> <str>)              TRIM THE RIGHT END OF A STRING
+     <bag>     a string containing characters to trim
+     <str>     the string to trim
+     returns   a trimed copy of the string
+
+(string-upcase <str> &key :start :end)                 CONVERT TO UPPERCASE
+     <str>     the string
+     :start    the starting offset
+     :end      the ending offset + 1 or NIL for end of string
+     returns   a converted copy of the string
+
+(string-downcase <str> &key :start :end)               CONVERT TO LOWERCASE
+     <str>     the string
+     :start    the starting offset
+     :end      the ending offset + 1 or NIL for end of string
+     returns   a converted copy of the string
+
+(string-capitalize <str> &key :start :end)                CAPITALIZE STRING
+     <str>     the string
+     :start    the starting offset
+     :end      the ending offset + 1 or NIL for end of string
+     returns   a  converted copy  of the  string with  each word  having an
+               initial uppercase letter and following lowercase letters
+
+(nstring-upcase <str> &key :start :end)                CONVERT TO UPPERCASE
+     <str>     the string
+     :start    the starting offset
+     :end      the ending offset + 1 or NIL for end of string
+     returns   the converted string (not a copy)
+
+(nstring-downcase <str> &key :start :end)              CONVERT TO LOWERCASE
+     <str>     the string
+     :start    the starting offset
+     :end      the ending offset + 1 or NIL for end of string
+     returns   the converted string (not a copy)
+
+(nstring-capitalize <str> &key :start :end)               CAPITALIZE STRING
+     <str>     the string
+     :start    the starting offset
+     :end      the ending offset + 1 or NIL for end of string
+     returns   the string with each word having an initial uppercase letter
+               and following lowercase letters (not a copy)
+
+(make-string  <size> &key :initial-element)                   MAKE A STRING
+     Defined in common2.lsp.
+     <size>    size of string (non-negative integer)
+     :initial-element
+               initial value of all characters in the string
+     returns   the new string
+
+(strcat <expr>...)                                      CONCATENATE STRINGS
+     Macro in init.lsp, to maintain compatibility with XLISP.
+     See CONCATENATE for preferred function.
+     <expr>    the strings to concatenate
+     returns   the result of concatenating the strings
+
+(string< <str1> <str2> &key :start1 :end1 :start2 :end2)
+(string<= <str1> <str2> &key :start1 :end1 :start2 :end2)
+(string= <str1> <str2> &key :start1 :end1 :start2 :end2)
+(string/= <str1> <str2> &key :start1 :end1 :start2 :end2)
+(string>= <str1> <str2> &key :start1 :end1 :start2 :end2)
+(string> <str1> <str2> &key :start1 :end1 :start2 :end2)
+     <str1>    the first string to compare
+     <str2>    the second string to compare
+     :start1   first substring starting offset
+     :end1     first substring ending offset + 1 or NIL for end of string
+     :start2   second substring starting offset
+     :end2     second substring ending offset + 1 or NIL for end of string
+     returns   string=: t if predicate is true, NIL otherwise
+               others: If predicate is true then number of initial matching
+               characters, else NIL
+     Note: case is significant with these comparison functions.
+
+(string-lessp <str1> <str2> &key :start1 :end1 :start2 :end2)
+(string-not-greaterp <str1> <str2> &key :start1 :end1 :start2 :end2)
+(string-equal <str1> <str2> &key :start1 :end1 :start2 :end2)
+(string-not-equal <str1> <str2> &key :start1 :end1 :start2 :end2)
+(string-not-lessp <str1> <str2> &key :start1 :end1 :start2 :end2)
+(string-greaterp <str1> <str2> &key :start1 :end1 :start2 :end2)
+     <str1>    the first string to compare
+     <str2>    the second string to compare
+     :start1   first substring starting offset
+     :end1     first substring ending offset + 1 or NIL for end of string
+     :start2   second substring starting offset
+     :end2     second substring ending offset + 1 or NIL for end of string
+     returns   string-equal: t if predicate is true, NIL otherwise
+               others: If predicate is true then number of initial matching
+               characters, else NIL
+     Note: case is not  significant with these comparison functions  -- all
+     uppercase characters are converted to lowercase before being compared.
+
+(char <string> <index>)                   EXTRACT A CHARACTER FROM A STRING
+     <string>  the string
+     <index>   the string index (zero relative)
+     returns   the ascii code of the character
+
+(alphanumericp <chr>)                       IS THIS CHARACTER ALPHANUMERIC?
+     <chr>     the character
+     returns   true  if  the  character   is  alphabetic  or  numeric,  NIL
+               otherwise
+
+(upper-case-p <chr>)                       IS THIS AN UPPER CASE CHARACTER?
+     <chr>     the character
+     returns   true if the character is upper case, NIL otherwise
+
+(lower-case-p <chr>)                        IS THIS A LOWER CASE CHARACTER?
+     <chr>     the character
+     returns   true if the character is lower case, NIL otherwise
+
+(alpha-char-p <chr>)                       IS THIS AN ALPHABETIC CHARACTER?
+     <chr>     the character
+     returns   true if the character is alphabetic, NIL otherwise
+
+(both-case-p <chr>)          IS THIS AN ALPHABETIC (EITHER CASE) CHARACTER?
+     <chr>     the character
+     returns   true  if the  character  is  available  in both  cases,  NIL
+               otherwise
+
+(digit-char-p <chr>[<radix>])                    IS THIS A DIGIT CHARACTER?
+     <chr>     the character
+     <radix>   the radix (default 10)
+     returns   the digit weight if character is a digit, NIL otherwise
+
+(char-code <chr>)                         GET THE ASCII CODE OF A CHARACTER
+     <chr>     the character
+     returns   the ASCII character code (integer, parity bit stripped)
+
+(code-char <code>)             GET THE CHARACTER WITH A SPECFIED ASCII CODE
+     <code>    the ASCII code (integer, range 0-127)
+     returns   the character with that code or NIL
+
+(char-upcase <chr>)                       CONVERT A CHARACTER TO UPPER CASE
+     <chr>     the character
+     returns   the upper  case  version of  the character,  if one  exists,
+               otherwise returns the character
+
+(char-downcase <chr>)                     CONVERT A CHARACTER TO LOWER CASE
+     <chr>     the character
+     returns   the  lower case  version  of the  character, if  one exists,
+               otherwise returns the character
+
+(digit-char <n>[<radix>])                 CONVERT A DIGIT WEIGHT TO A DIGIT
+     <n>       the digit weight (integer)
+     <radix>   the radix (default 10)
+     returns   the digit character or NIL
+
+(char-int <chr>)                          CONVERT A CHARACTER TO AN INTEGER
+     <chr>     the character
+     returns   the ASCII character code (range 0-255)
+
+(int-char <int>)                          CONVERT AN INTEGER TO A CHARACTER
+     <int>     the ASCII character code (treated modulo 256)
+     returns   the character with that code
+
+(character <expr>)                                       CREATE A CHARACTER
+     Defined in common2.lsp
+     <expr>    single character symbol, string, or integer
+     returns   <expr> converted into a character
+
+(char-name <chr>)                                      CHARACTER PRINT NAME
+     Defined in common2.lsp
+     <chr>     the character
+     returns   string which is the name of the character, or NIL if no name
+
+(char< <chr1> <chr2>...)
+(char<= <chr1> <chr2>...)
+(char= <chr1> <chr2>...)
+(char/= <chr1> <chr2>...)
+(char>= <chr1> <chr2>...)
+(char> <chr1> <chr2>...)
+     <chr1>    the first character to compare
+     <chr2>    the second character(s) to compare
+     returns   t if predicate is true, NIL otherwise
+     Note: case is significant with these comparison functions.
+
+(char-lessp <chr1> <chr2>...)
+(char-not-greaterp <chr1> <chr2>...)
+(char-equal <chr1> <chr2>...)
+(char-not-equal <chr1> <chr2>...)
+(char-not-lessp <chr1> <chr2>...)
+(char-greaterp <chr1> <chr2>...)
+     <chr1>    the first string to compare
+     <chr2>    the second string(s) to compare
+     returns   t if predicate is true, NIL otherwise
+     Note: case is not  significant with these comparison functions  -- all
+     uppercase characters are converted to lowercase before the comparison.
+
+(defstruct name [<comment>] <slot-desc>...)              DEFINE A STRUCTURE
+(defstruct (name <option>...) [<comment>] <slot-desc>...)
+     fsubr
+     <name>              the structure name symbol (quoted)
+     <option>            option description (quoted)
+     <comment>           comment string (ignored)
+     <slot-desc>         slot descriptions (quoted)
+     returns             the structure name
+The recognized options are:
+     (:conc-name name)
+     (:include name [<slot-desc>...])
+     (:print-function <function>)
+Note that if :CONC-NAME appears, it should be before :INCLUDE.
+Each slot description takes the form:
+     <name>
+or
+     (<name> <defexpr>)
+If the default initialization expression is not specified, the slot will be
+initialized  to NIL  if  no keyword  argument  is  passed to  the  creation
+function.
+The  optional  :PRINT-FUNCTION  overrides  the  default  #S  notation.  The
+function must take three arguments, the structure instance, the stream, and
+the current printing depth.
+DEFSTRUCT  causes access functions to be created  for each of the slots and
+also arranges that SETF will work  with those access functions. The  access
+function  names are constructed by  taking the structure  name, appending a
+'-' and then appending  the slot name. This can be  overridden by using the
+:CONC-NAME option.
+DEFSTRUCT also  makes a creation function called  MAKE-<structname>, a copy
+function  called  COPY-<structname>   and  a   predicate  function   called
+<structname>-P. The creation  function takes keyword arguments  for each of
+the slots. Structures can be created using the #S( read macro, as well.
+The  property  *struct-slots*  is  added  to  the  symbol  that  names  the
+structure. This property  consists of an association list of slot names and
+closures  that evaluate  to the  initial values  (NIL if  no initial  value
+expression).
+
+(send <object> <message> [<args>...])                        SEND A MESSAGE
+     <object>  the object to receive the message
+     <message> message sent to object
+     <args>    arguments to method (if any)
+     returns   the result of the method
+
+(send-super <message> [<args>])                SEND A MESSAGE TO SUPERCLASS
+     valid only in method context
+     <message> message sent to method's superclass
+     <args>    arguments to method (if any)
+     returns   the result of the method
+
+(defclass <sym> <ivars> [<cvars> [<super>]])             DEFINE A NEW CLASS
+     defined in class.lsp as a macro
+     <sym>     symbol  whose value  is  to be  bound  to the  class  object
+               (quoted)
+     <ivars>   list  of instance  variables  (quoted).  Instance  variables
+               specified  either as  <ivar> or  (<ivar> <init>)  to specify
+               non-NIL default initial value.
+     <cvars>   list of class variables (quoted)
+     <super>   superclass, or Object if absent.
+     This function  sends :SET-PNAME  (defined in  classes.lsp) to  the new
+     class to set the class' print name instance variable.
+     Methods defined for classes defined with defclass:
+     (send <object> :<ivar>)
+               Returns the specified instance variable
+     (send <object> :SET-IVAR <ivar> <value>)
+               Used  to set an  instance variable, typically  with setf via
+               (setf (send <object> :<ivar>) <value>).
+     (send <sym> :NEW {:<ivar> <init>})
+               Actually  definition   for   :ISNEW.  Creates   new   object
+               initializing  instance variables  as  specified  in  keyword
+               arguments,  or  to  their  default if  keyword  argument  is
+               missing. Returns the object.
+     returns   the new class object
+
+(defmethod <class> <sym> <fargs> <expr> ...)            DEFINE A NEW METHOD
+     defined in class.lsp as a macro
+     <class>   Class which will respond to message
+     <sym>     Message name (quoted)
+     <fargs>   Formal argument list. Leading "self" is implied (quoted)
+     <expr>    Expressions constituting body of method (quoted)
+     returns   the class object.
+
+(definst <class> <sym> [<args>...])            DEFINE A NEW GLOBAL INSTANCE
+     defined in class.lsp as a macro
+     <class>   Class of new object
+     <sym>     Symbol whose value will be set to new object
+     <args>    Arguments  passed  to  :NEW  (typically initial  values  for
+               instance variables)
+     returns   the new object
+
+(tracemethod <class> [<sel>])                ADD A METHOD TO THE TRACE LIST
+     defined in class.lsp
+     <class>   Class containing method to trace
+     <sel>     Message selector  of method to  trace, if absent  then trace
+               all methods defined in <class>.
+     returns   the trace list
+
+(untracemethod [<class> [<sel>]]))      REMOVE A METHOD FROM THE TRACE LIST
+     defined in class.lsp
+     <class>   Class  containing method  to  remove, if  absent remove  all
+               methods of all classes.
+     <sel>     Message selector  of method to remove, if absent then remove
+               all methods of <class>.
+     returns   the trace list
+
+(atom <expr>)                                              IS THIS AN ATOM?
+     <expr>    the expression to check
+     returns   t if the value is an atom, NIL otherwise
+
+(symbolp <expr>)                                          IS THIS A SYMBOL?
+     <expr>    the expression to check
+     returns   t if the expression is a symbol, NIL otherwise
+
+(numberp <expr>)                                          IS THIS A NUMBER?
+     <expr>    the expression to check
+     returns   t if the expression is a number, NIL otherwise
+
+(null <expr>)                                        IS THIS AN EMPTY LIST?
+     <expr>    the list to check
+     returns   t if the list is empty, NIL otherwise
+
+(not <expr>)                                                 IS THIS FALSE?
+     <expr>    the expression to check
+     return    t if the value is NIL, NIL otherwise
+
+(listp <expr>)                                              IS THIS A LIST?
+     <expr>    the expression to check
+     returns   t if the value is a cons or NIL, NIL otherwise
+
+(endp <list>)                                    IS THIS THE END OF A LIST?
+     <list>    the list
+     returns   t if the value is NIL, NIL otherwise
+
+(consp <expr>)                                    IS THIS A NON-EMPTY LIST?
+     <expr>    the expression to check
+     returns   t if the value is a cons, NIL otherwise
+
+(constantp <expr>)                                      IS THIS A CONSTANT?
+     <expr>    the expression to check
+     returns   t if the value  is a constant (basically, would  EVAL <expr>
+               repeatedly return the same thing?), NIL otherwise.
+
+(specialp <expr>)                                 IS THIS A SPECIAL SYMBOL?
+     <expr>    the expression to check
+     returns   t if the value is a symbol which is SPECIAL, NIL otherwise.
+
+(integerp <expr>)                                       IS THIS AN INTEGER?
+     <expr>    the expression to check
+     returns   t if the value is an integer, NIL otherwise
+
+(floatp <expr>)                                            IS THIS A FLOAT?
+     <expr>    the expression to check
+     returns   t if the value is a float, NIL otherwise
+
+(rationalp <expr>)                               IS THIS A RATIONAL NUMBER?
+     Part of bignum extension.
+     <expr>    the expression to check
+     returns   t if the value is rational (integer or ratio), NIL otherwise
+
+(realp <expr>)                                       IS THIS A REAL NUMBER?
+     Defined in common2.lsp
+     <expr>    the expression to check
+     returns   t if the value is rational or float, NIL otherwise
+
+(complexp <expr>)                                 IS THIS A COMPLEX NUMBER?
+     Part of math extension.
+     <expr>    the expression to check
+     returns   t if the value is a complex number, NIL otherwise
+
+(stringp <expr>)                                          IS THIS A STRING?
+     <expr>    the expression to check
+     returns   t if the value is a string, NIL otherwise
+
+(characterp <expr>)                                    IS THIS A CHARACTER?
+     <expr>    the expression to check
+     returns   t if the value is a character, NIL otherwise
+
+(arrayp <expr>)                                           IS THIS AN ARRAY?
+     <expr>    the expression to check
+     returns   t if the value is an array, NIL otherwise
+
+(array-in-bounds-p <expr> <index>)                IS ARRAY INDEX IN BOUNDS?
+     Defined in common2.lsp
+     <expr>    the array
+     <index>   index to check
+     returns   t if index is in bounds for the array, NIL otherwise
+
+(streamp <expr>)                                          IS THIS A STREAM?
+     <expr>    the expression to check
+     returns   t if the value is a stream, NIL otherwise
+
+(open-stream-p <stream>)                                    IS STREAM OPEN?
+     <stream>  the stream
+     returns   t if the stream is open, NIL otherwise
+
+(input-stream-p <stream>)                               IS STREAM READABLE?
+     <stream>  the stream
+     returns   t if stream is readable, NIL otherwise
+
+(output-stream-p <stream>)                              IS STREAM WRITABLE?
+     <stream>  the stream
+     returns   t if stream is writable, NIL otherwise
+
+(objectp <expr>)                                         IS THIS AN OBJECT?
+     <expr>    the expression to check
+     returns   t if the value is an object, NIL otherwise
+
+(classp <expr>)                                     IS THIS A CLASS OBJECT?
+     <expr>    the expression to check
+     returns   t if the value is a class object, NIL otherwise
+
+(hash-table-p <expr>)                                 IS THIS A HASH TABLE?
+     Defined in common2.lsp
+     <expr>    the expression to check
+     returns   t if the value is a hash table, NIL otherwise
+
+(keywordp <expr>)                                        IS THIS A KEYWORD?
+     Defined in common2.lsp
+     <expr>    the expression to check
+     returns   t if the value is a keyword symbol, NIL otherwise
+
+(packagep <expr>)                                        IS THIS A PACKAGE?
+     Defined in common2.lsp
+     <expr>    the expression to check
+     returns   t if the value is a package, NIL otherwise
+
+(boundp <sym>)                             IS A VALUE BOUND TO THIS SYMBOL?
+     <sym>     the symbol
+     returns   t if a value is bound to the symbol, NIL otherwise
+
+(fboundp <sym>)                 IS A FUNCTIONAL VALUE BOUND TO THIS SYMBOL?
+     <sym>     the symbol
+     returns   t  if a  functional  value  is  bound  to  the  symbol,  NIL
+               otherwise
+
+(functionp <sym>)                                       IS THIS A FUNCTION?
+     Defined in common.lsp
+     <expr>    the expression to check
+     returns   t if the value is a  function -- that is, can it be  applied
+               to arguments. This is  true for any symbol (even  those with
+               no function binding), list with car being lambda, a closure,
+               or subr. Otherwise returns NIL.
+
+(minusp <expr>)                                    IS THIS NUMBER NEGATIVE?
+     <expr>    the number to test
+     returns   t if the number is negative, NIL otherwise
+
+(zerop <expr>)                                         IS THIS NUMBER ZERO?
+     <expr>    the number to test
+     returns   t if the number is zero, NIL otherwise
+
+(plusp <expr>)                                     IS THIS NUMBER POSITIVE?
+     <expr>    the number to test
+     returns   t if the number is positive, NIL otherwise
+
+(evenp <expr>)                                        IS THIS INTEGER EVEN?
+     <expr>    the integer to test
+     returns   t if the integer is even, NIL otherwise
+
+(oddp <expr>)                                          IS THIS INTEGER ODD?
+     <expr>    the integer to test
+     returns   t if the integer is odd, NIL otherwise
+
+(subsetp <list1> <list2> &key :test :test-not :key)        IS SET A SUBSET?
+     <list1>   the first list
+     <list2>   the second list
+     :test     test function (defaults to eql)
+     :test-not test function (sense inverted)
+     :key      function to  apply to  test function arguments  (defaults to
+               identity)
+     returns   t if every element of the  first list is in the second list,
+               NIL otherwise
+
+(eq <expr1> <expr2>)                             ARE THE EXPRESSIONS EQUAL?
+(eql <expr1> <expr2>)
+(equal <expr1> <expr2>)
+(equalp <expr1> <expr2>)
+     equalp defined in common.lsp
+     <expr1>   the first expression
+     <expr2>   the second expression
+     returns   t  if  equal,  NIL  otherwise. Each  is  progressively  more
+               liberal in what is "equal":
+               eq: identical  pointers --  works with characters,  symbols,
+                         and arbitrarily small integers
+               eql: works  with all numbers,  if same type
+               equal: lists and strings
+               equalp: case insensitive  characters (and strings),  numbers
+                         of differing types, arrays (which can be equalp to
+                         string containing same elements)
+
+(typep <expr> <type>)                             IS THIS A SPECIFIED TYPE?
+     <expr>    the expression to test
+     <type>    the  type specifier.  Symbols  can either  be  one of  those
+               listed under type-of or one of:
+               ATOM      any atom
+               NULL      NIL
+               LIST      matches NIL or any cons cell
+               STREAM    any stream
+               NUMBER    any numeric type
+               REAL      flonum or rational number
+               INTEGER   fixnum or bignum
+               RATIONAL  fixnum or ratio
+               STRUCT    any structure (except hash-table)
+               FUNCTION  any function, as defined by functionp
+               The specifer can  also be a form (which can  be nested). All
+               form elements are quoted. Valid form cars:
+               or        any of the cdr type specifiers must be true
+               and       all of the cdr type specifiers must be true
+               not       the single cdr type specifier must be false
+               satisfies the result  of applying the cdr predicate function
+                         to <expr>
+               member    <expr> must be eql to one of the cdr values
+               object    <expr> must  be an  object, of class  specified by
+                         the single  cdr  value. The  cdr  value can  be  a
+                         symbol which must evaluate to a class.
+               Note that  everything is of type  T, and nothing is  of type
+               NIL.
+     returns   t if <expr> is of type <type>, NIL otherwise.
+
+(cond <pair>...)                                     EVALUATE CONDITIONALLY
+     fsubr
+     <pair>    pair consisting of:
+               (<pred> <expr>...)
+               where
+               <pred>    is a predicate expression
+               <expr>    evaluated if the predicate is not NIL
+     returns   the value of the first expression whose predicate is not NIL
+
+(and <expr>...)                    THE LOGICAL AND OF A LIST OF EXPRESSIONS
+     fsubr
+     <expr>    the expressions to be ANDed
+     returns   NIL if any  expression evaluates to NIL, otherwise the value
+               of  the last  expression  (evaluation  of expressions  stops
+               after the first expression that evaluates to NIL)
+
+(or <expr>...)                      THE LOGICAL OR OF A LIST OF EXPRESSIONS
+     fsubr
+     <expr>    the expressions to be ORed
+     returns   NIL if all expressions evaluate to NIL, otherwise  the value
+               of the  first non-NIL expression (evaluation  of expressions
+               stops  after the first expression  that does not evaluate to
+               NIL)
+
+(if <texpr> <expr1> [<expr2>])           EVALUATE EXPRESSIONS CONDITIONALLY
+     fsubr
+     <texpr>   the test expression
+     <expr1>   the expression to be evaluated if texpr is non-NIL
+     <expr2>   the expression to be evaluated if texpr is NIL
+     returns   the value of the selected expression
+
+(when <texpr> <expr>...)             EVALUATE ONLY WHEN A CONDITION IS TRUE
+     fsubr
+     <texpr>   the test expression
+     <expr>    the expression(s) to be evaluted if texpr is non-NIL
+     returns   the value of the last expression or NIL
+
+(unless <texpr> <expr>...)          EVALUATE ONLY WHEN A CONDITION IS FALSE
+     fsubr
+     <texpr>   the test expression
+     <expr>    the expression(s) to be evaluated if texpr is NIL
+     returns   the value of the last expression or NIL
+
+(case <expr> <case>...[(t <expr>)])                          SELECT BY CASE
+     fsubr
+     <expr>    the selection expression
+     <case>    pair consisting of:
+               (<value> <expr>...)
+               where:
+               <value>   is a  single expression  or a list  of expressions
+                         (unevaluated)
+               <expr>    are expressions to execute if the case matches
+     (t <expr>)          default case (no previous matching)
+     returns   the value of the last expression of the matching case
+
+(typecase <expr> <case>...[(t <expr>)])                      SELECT BY TYPE
+     macro defined in common2.lsp
+     <expr>    the selection expression
+     <case>    pair consisting of:
+               (<type> <expr>...)
+               where:
+               <type>    type specifier as in function TYPEP
+               <expr>    are expressions to execute if the case matches
+     (t <expr>)          default case (no previous matching)
+     returns   the value of the last expression of the matching case
+
+(let (<binding>...) <expr>...)                        CREATE LOCAL BINDINGS
+(let* (<binding>...) <expr>...)                 LET WITH SEQUENTIAL BINDING
+     fsubr
+     <binding> the variable bindings each of which is either:
+               1)        a symbol (which is initialized to NIL)
+               2)        a  list whose car is a symbol and whose cadr is an
+                         initialization expression
+     <expr>    the expressions to be evaluated
+     returns   the value of the last expression
+
+(flet (<binding>...) <expr>...)                      CREATE LOCAL FUNCTIONS
+(labels (<binding>...) <expr>...)             FLET WITH RECURSIVE FUNCTIONS
+(macrolet (<binding>...) <expr>...)                     CREATE LOCAL MACROS
+     fsubr
+     <binding> the function bindings each of which is:
+               (<sym> <fargs> <expr>...)
+               where:
+               <sym>     the function/macro name
+               <fargs>   formal argument list (lambda list)
+               <expr>    expressions   constituting   the   body   of   the
+                         function/macro
+     <expr>    the expressions to be evaluated
+     returns   the value of the last expression
+
+(catch <sym> <expr>...)               EVALUATE EXPRESSIONS AND CATCH THROWS
+     fsubr
+     <sym>     the catch tag
+     <expr>    expressions to evaluate
+     returns   the value of the last expression or the throw expression
+
+(throw <sym> [<expr>])                                     THROW TO A CATCH
+     fsubr
+     <sym>     the catch tag
+     <expr>    the value for the catch to return (defaults to NIL)
+     returns   never returns
+
+(unwind-protect <expr> <cexpr>...)      PROTECT EVALUATION OF AN EXPRESSION
+     fsubr
+     <expr>    the expression to protect
+     <cexpr>   the cleanup expressions
+     returns   the value of the expression
+     Note:   unwind-protect guarantees  to execute the  cleanup expressions
+     even  if a non-local exit  terminates the evaluation  of the protected
+     expression
+
+(loop <expr>...)                                         BASIC LOOPING FORM
+     fsubr
+     <expr>    the body of the loop
+     returns   never returns (must use non-local exit, such as RETURN)
+
+(do (<binding>...) (<texpr> <rexpr>...) <expr>...)     GENERAL LOOPING FORM
+(do* (<binding>...) (<texpr> <rexpr>...) <expr>...)
+     fsubr. do binds simultaneously, do* binds sequentially
+     <binding> the variable bindings each of which is either:
+               1)        a symbol (which is initialized to NIL)
+               2)        a list of the form: (<sym> <init> [<step>])
+               where:
+                         <sym>     is the symbol to bind
+                         <init>    the initial value of the symbol
+                         <step>    a step expression
+     <texpr>   the termination test expression
+     <rexpr>   result expressions (the default is NIL)
+     <expr>    the body of the loop (treated like an implicit prog)
+     returns   the value of the last result expression
+
+(dolist (<sym> <expr> [<rexpr>]) <expr>...)             LOOP THROUGH A LIST
+     fsubr
+     <sym>     the symbol to bind to each list element
+     <expr>    the list expression
+     <rexpr>   the result expression (the default is NIL)
+     <expr>    the body of the loop (treated like an implicit prog)
+     returns   the result expression
+
+(dotimes (<sym> <expr> [<rexpr>]) <expr>...)          LOOP FROM ZERO TO N-1
+     fsubr
+     <sym>     the symbol to bind to each value from 0 to n-1
+     <expr>    the number of times to loop (a fixnum)
+     <rexpr>   the result expression (the default is NIL)
+     <expr>    the body of the loop (treated like an implicit prog)
+     returns   the result expression
+
+(prog (<binding>...) <expr>...)                         THE PROGRAM FEATURE
+(prog* (<binding>...) <expr>...)               PROG WITH SEQUENTIAL BINDING
+     fsubr -- equivalent to (let () (block NIL (tagbody ...)))
+     <binding> the variable bindings each of which is either:
+               1)        a symbol (which is initialized to NIL)
+               2)        a list whose car is a  symbol and whose cadr is an
+                         initialization expression
+     <expr>    expressions to evaluate or tags (symbols)
+     returns   NIL or the argument passed to the return function
+
+(block <name> <expr>...)                                        NAMED BLOCK
+     fsubr
+     <name>    the block name (quoted symbol)
+     <expr>    the block body
+     returns   the value of the last expression
+
+(return [<expr>])                  CAUSE A PROG CONSTRUCT TO RETURN A VALUE
+     fsubr
+     <expr>    the value (defaults to NIL)
+     returns   never returns
+
+(return-from <name> [<value>])        RETURN FROM A NAMED BLOCK OR FUNCTION
+     fsubr.  In traditional  Xlisp,  the names  are  dynamically scoped.  A
+     compilation option (default) uses lexical scoping like Common Lisp.
+     <name>    the  block or function name (quoted symbol). If name is NIL,
+               use function RETURN.
+     <value>   the value to return (defaults to NIL)
+     returns   never returns
+
+(tagbody <expr>...)                                       BLOCK WITH LABELS
+     fsubr
+     <expr>    expression(s) to evaluate or tags (symbols)
+     returns   NIL
+
+(go <sym>)                                     GO TO A TAG WITHIN A TAGBODY
+     fsubr.  In   traditional  Xlisp,   tags  are  dynamically   scoped.  A
+     compilation option (default) uses lexical scoping like Common Lisp.
+     <sym>     the tag (quoted)
+     returns   never returns
+
+(progv <slist> <vlist> <expr>...)                  DYNAMICALLY BIND SYMBOLS
+     fsubr
+     <slist>   list of symbols (evaluated)
+     <vlist>   list of values to bind to the symbols (evaluated)
+     <expr>    expression(s) to evaluate
+     returns   the value of the last expression
+
+(prog1 <expr1> <expr>...)                  EXECUTE EXPRESSIONS SEQUENTIALLY
+     fsubr
+     <expr1>   the first expression to evaluate
+     <expr>    the remaining expressions to evaluate
+     returns   the value of the first expression
+
+(prog2 <expr1> <expr2> <expr>...)          EXECUTE EXPRESSIONS SEQUENTIALLY
+     fsubr
+     <expr1>   the first expression to evaluate
+     <expr2>   the second expression to evaluate
+     <expr>    the remaining expressions to evaluate
+     returns   the value of the second expression
+
+(progn <expr>...)                          EXECUTE EXPRESSIONS SEQUENTIALLY
+     fsubr
+     <expr>    the expressions to evaluate
+     returns   the value of the last expression (or NIL)
+
+(read [<stream> [<eofp> [<eof> [<rflag>]]]])             READ AN EXPRESSION
+     NOTE:  there has been an  incompatible change in  arguments from prior
+     versions.
+     <stream>  the input stream (default, or NIL, is *standard-input*, T is
+               *terminal-io*)
+     <eofp>    When T,  signal an  error on end  of file,  when NIL  return
+               <eof> (default is T)
+     <eof>     the value to return on end of file (default is NIL)
+     <rflag>   recursive read flag. The value is ignored
+     returns   the expression read
+
+(set-macro-character <ch> <fcn> [ T ])                    MODIFY READ TABLE
+     defined in init.lsp
+     <ch>      character to define
+     <fcn>     function to bind to character
+     T         if TMACRO rather than NMACRO
+
+(get-macro-character <ch>)                               EXAMINE READ TABLE
+     defined in init.lsp
+     <ch>      character
+     returns   function bound to character
+
+(print <expr> [<stream>])                 PRINT AN EXPRESSION ON A NEW LINE
+     The expression is printed using prin1, then current line is terminated
+     (Note: this is backwards from Common Lisp).
+     <expr>    the expression to be printed
+     <stream>  the output stream (default,  or NIL, is *standard-output*, T
+               is *terminal-io*)
+     returns   the expression
+
+(prin1 <expr> [<stream>])                               PRINT AN EXPRESSION
+     symbols, cons cells (without circularities), arrays, strings, numbers,
+     and characters are  printed in  a format generally  acceptable to  the
+     read  function.  Printing  format  can  be   affected  by  the  global
+     formatting variables: *print-level* and  *print-length* for lists  and
+     arrays,  *print-base*  for  rationals,  *integer-format*  for fixnums,
+     *float-format*   for   flonums,   *ratio-format*   for   ratios,   and
+     *print-case* and *readtable-case* for symbols.
+     <expr>    the expression to be printed
+     <stream>  the output stream (default,  or NIL, is *standard-output*, T
+               is *terminal-io*)
+     returns   the expression
+
+(princ <expr> [<stream>])               PRINT AN EXPRESSION WITHOUT QUOTING
+     Like  PRIN1  except  symbols  (including  uninterned),  strings,   and
+     characters are printed without using any quoting mechanisms.
+     <expr>    the expressions to be printed
+     <stream>  the output stream (default,  or NIL, is *standard-output*, T
+               is *terminal-io*)
+     returns   the expression
+
+(pprint <expr> [<stream>])                       PRETTY PRINT AN EXPRESSION
+     Uses prin1 for printing.
+     <expr>    the expressions to be printed
+     <stream>  the output stream (default,  or NIL, is *standard-output*, T
+               is *terminal-io*)
+     returns   the expression
+
+(terpri [<stream>])                        TERMINATE THE CURRENT PRINT LINE
+     <stream>  the output stream (default,  or NIL, is *standard-output*, T
+               is *terminal-io*)
+     returns   NIL
+
+(fresh-line [<stream>])                                    START A NEW LINE
+     <stream>  the output stream (default,  or NIL, is *standard-output*, T
+               is *terminal-io*)
+     returns   t if  a new list was started, NIL if already at the start of
+               a line.
+
+(flatsize <expr>)              LENGTH OF PRINTED REPRESENTATION USING PRIN1
+     <expr>    the expression
+     returns   the length
+
+(flatc <expr>)                 LENGTH OF PRINTED REPRESENTATION USING PRINC
+     <expr>    the expression
+     returns   the length
+
+(y-or-n-p [<fmt> [<arg>...]])                      ASK A YES OR NO QUESTION
+(yes-or-no-p [<fmt> [<arg>...]])
+     defined  in common.lsp.  Uses  *terminal-io* stream  for  interaction.
+     y-or-n-p  strives for  a  single character  answer,  using get-key  if
+     defined.
+     <fmt>     optional format string for question
+     <arg>     arguments, if any, for format string
+     returns   T for yes, NIL for no.
+
+(prin1-to-string <expr>)                                  PRINT TO A STRING
+(princ-to-string <expr>)
+     defined in common2.lsp. Uses prin1 or princ conventions, respectively.
+     <expr>    the expression to print
+     returns   the string containing the "printed" expression
+
+(read-from-string <str> [<eofp> [<eof>]] &key :start :end)
+                                                         READ AN EXPRESSION
+     defined in common2.lsp.
+     <str>     the input string
+     <eofp>    When  T, signal an  error on end of  string, when NIL return
+               <eof> (default is T)
+     <eof>     the value to return on end of string (default is NIL)
+     :start    starting index of <str>, default 0
+     :end      ending index of <str>, default NIL (end of string)
+     returns   two values: the expression read and index of character after
+               last one used
+
+(format <stream> <fmt> [<arg>...])                      DO FORMATTED OUTPUT
+     <stream>  the output stream (T is *standard-output*)
+     <fmt>     the format string
+     <arg>     the format arguments
+     returns   output string if <stream> is NIL, NIL otherwise
+The format string can contain characters that  should be copied directly to
+the output and formatting directives. The formatting directives are:
+     ~?        use next argument as recursive format string
+     ~( ~)     process format string with case conversion
+     ~{ ~}     process format string repetitively
+     ~*        skip arguments
+     ~%        start a new line
+     ~&        start a new line if not on a new line
+     ~\n       ignore return and following whitespace
+     ~|        start a new page
+     ~~        print a tilde character
+     ~A or ~a  print next argument using princ
+     ~B or ~b  print next argument as binary integer (bignum extension)
+     ~D or ~d  print next argument as decimal integer
+     ~E or ~e  print next argument in exponential form
+     ~F or ~f  print next argument in fixed point form
+     ~G or ~g  print next  argument  using either  ~E  or ~F  depending  on
+               magnitude
+     ~O or ~o  print next argument as octal integer
+     ~R or ~r  print next number in any radix (bignum extension)
+     ~S or ~s  print next argument using prin1
+     ~T or ~t  go to a specified column
+     ~X or ~x  print next argument as hexidecimal integer
+     ~[ ~; ~]  process format string conditionally
+
+(read-char [<stream>[<eofp>[<eof>]]])        READ A CHARACTER FROM A STREAM
+     NOTE: New eof arguments are incompatible with older XLISP versions.
+     <stream>  the input stream (default, or NIL, is *standard-input*, T is
+               *terminal-io*)
+     <eofp>    When  T, signal  an error  on end  of file, when  NIL return
+               <eof> (default is T)
+     <eof>     the value to return on end of file (default is NIL)
+     returns   the character or <eof> at end of file
+
+(peek-char [<flag> [<stream> [<eofp> [<eof>]]]])  
+                                                 PEEK AT THE NEXT CHARACTER
+     <flag>    flag for skipping white space (default is NIL)
+     <stream>  the input stream (default, or NIL, is *standard-input*, T is
+               *terminal-io*)
+     <eofp>    When  T, signal  an error  on end of  file, when  NIL return
+               <eof> (default is T)
+     <eof>     the value to return on end of file (default is NIL)
+     returns   the character or <eof> at end of file
+
+(write-char <ch> [<stream>])                  WRITE A CHARACTER TO A STREAM
+     <ch>      the character to write
+     <stream>  the output stream (default,  or NIL, is *standard-output*, T
+               is *terminal-io*)
+     returns   the character
+
+(read-line [<stream>[<eofp>[<eof>]]])             READ A LINE FROM A STREAM
+     NOTE: New eof arguments are incompatible with older XLISP versions.
+     <stream>  the input stream (default, or NIL, is *standard-input*, T is
+               *terminal-io*)
+     <eofp>    When  T, signal an  error on  end of  file, when  NIL return
+               <eof> (default is T)
+     <eof>     the value to return on end of file (default is NIL)
+     returns   the string excluding the #\newline, or <eof> at end of file
+
+(open <fname> &key :direction :element-type :if-exists :if-does-not-exist)
+                                                         OPEN A FILE STREAM
+     The function OPEN has been significantly enhanced over original XLISP.
+     The original function only had the  :direction keyword argument, which
+     could only  have  the values  :input or  :output. When  used with  the
+     :output keyword, it was equivalent to (open <fname> :direction :output
+     :if-exists :supersede). A maximum of ten files can be open  at any one
+     time, including any files open via the LOAD, DRIBBLE, SAVE and RESTORE
+     commands. The open command  may force a garbage collection  to reclaim
+     file slots used by unbound file streams. 
+
+     <fname>        the file  name string,  symbol, or file  stream created
+                    via OPEN. In the last case, the name is used  to open a
+                    second stream  on  the  same  file --  this  can  cause
+                    problems if one or more streams is used for writing.
+     :direction     Read  and  write  permission  for  stream  (default  is
+                    :input).
+       :input       Open file for read operations only.
+       :probe       Open file for reading,  then close it (use to  test for
+                    file existance)
+       :output      Open file for write operations only.
+       :io          Like :output, but reading also allowed.
+     :element-type  FIXNUM or CHARACTER (default is CHARACTER), as returned
+                    by  type-of function, or  UNSIGNED-BYTE,
+                    SIGNED-BYTE,  (UNSIGNED-BYTE  <size>), or  (SIGNED-BYTE
+                    <size>)  with  the  bignum  extension.  CHARACTER  (the
+                    default)  is for text  files, the  other types  are for
+                    binary files and  can only be  used with READ-BYTE  and
+                    WRITE-BYTE.  FIXNUM is  a vestige  of older  XLISP-PLUS
+                    releases and  is identical to (UNSIGNED-BYTE  8). If no
+                    size is given, then size defaults  to 8. Size must be a
+                    multiple of 8.
+     :if-exists     action  to take  if file  exists. Argument  ignored for
+                    :input (file is positioned at start) or :probe (file is
+                    closed)
+       :error       give error message
+       :rename      rename file  to generated backup name, then  open a new
+                    file of the original name. This is the default action
+       :new-version same as :rename
+       :overwrite   file is positioned to start, original data intact
+       :append      file is positioned to end
+       :supersede   delete original file and open new file of the same name
+       :rename-and-delete  same as :supersede
+       NIL          close file and return NIL
+     :if-does-not-exist    action to take if file does not exist.
+       :error       give error message  (default for :input,  or :overwrite
+                    or :append)
+       :create      create  a new file (default for :output or :io when not
+                    :overwrite or :append)
+       NIL          return NIL (default for :probe)
+     returns        a file stream, or sometimes NIL
+
+(close <stream>)                                        CLOSE A FILE STREAM
+     The stream becomes a  "closed stream." Note that unbound  file streams
+     are closed automatically during a garbage collection.
+     <stream>  the stream, which may be a string stream
+     returns   t  if stream closed, NIL  if terminal (cannot  be closed) or
+               already closed.
+
+(probe-file <fname>)                          CHECK FOR EXISTANCE OF A FILE
+     Defined in common2.lsp
+     <fname>   file name string or symbol
+     returns   t if file exists, else NIL
+
+(delete-file <fname>)                                         DELETE A FILE
+     <fname>   file name string, symbol or a stream opened with OPEN
+     returns   t if  file does not  exist or  is deleted. If  <fname> is  a
+               stream,  the stream is closed before the file is deleted. An
+               error occurs if the file cannot be deleted.
+
+(truename <fname>)                                OBTAIN THE FILE PATH NAME
+     <fname>   file name string, symbol, or a stream opened with OPEN
+     returns   string  representing the  true file  name (absolute  path to
+     file).
+
+(with-open-file (<var> <fname> [<karg>...]) [<expr>...])
+(with-open-stream (<var> <stream>) [<expr>...])
+                                            EVALUATE USING AN OPENED STREAM
+     Defined in common.lsp and common2.lsp, respectively, as macros. Stream
+     will always be closed upon completion
+     <var>     symbol name to bind  stream to while evaluating expresssions
+               (quoted)
+     <fname>   file name string or symbol
+     <stream>  a file or string stream
+     <karg>    keyword arguments for the implicit open command
+     <expr>    expressions to evaluate while file is open (implicit progn)
+     returns   value of last <expr>.
+
+(read-byte <stream>[<eofp>[<eof>]])               READ A BYTE FROM A STREAM
+     NOTE: New  eof arguments are  incompatible with older  XLISP versions.
+     Stream  argument  used to  be optional.  Number  of system  bytes read
+     depend on :element-type specified in the open command.
+     <stream>  the input stream
+     <eofp>    When T, signal  an error  on end  of file,  when NIL  return
+               <eof> (default is T)
+     <eof>     the value to return on end of file (default is NIL)
+     returns   the byte (integer) or <eof> at end of file
+
+(write-byte <byte> <stream>)                       WRITE A BYTE TO A STREAM
+     NOTE:  Stream argument  used to  be optional.  Number of  system bytes
+     writen depend  on :element-type specified  in open command.  No checks
+     are  made for overflow, however  negative values cannot  be written to
+     unsigned-byte streams.
+     <byte>    the byte to write (integer)
+     <stream>  the output stream
+     returns   the byte (integer)
+
+(file-length <stream>)                                   GET LENGTH OF FILE
+     For a  CHARACTER file,  the length  reported  may  be larger  than the 
+     number of characters read or written because of CR conversion.
+     <stream>  the file stream (should be disk file)
+     returns   length of file, or NIL if cannot be determined.
+
+(file-position <stream> [<expr>])                  GET OR SET FILE POSITION
+     For  a CHARACTER file,  the file position  may not be the same  as the 
+     number of characters read or written because of CR conversion. It will
+     be correct when using  file-position to  position a file at a location
+     earlier reported by file-position.
+     <stream>  the file stream (should be a disk file)
+     <expr>    desired  file position,  if  setting position.  Can also  be
+               :start for start of file or :end for end of file.
+     returns   if  setting position,  and  successful, then  T; if  getting
+               position and successful then the position; otherwise NIL
+
+(make-string-input-stream <str> [<start> [<end>]])
+     <str>     the string
+     <start>   the starting offset
+     <end>     the ending offset + 1 or NIL for end of string
+     returns   an unnamed stream that reads from the string
+
+(make-string-output-stream)
+     returns   an unnamed output stream
+
+(get-output-stream-string <stream>)
+     The output stream is emptied by this function
+     <stream>  the output stream
+     returns   the output so far as a string
+
+(get-output-stream-list <stream>)
+     The output stream is emptied by this function
+     <stream>  the output stream
+     returns   the output so far as a list
+
+(with-input-from-string (<var> <str> &key :start :end :index) [<expr>...])
+     Defined in common.lsp as a macro
+     <var>     symbol  that   stream  is  bound  to   during  execution  of
+               expressions (quoted)
+     <str>     the string
+     :start    starting offset into string (default 0)
+     :end      ending offset + 1  (default, or NIL, is end of string)
+     :index    setf  place form which  gets final  index into  string after
+               last expression is executed (quoted)
+     <expr>    expressions to evaluate (implicit progn)
+     returns   the value of the last <expr>
+
+(with-output-to-string (<var>) [<expr>...])
+     Defined in common.lsp as a macro
+     <var>     symbol  that   stream  is  bound  to   during  execution  of
+               expressions (quoted)
+     <expr>    expressions to evaluate (implicit progn)
+     returns   contents of stream, as a string
+
+(trace [<sym>...])                         ADD A FUNCTION TO THE TRACE LIST
+     fsubr
+     <sym>     the function(s) to add (quoted)
+     returns   the trace list
+
+(untrace [<sym>...])                  REMOVE A FUNCTION FROM THE TRACE LIST
+     fsubr. If no functions given, all functions are removed from the trace
+     list.
+     <sym>     the function(s) to remove (quoted)
+     returns   the trace list
+
+(error <emsg> {<arg>})                       SIGNAL A NON-CORRECTABLE ERROR
+     Note  that the definition  of this function has  changed from 2.1e and
+     earlier so to match Common Lisp.
+     <emsg>    the error message string, which is processed by FORMAT
+     <arg>     optional argument{s} for FORMAT 
+     returns   never returns
+
+(cerror <cmsg> <emsg> {<arg>})                   SIGNAL A CORRECTABLE ERROR
+     Note that the definition  of this function  has changed from 2.1e  and
+     earlier so to match Common Lisp.
+     <cmsg>    the continue message string, which is processed by FORMAT
+     <emsg>    the error message string, which is processed by FORMAT
+     <arg>     optional argument(s) for both FORMATs (arguments are useable
+               twice)
+     returns   NIL when continued from the break loop
+
+(break <bmsg> {<arg>})                                   ENTER A BREAK LOOP
+     Note that the  definition of this function  has changed from 2.1e  and
+     earlier so to match Common Lisp.
+     <bmsg>    the break message string, which is processed by FORMAT
+     <arg>     optional argument(s) for FORMAT
+     returns   NIL when continued from the break loop
+
+(clean-up)                                          CLEAN-UP AFTER AN ERROR
+     returns   never returns
+
+(top-level)             CLEAN-UP AFTER AN ERROR AND RETURN TO THE TOP LEVEL
+     Runs  the function in  variable *top-level-loop*  (ususally TOP-LEVEL-
+     LOOP)
+     returns   never returns
+
+(continue)                                CONTINUE FROM A CORRECTABLE ERROR
+     returns   never returns
+
+(errset <expr> [<pflag>])                                       TRAP ERRORS
+     fsubr
+     <expr>    the expression to execute
+     <pflag>   flag to control printing of the error message (default t)
+     returns   the value of  the last expression consed with NIL  or NIL on
+               error
+
+(baktrace [<n>])                   PRINT N LEVELS OF TRACE BACK INFORMATION
+     <n>       the number of levels (defaults to all levels)
+     returns   NIL
+
+(evalhook <expr> <ehook> <ahook> [<env>])               EVALUATE WITH HOOKS
+     <expr>    the expression to evaluate.  <ehook> is not used at  the top
+               level.
+     <ehook>   the value for *evalhook*
+     <ahook>   the value for *applyhook*
+     <env>     the  environment (default  is NIL). The  format is  a dotted
+               pair of value (car)  and function (cdr) binding lists.  Each
+               binding  list is a list  of level binding  a-lists, with the
+               innermost a-list  first. The level binding a-list associates
+               the bound symbol with its value.
+     returns   the result of evaluating the expression
+
+(applyhook <fun> <arglist> <ehook> <ahook>)                APPLY WITH HOOKS
+     <fun>     The function closure. <ahook> is not used  for this function
+               application.
+     <arglist> The list of arguments.
+     <ehook>   the value for *evalhook*
+     <ahook>   the value for *applyhook*
+     returns   the result of applying <fun> to <arglist>
+
+(debug)                                                 ENABLE DEBUG BREAKS
+(nodebug)                                              DISABLE DEBUG BREAKS
+     Defined in init.lsp
+
+(ecase <expr> <case>...)                                     SELECT BY CASE
+(ccase <expr> <case>...)
+     Defined  in common2.lsp  as  macros. ECASE  signals a  non-continuable
+     error if there are no case matches,  while CCASE signals a continuable
+     error and allows changing the value of <expr>.
+     <expr>    the selection expression
+     <case>    pair consisting of:
+               (<value> <expr>...)
+               where:
+               <value>   is a  single expression  or a list  of expressions
+                         (unevaluated)
+               <expr>    are expressions to execute if the case matches
+     returns   the value of the last expression of the matching case
+
+(etypecase <expr> <case>...)                                 SELECT BY TYPE
+(ctypecase <expr> <case>...)
+     Defined in common2.lsp as  macros. ETYPECASE signals a non-continuable
+     error  if there  are  no  case  matches,  while  CTYPECASE  signals  a
+     continuable error and allows changing the value of <expr>.
+     <expr>    the selection expression
+     <case>    pair consisting of:
+               (<type> <expr>...)
+               where:
+               <type>    type specifier as in function TYPEP
+               <expr>    are expressions to execute if the case matches
+     returns   the value of the last expression of the matching case
+
+(check-type <place> <type> [<string>])                     VERIFY DATA TYPE
+     Defined in common2.lsp  as a macro. If value stored  at <place> is not
+     of  type  <type> then  a continuable  error  is signaled  which allows
+     changing the value at <place>.
+     <place>   a valid field specifier (generalized variable)
+     <type>    a valid type specifier as in function TYPEP
+     <string>  string to print as the error message
+     returns   NIL
+
+(assert <test> [([<place>...]) [<string> [<args>...]]])   MAKE AN ASSERTION
+     Defined  in common2.lsp. If value of  <test> is NIL then a continuable
+     error is signaled which allows changing the place values.
+     <test>    assertion test
+     <place>   zero or more valid field specifiers
+     <string>  error  message  printed  using  FORMAT  (evaluated  only  if
+               assertion fails)
+     <args>    arguments for FORMAT (evaluated only if assertion fails)
+     returns   NIL
+
+(load <fname> &key :verbose :print)                      LOAD A SOURCE FILE
+     An  implicit ERRSET exists  in this function  so that  if error occurs
+     during  loading, and *breakenable* is NIL, then the error message will
+     be printed and  NIL will  be returned. The  OS environmental  variable
+     XLPATH is  used as a  search path for  files in this  function. If the
+     filename  does not contain path  separators ('/' for  UNIX, and either
+     '/' or  '\' for MS-DOS) and  XLPATH is defined, then  each pathname in
+     XLPATH is tried in turn until a matching file is found.  If no file is
+     found,  then one last  attempt is made  in the current  directory. The
+     pathnames are separated by either a space or semicolon, and a trailing
+     path separator character is optional.
+     <fname>   the filename string,  symbol, or a file stream  created with
+               OPEN. The extension "lsp" is assumed.
+     :verbose  the verbose flag (default is t)
+     :print    the print flag (default is NIL)
+     returns   t if successful, else NIL
+
+(restore <fname>)                             RESTORE WORKSPACE FROM A FILE
+     The OS  environmental variable XLPATH  is used  as a  search path  for
+     files in this function. See the note under function "load", above. The
+     standard  system streams  are  restored to  the  defaults as  of  when
+     XLISP-PLUS  was started. Files streams  are restored in  the same mode
+     they were created, if possible, and  are positioned where they were at
+     the time of the  save. If the files  have been altered or moved  since
+     the time  of the save, the restore  will not be completely successful.
+     Memory  allocation will  not be  the same as  the current  settings of
+     ALLOC are  used. Execution  proceeds at the  top-level read-eval-print
+     loop. The  state of  the transcript  logging is  not affected  by this
+     function.
+     <fname>   the filename string,  symbol, or a file stream  created with
+               OPEN. The extension "wks" is assumed.
+     returns   NIL on failure, otherwise never returns
+
+(save <fname>)                                     SAVE WORKSPACE TO A FILE
+     You cannot save from within a load.  Not all of the state may be saved
+     -- see "restore", above. By saving a workspace with the  name "xlisp",
+     that  workspace   will  be   loaded  automatically  when   you  invoke
+     XLISP-PLUS.
+     <fname>   the filename string,  symbol, or a file stream  created with
+               OPEN. The extension "wks" is assumed.
+     returns   t if workspace was written, NIL otherwise
+
+(savefun <fcn>)                                     SAVE FUNCTION TO A FILE
+     defined in init.lsp
+     <fcn>     function name (saves it to file of same name, with extension
+               ".lsp")
+     returns   t if successful
+
+(dribble [<fname>])            CREATE A FILE WITH A TRANSCRIPT OF A SESSION
+     <fname>   file name string, symbol, or file stream created with OPEN
+               (if missing, close current transcript)
+     returns   t if the transcript is opened, NIL if it is closed
+
+(gc)                                               FORCE GARBAGE COLLECTION
+     returns   NIL
+
+(expand [<num>])                           EXPAND MEMORY BY ADDING SEGMENTS
+     <num>     the (fixnum) number of segments to add, default 1
+     returns   the (fixnum) number of segments added
+
+(alloc <num> [<num2> [<num3]])                          CHANGE SEGMENT SIZE
+     <num>     the (fixnum) number of nodes to allocate
+     <num2>    the (fixnum) number  of pointer elements  to allocate in  an
+               array  segment  (when  dynamic array  allocation  compiled).
+               Default is no change.
+     <num3>    the <fixnum>  ideal ratio  of free  to unused  vector  space
+               (versions of XLISP using dldmem.c).  Default is 1.  Increase
+               if  extensive time is spent in garbage collection  in bignum
+               math intensive programs.
+     returns   the old number of nodes to allocate
+
+(room)                                    SHOW MEMORY ALLOCATION STATISTICS
+     Statistics (which are sent to *STANDARD-OUTPUT*) include:
+               Nodes - number of nodes, free and used
+               Free nodes - number of free nodes
+               Segments - number of node segments, including those reserved
+                         for characters and small integers.
+               Allocate  -  number of  nodes to  allocate  in any  new node
+                         segments
+               Total  - total  memory  bytes allocated  for node  segments,
+                         arrays, and strings
+               Collections - number of garbage collections
+               Time  -  time  spent  performing   garbage  collections  (in
+               seconds)
+     When dynamic  array allocation  is compiled, the  following additional
+     statistics are printed:
+               Vector  nodes  - total vector space (pointers and strings in
+                         pointer sized units)
+               Vector free - free  space in vector area (may  be fragmented
+                         across segments)
+               Vector  segs  - number  of  vector  segments. Increases  and
+                         decreases as needed.
+               Vec allocate - number of pointer elements to allocate in any
+                         new vector segment
+               Vec collect -  number of garbage  collections instigated  by 
+                         vector space exhaustion
+     returns   NIL
+
+(time <expr>)                                        MEASURE EXECUTION TIME
+     fsubr.
+     <expr>    the expression to evaluate
+     returns   the result of  the expression. The execution time is printed
+               to *TRACE-OUTPUT*
+
+(sleep <expr>)                                                   TIME DELAY
+     defined in common2.lsp
+     <expr>    time in seconds
+     returns   NIL, after <expr> seconds delay
+
+(get-internal-real-time)                             GET ELAPSED CLOCK TIME
+(get-internal-run-time)                          GET ELAPSED EXECUTION TIME
+     returns   integer time in system units.  Meaning of absolute values is 
+               system dependent.
+
+(coerce <expr> <type>)                  FORCE EXPRESSION TO DESIGNATED TYPE
+     Sequences  can  be  coerced  into other  sequences,  single  character
+     strings or  symbols with  single character  printnames can  be coerced
+     into characters, integers can  be coerced into characters  or flonums.
+     Ratios  can be  coerced  into flonums.  Flonums  can be  coerced  into
+     complex.
+     <expr>    the expression to coerce
+     <type>    desired type, as returned by type-of
+     returns   <expr> if type is correct, or converted object.
+
+(type-of <expr>)                         RETURNS THE TYPE OF THE EXPRESSION
+     It is recommended that typep  be used instead, as it is  more general.
+     In the original XLISP, the value NIL was returned for NIL.
+     <expr>    the expression to return the type of
+     returns   One of the symbols:
+               LIST                for NIL (lists, conses return CONS)
+               SYMBOL              for symbols
+               OBJECT              for objects
+               CONS                for conses
+               SUBR                for built-in functions
+               FSUBR               for special forms
+               CLOSURE             for defined functions
+               STRING              for strings
+               FIXNUM              for integers
+               BIGNUM              for large integers
+               RATIO               for ratios
+               FLONUM              for floating point numbers
+               COMPLEX             for complex numbers
+               CHARACTER           for characters
+               FILE-STREAM         for file pointers
+               UNNAMED-STREAM      for unnamed streams
+               ARRAY               for arrays
+               HASH-TABLE          for hash tables
+               sym                 for structures of type "sym"
+
+(peek <addrs>)                                 PEEK AT A LOCATION IN MEMORY
+     <addrs>   the address to peek at (fixnum)
+     returns   the value at the specified address (integer)
+
+(poke <addrs> <value>)                             POKE A VALUE INTO MEMORY
+     <addrs>   the address to poke (fixnum)
+     <value>   the value to poke into the address (fixnum)
+     returns   the value
+
+(address-of <expr>)                        GET THE ADDRESS OF AN XLISP NODE
+     <expr>    the node
+     returns   the address of the node (fixnum)
+
+(get-key)                                     READ A KEYSTROKE FROM CONSOLE
+     OS dependent.
+     returns   integer value of key (no echo)
+
+(system <command>)                                 EXECUTE A SYSTEM COMMAND
+     OS dependent -- not always available.
+     <command> Command string, if 0 length then spawn OS shell
+     returns   T if successful (note that MS/DOS command.com always returns
+               success)
+
+(set-stack-mark <size>)                      SET SYSTEM STACK WARNING POINT
+     OS  dependent --  not  always available.  The  system will  perform  a
+     continuable  error when the  amount of  remaining system  stack passes
+     below this setting. The trap is reset  at the top-level. This function
+     is useful for debugging runaway recursive functions.
+     <size>    Remaining stack,  in bytes.  Minimum value  is fixed  at the
+               value that causes the system stack overflow error, while the
+               maximum value is limitied to somewhat less than  the current
+               remaining stack space. Use "0" to turn the warnings off.
+     returns   the previous value.
+
+(top-level-loop)                                     DEFAULT TOP LEVEL LOOP
+     Runs  the XLISP  top  level read-eval-print  loop, described  earlier.
+     Never returns.
+
+(reset-system)                                          FLUSH INPUT BUFFERS
+     Used by user-implemented top level loops to flush the input buffer
+     returns   NIL
+
+(exit)                                                           EXIT XLISP
+     returns   never returns
+
+(generic <expr>)              CREATE A GENERIC TYPED COPY OF THE EXPRESSION
+     Note: added function, Tom Almy's creation for debugging xlisp.
+     <expr>    the expression to copy
+     returns   NIL if  value is NIL  and NILSYMBOL  compilation option  not
+               declared, otherwise if type is:
+               SYMBOL              copy as an ARRAY
+               OBJECT              copy as an ARRAY
+               CONS                (CONS (CAR <expr>)(CDR <expr>))
+               CLOSURE             copy as an ARRAY
+               STRING              copy of the string
+               FIXNUM              value
+               FLONUM              value
+               RATIO               value
+               CHARACTER           value
+               UNNAMED-STREAM      copy as a CONS
+               ARRAY               copy of the array
+               COMPLEX             copy as an ARRAY
+               HASH-TABLE          copy as an ARRAY
+               BIGNUM              copy as a string
+               structure           copy as an ARRAY
+
+(eval-when <condition> <body> ...)
+     Macro  defined in common.lsp, and provided to assist in porting Common
+     Lisp applications to XLISP-PLUS.
+     <condition>         List of conditions
+     <body>    expressions which are evaluated if one of the  conditions is
+               EXECUTE or LOAD.
+     returns   result of last body expression
+
+(cls)                                                         CLEAR DISPLAY
+     Clear the display and position cursor at upper left corner.
+     returns   nil
+
+(cleol)                                                CLEAR TO END OF LINE
+     Clears current line to end.
+     returns   nil
+
+(goto-xy [<column> <row>])                       GET OR SET CURSOR POSITION
+     Cursor  is   repositioned   if  optional   arguments  are   specified.
+     Coordinates are clipped to actual size of display.
+     <column>  0-based column (x coordinate)
+     <row>     0-based row (y coordinate)
+     returns   list of original column and row positions
+
+(mode <ax> [<bx> <width> <height>)                         SET DISPLAY MODE
+     Standard modes require only <ax> argument. Extended modes are  "Super-
+     VGA"  or  "Super-EGA" and  are display  card  specific. Not  all XLISP
+     versions support all modes.
+     <ax>      Graphic mode (value passed in register AX)
+               Common standard Modes:
+               0,1 - 40x25 text
+               2,3 - 80x25 text
+               4,5 - 320x200 4 color graphics (CGA)
+               6 - 640x200 monchrome graphics (CGA)
+               13 - 320x200 16 color graphics (EGA)
+               14 - 640x200 16 color graphics (EGA)
+               16 - 640x350 16 color graphics (EGA)
+               18 - 640x480 16 color graphics (VGA)
+               19 - 320x200 256 color graphics (VGA)
+     <bx>      BX value for some extended graphic modes
+     <width>   width for extended graphic modes
+     <height>  height for extended graphic modes
+     returns   a list  of the  number of columns,  number of  lines (1  for
+               CGA), maximum X graphic coordinate (-1 for text modes),  and
+               the maximum Y graphic coordinate (-1 for text modes), or NIL
+               if fails
+
+(color <value>)                                           SET DRAWING COLOR
+     <value>   Drawing color (not checked for validity)
+     returns   <value>
+
+(move <x1> <y1> [<x2> <y2> ...])                              ABSOLUTE MOVE
+(moverel <x1> <y2> [<x2> <y2> ...])                           RELATIVE MOVE
+     For moverel, all coordinates are relative to the preceeding point.
+     <x1> <y1> Moves to point x1,y1 in anticipation of draw.
+     <x2> <y2> Draws to points specified in additional arguments.
+     returns   T if succeeds, else NIL
+
+(draw [<x1> <y1> ...])                                        ABSOLUTE DRAW
+(drawrel [<x1> <y1> ...])                                     RELATIVE DRAW
+     For drawrel, all coordinates are relative to the preceeding point.
+     <x1> <y1> Point(s) drawn to, in order.
+     returns   T if succeeds, else NIL
+
+(documentation <symbol> <doctype>)                 GET DOCUMENTATION STRING
+     Use with SETF to alter documentation string.
+     <symbol>  Symbol of interest
+     <doctype> Documentation  type, one  of FUNCTION,  VARIABLE, STRUCTURE,
+               SETF, or TYPE.
+     returns   Documentation string
+
+(glos <symbol> [T])                                       GET DOCUMENTATION
+     Defined in package TOOLS.
+     <symbol>  Either the symbol for  which the documentation is requested,
+               or  a string  which will match  all symbol  names containing
+               that string.
+     T         Flag  saying  to treat  symbol as  a  string, and  match all
+               related names.
+     returns   nothing
+
+(ins  <symbol>)                                            INSPECT A SYMBOL
+(inspect <expr>)                                                  INSPECTOR
+(insf <symbol>)                                    INSPECT FUNCTION BINDING
+     INS  and  INSF are  macros defined  in package  TOOLS. INSF  edits the
+     function  binding and allows changing the argument list or type (MACRO
+     or LAMBDA).
+     <symbol>  Symbol to inspect (quoted)
+     <expr>    Expression to inspect
+     returns   Symbol or expression
+
+(describe <expr>)                                                  DESCRIBE
+     Tells what <expr> is, but doesn't allow editing. Use INSPECT to edit.
+     <expr>    Expression to describe
+     returns   The expression
+
+(pp <object> [<stream>])                            PRETTY PRINT EXPRESSION
+(pp-def <funct> [<stream>])                     PRETTY PRINT FUNCTION/MACRO
+(pp-file <file> [<stream>])                               PRETTY PRINT FILE
+     <object>  The expression to print
+     <funct>   Function to print (as DEFUN or DEFMACRO)
+     <file>    File to print (specify either as string or quoted symbol)
+     <stream>  Output stream (default is *standard-output*)
+     returns   T
+

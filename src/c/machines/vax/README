@@ -1,0 +1,23 @@
+I no longer have access to a VAX, but I believe the following will
+work under Ultrix or BSD, assuming X11 stuff is in a standard place:
+
+GRAPHSYS = X11WINDOWS
+X11INCDIR_FLAG=
+X11LIBDIR_FLAG=
+
+UCFLAGS = -O
+ULDFLAGS =
+
+EXTRALIBS=
+EXTRAOBJS=
+
+IEEE_FLAG=
+ANSI_FLAG=
+
+FOREIGN_FLAG = -DFOREIGNCALL
+FOREIGN_FILE = bsd-foreign.h
+
+CC = cc
+LDCC = $(CC)
+
+The configure script should set up the Makefile to use these options.

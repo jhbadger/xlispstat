@@ -1,0 +1,26 @@
+This directory contains the lisp code for the XLISP byte code
+compiler.  The "virtual machine" for running the code is mainly in the
+file xlbcode.c in the C source directory.
+
+This compiler is based on CPS conversion (see, for example, Friedman,
+Wand and Haynes [2]). The design is based on the ORBIT compiler as
+described in Kranz et al. [3] and on Brooks, Gabriel and Steele [1].
+
+At this point the compiler does not do anything special for vectorized
+arithmetic or anything else statistical. In the future I will explore
+adding optimizations designed to deal with problems specific to
+statistical usage. The basic design should make this reasonably easy.
+
+Currently the compiler ignores all declarations and all proclamations
+other than special ones. Future versions will use inline and optimize
+declarations to choose among code generation strategies.
+
+[1] Brooks, R. A., Gabriel, R. P, and Steele, G. L.} (1982), "An
+    optimizing compiler for lexically scoped LISP," Proc. Symp.
+    on Compiler Construction, ACM SIGPLAN Notices 17, 6, 261-275.
+[2] Friedman, D. P, Wand, M. and Haynes, C. T. (1992), Essentials
+    of Programming Languages, Cambridge, MA: MIT Press.
+[3] Krantz, D. A., Kelsey, R., Rees, J. A., hudak, P., Philbin, J.,
+    and Adams, N. I. (1986), "Orbit: An optimizing compiler for
+    Scheme," Proc. SIGPLAN '86 Symp. on Compiler Construction,
+    SIGPLAN Notices 21, 7, 219-223.

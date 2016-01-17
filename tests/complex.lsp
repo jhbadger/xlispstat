@@ -1,0 +1,17 @@
+; tests of complex number arithmetic
+(setf eps 1.e-12)
+
+(check #'= (+ #c(2 3) #c(4 2)) #c(6 5))
+(check #'= (+ (- #c(2 3)) #c(4 2)) #c(2 -1))
+(check #'= (- #c(2 3) #c(4 2)) (- #c(2 -1)))
+(check #'= (* (- #c(3 4)) #c(1 -2)) (- #c(11 -2)))
+(check #'< (abs (- (/ #c(2 1) #c(1 2)) (/ 4 5) (/ 3 #c(0 5)))) eps)
+(check #'< (abs (- (imagpart (* #c(3.4 2.5) #c(3.4 -2.5))) 0)) eps)
+(check #'< (abs (- (abs #c(2 -2)) (sqrt 8))) eps)
+(check #'< (abs (- (realpart (- #c(1.77 -3))) -1.77)) eps)
+(check #'< (abs (- (conjugate #c(9.03 -3.6)) #c(9.03 3.6))) eps)
+(check #'< (abs (- (phase #c(2 2)) (/ pi 4))) eps)
+(check #'= (complex 0 7) #c(0 7))
+(check #'eql (if (complexp #c(4 0)) t nil) nil)
+(check #'eql (if (complexp #c(4.5 0)) t nil) t)
+(check #'= (cos (list pi (* 2 pi))) (cos (list (- pi) (- (* 2 pi)))))

@@ -1,0 +1,96 @@
+(provide "wrapptrs")
+(defpackage "POINTER-WRAPPERS" (:nicknames "WRAPPTRS") (:use "XLISP"))
+(in-package "WRAPPTRS")
+
+(export '(make-c-void cast-c-void
+          make-c-void-p cast-c-void-p offset-c-void-p get-c-void-p
+          make-c-char cast-c-char offset-c-char get-c-char set-c-char
+          make-c-schar cast-c-schar offset-c-schar get-c-schar set-c-schar
+          make-c-uchar cast-c-uchar offset-c-uchar get-c-uchar set-c-uchar
+          make-c-short cast-c-short offset-c-short get-c-short set-c-short
+          make-c-ushort cast-c-ushort offset-c-ushort get-c-ushort set-c-ushort
+          make-c-int cast-c-int offset-c-int get-c-int set-c-int
+          make-c-uint cast-c-uint offset-c-uint get-c-uint set-c-uint
+          make-c-long cast-c-long offset-c-long get-c-long set-c-long
+          make-c-ulong cast-c-ulong offset-c-ulong get-c-ulong set-c-ulong
+          make-c-float cast-c-float offset-c-float get-c-float set-c-float
+          make-c-double cast-c-double offset-c-double get-c-double set-c-double
+          make-c-string cast-c-string offset-c-string get-c-string set-c-string))
+(wrap:c-pointer "void"
+                (:make make-c-void)
+                (:cast cast-c-void))
+(wrap:c-pointer (:cptr "void")
+                (:make make-c-void-p)
+                (:cast cast-c-void-p)
+                (:offset offset-c-void-p)
+                (:get get-c-void-p nil (:cptr "void")))
+(wrap:c-pointer "char"
+                (:make make-c-char)
+                (:cast cast-c-char)
+                (:offset offset-c-char)
+                (:get get-c-char nil :integer)
+                (:set set-c-char nil :integer))
+(wrap:c-pointer (:signed "char")
+                (:make make-c-schar)
+                (:cast cast-c-schar)
+                (:offset offset-c-schar)
+                (:get get-c-schar nil :integer)
+                (:set set-c-schar nil :integer))
+(wrap:c-pointer (:unsigned "char")
+                (:make make-c-uchar)
+                (:cast cast-c-uchar)
+                (:offset offset-c-uchar)
+                (:get get-c-uchar nil :integer)
+                (:set set-c-uchar nil :integer))
+(wrap:c-pointer "short"
+                (:make make-c-short)
+                (:cast cast-c-short)
+                (:offset offset-c-short)
+                (:get get-c-short nil :integer)
+                (:set set-c-short nil :integer))
+(wrap:c-pointer (:unsigned "short")
+                (:make make-c-ushort)
+                (:cast cast-c-ushort)
+                (:offset offset-c-ushort)
+                (:get get-c-ushort nil :integer)
+                (:set set-c-ushort nil :integer))
+(wrap:c-pointer "int"
+                (:make make-c-int)
+                (:cast cast-c-int)
+                (:offset offset-c-int)
+                (:get get-c-int nil :integer)
+                (:set set-c-int nil :integer))
+(wrap:c-pointer (:unsigned "int")
+                (:make make-c-uint)
+                (:cast cast-c-uint)
+                (:offset offset-c-uint)
+                (:get get-c-uint nil :integer)
+                (:set set-c-uint nil :integer))
+(wrap:c-pointer "long"
+                (:make make-c-long)
+                (:cast cast-c-long)
+                (:offset offset-c-long)
+                (:get get-c-long nil :integer)
+                (:set set-c-long nil :integer))
+(wrap:c-pointer (:unsigned "long")
+                (:make make-c-ulong)
+                (:cast cast-c-ulong)
+                (:offset offset-c-ulong)
+                (:get get-c-ulong nil :integer)
+                (:set set-c-ulong nil :integer))
+(wrap:c-pointer "float"
+                (:make make-c-float)
+                (:cast cast-c-float)
+                (:offset offset-c-float)
+                (:get get-c-float nil :flonum)
+                (:set set-c-float nil :flonum))
+(wrap:c-pointer "double"
+                (:make make-c-double)
+                (:cast cast-c-double)
+                (:offset offset-c-double)
+                (:get get-c-double nil :flonum)
+                (:set set-c-double nil :flonum))
+(wrap:c-pointer (:cptr "char")
+                (:cast cast-c-string)
+                (:offset offset-c-string)
+                (:get get-c-string nil :string))

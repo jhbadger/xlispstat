@@ -1,0 +1,49 @@
+XLSDIR = ..\..
+WXLSDIR = $(XLSDIR)\msdos
+XLSLIB = $(WXLSDIR)\wxls32.lib
+
+BCC32   = $(TOOLBIN)\BCC32
+LINK32 = $(TOOLBIN)\ILINK32
+
+TOOLS	= F:\BC5
+TOOLBIN	= $(TOOLS)\BIN
+LIBDIRS	= $(TOOLS)\LIB
+INCDIRS	= $(TOOLS)\INCLUDE;$(WXLSDIR);$(XLSDIR);.
+
+DEFINES = -DSTRICT
+CFLAGS = -w- -v -H=wrapptrs.csm -WD -I$(INCDIRS) $(DEFINES)
+LDOPTS = -L$(LIBDIRS) -Tpd -aa -c $(TOOLS)\LIB\c0d32.obj
+
+.c.obj:
+	$(BCC32) +cfgdll.cfg -c $<
+{$(WXLSDIR)}.c.obj:
+	$(BCC32) +cfgdll.cfg -c $<
+
+OBJECTS = dllstub.obj wrapptrs.obj
+
+wrapptrs.dll : $(OBJECTS) $(XLSLIB) wrapptrs.def
+  $(LINK32) @&&|
+ /v $(LDOPTS) $(OBJECTS)
+ $<,$*
+ $(XLSLIB) import32.lib cw32.lib
+ wrapptrs.def
+|
+
+$(OBJECTS) : cfgdll.cfg
+
+# Compiler configuration files
+cfgdll.cfg : makefile.bc
+   Copy &&|
+$(CFLAGS)
+| $@
+
+
+# Remove all generated files
+clean:
+	-@erase *.exe
+	-@erase *.lib
+	-@erase *.dll
+	-@erase *.obj
+	-@erase *.cfg
+	-@erase *.map
+

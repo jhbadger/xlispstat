@@ -1,0 +1,117 @@
+On an RS6000 running AIX,
+
+	uname -a => AIX alpha 2 3 000001086600
+
+I got things running with dynamic loading by running configure and
+then doing the make.
+
+More details:
+
+The following worked to compile without dynamic loading:
+
+GRAPHSYS = X11WINDOWS
+X11INCDIR_FLAG=
+X11LIBDIR_FLAG=
+
+UCFLAGS = -O -D_BSD -qmaxmem=3000 -qlanglvl=ansi
+ULDFLAGS =
+
+EXTRALIBS=
+EXTRAOBJS=
+
+IEEE_FLAG=-DIEEEFP
+ANSI_FLAG=-DANSI
+
+FOREIGN_FLAG =
+FOREIGN_FILE =
+
+CC = cc
+LDCC = $(CC)
+
+
+Dynamic loading can be added using the shared library system. To add
+dynamic loading, first change MACHINE, UCFLAGS, and FOREIGN_FLAG to
+
+MACHINE = aix
+UCFLAGS = -O -D_BSD -qmaxmem=3000 -qlanglvl=ansi -Imachines/aix/dynload
+FOREIGN_FLAG = -DFOREIGNCALL
+
+Then there are two options.
+
+Option 1.  First do a make in the dynload subdirectiry of this
+directory and install the dl emulation library somewhere on your
+library search path. Then use
+
+EXTRALIBS=-ldl -lld
+FOREIGN_FLAG=-DFOREIGNCALL
+FOREIGN_FILE = sysvr4-foreign.h
+
+to build xlispstat. (If you instal the include file someplace standard
+you may also be able to drop the -I directive from UCFLAGS).
+
+Option 2. From the slispstat source directory fo
+
+	cp machines/aix/dynload/dlfcn.c .
+
+Then use
+
+EXTRAOBJS=dlfcn.o
+FOREIGN_FLAG=-DFOREIGNCALL
+FOREIGN_FILE = sysvr4-foreign.h
+
+to build xlispstat.
+
+Either way, to load the example in foo.c you need to compile foo.c
+with cc -c foo.c, create an exports file, say foo.exp, with contents
+
+foo
+
+(as in the file foo.exp in this directory) and then use
+
+	cc -o libfoo.so -bM:SRE -bE:foo.exp -e _nostart foo.o
+
+to create the shared object file to load. Load it from within xlispstat
+as
+
+	(dyn-load "libfoo.so")
+
+This approach does not yet allow the loaded code to call functions
+defined in xlisp. To allow that, you need to create an exports file
+for the functions to export, say xlisp.exp, that contains the path
+name of the executable (see the ld man page for details). Then you
+need to relink xlispstat using
+
+ULDFLAGS= -bE:xlisp.exp -bM:SRE
+
+and link your library with -bI:xlisp.exp. I have not yet figured out a
+good set of things to export from xlisp, so I have not prepared a full
+xlisp.exp file; a very small sample one is given here. If you prepare
+a more complete one, please sent it to me.
+
+This approach does not allow statically loaded symbols to be accessed
+using call-cfun (the dl emulation library does not support this
+feature, and I have not been able to get nlist to work). However, I am
+planning a revision of the entire dynamic loading, static loading, and
+call-cfun system that will address this.
+
+To summarize, for full dynamic loading support I did the make of
+dlfcn.o in the dl subdirectory and used the following:
+
+GRAPHSYS = X11WINDOWS
+X11INCDIR_FLAG=
+X11LIBDIR_FLAG=
+
+UCFLAGS = -O -D_BSD -qmaxmem=3000 -Imachines/aix/dynload
+ULDFLAGS= -bE:xlisp.exp -bM:SRE
+
+EXTRALIBS=-lld
+EXTRAOBJS=dlfcn.o
+
+IEEE_FLAG=-DIEEEFP
+ANSI_FLAG=-DANSI
+
+FOREIGN_FLAG = -DFOREIGNCALL
+FOREIGN_FILE = sysvr4-foreign.h
+
+CC = cc
+LDCC = $(CC)

@@ -1,0 +1,95 @@
+#include <windows.h>
+#include "wxlisp.h"
+
+LEditIcon	ICON icons/LEDIT.ICO
+GraphIcon	ICON icons/GRAPH.ICO
+WXLSIcon	ICON icons/WXLS.ICO
+
+GCCursor	CURSOR cursors/GC.CUR
+HandCursor	CURSOR cursors/HAND.CUR
+FingerCursor	CURSOR cursors/FINGER.CUR
+BrushCursor	CURSOR cursors/BRUSH.CUR
+
+MdiMenu MENU
+BEGIN
+#if defined(NOGRAPHICS) || defined(TESTING)
+  POPUP "&File"
+  BEGIN
+    MENUITEM "New &Points",		IDM_NEWPOINTS
+    MENUITEM "New &Lines",		IDM_NEWLINES
+    MENUITEM "&Print...",		IDM_PRINT
+    MENUITEM SEPARATOR
+    MENUITEM "E&xit",			IDM_EXIT
+    MENUITEM "About XLISP-STAT...",	IDM_ABOUT
+  END
+
+  POPUP		"&Edit"
+  BEGIN
+    MENUITEM	"&Undo\tCtrl+Z",	IDM_UNDO,	GRAYED
+    MENUITEM	SEPARATOR
+    MENUITEM	"Cu&t\tCtrl+X",	IDM_CUT
+    MENUITEM	"&Copy\tCtrl+C",	IDM_COPY
+    MENUITEM	"&Paste\tCtrl+V",	IDM_PASTE
+    MENUITEM	"C&lear\tDel",		IDM_CLEAR
+    MENUITEM	SEPARATOR
+    MENUITEM	"Copy-Paste\tAlt+V",	IDM_COPYPASTE
+  END
+#endif
+  POPUP "&Window"
+  BEGIN
+    MENUITEM "&Cascade\tShift+F5",	IDM_CASCADE
+    MENUITEM "&Tile\tShift+F4",		IDM_TILE
+    MENUITEM "Arrange &Icons",		IDM_ARRANGE
+    MENUITEM "Close &All",		IDM_CLOSEALL
+  END
+END
+
+MdiAccel ACCELERATORS
+BEGIN
+  VK_Z,		IDM_UNDO,	VIRTKEY,	CONTROL
+  VK_X,		IDM_CUT,	VIRTKEY,	CONTROL
+  VK_C,		IDM_COPY,	VIRTKEY,	CONTROL
+  VK_V,		IDM_PASTE,	VIRTKEY,	CONTROL
+  VK_DELETE,	IDM_CLEAR,	VIRTKEY
+  VK_V,		IDM_COPYPASTE,	VIRTKEY,	ALT
+  VK_CANCEL,	IDM_TOPLEVEL,	VIRTKEY,	CONTROL
+  VK_F5,	IDM_CASCADE,	VIRTKEY,	SHIFT
+  VK_F4,	IDM_TILE,	VIRTKEY,	SHIFT
+  VK_P,		IDM_PRINT,	VIRTKEY,	CONTROL
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+  IDS_STRUCTSIZE          "Invalid structure size passed to Print Dialog"
+  IDS_INITIALIZATION      "Failure initializing Print Dialog.  Possibly\n\r due to insufficient memory."
+  IDS_NOTEMPLATE          "Failure finding custom template for Print Dialog"
+  IDS_NOHINSTANCE         "Instance handle not passed to Print Dialog"
+  IDS_LOADSTRFAILURE      "Failure loading specified string"
+  IDS_FINDRESFAILURE      "Failure finding specified resource"
+  IDS_LOADRESFAILURE      "Failure loading specified resource"
+  IDS_LOCKRESFAILURE      "Failure locking specified resource"
+  IDS_MEMALLOCFAILURE     "Failure allocating memory for internal Print Dialog structure"
+  IDS_MEMLOCKFAILURE      "Failure locking memory for internal Print Dialog structure"
+  IDS_NOHOOK              "No hook function passed to Print Dialog but ENABLEHOOK\n\r was passed as a flag"
+  IDS_SETUPFAILURE        "Failure setting up resources for Print Dialog"
+  IDS_PARSEFAILURE        "Failure parsing strings in [devices]\n\rsection of WIN.INI"
+  IDS_RETDEFFAILURE       "PD_RETURNDEFAULT flag was set but either the \n\rhDevMode or hDevNames field was nonzero"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_LOADDRVFAILURE      "Failure loading the printers device driver"
+    IDS_GETDEVMODEFAIL      "The printer driver failed to initialize a DEVMODE data structure"
+    IDS_INITFAILURE         "Print Dialog failed during initialization"
+    IDS_NODEVICES           "No printer device drivers were found"
+    IDS_NODEFAULTPRN        "No default printer was found"
+    IDS_DNDMMISMATCH        "Data in DEVMODE contradicts data in DEVNAMES"
+    IDS_CREATEICFAILURE     "Failure creating an IC"
+    IDS_PRINTERNOTFOUND     "Printer not found"
+    IDS_NOFONTS             "No fonts exist"
+    IDS_SUBCLASSFAILURE     "Failure subclassing during initialization of Print Dialog"
+    IDS_INVALIDFILENAME     "Invalide filename passed to FileOpen or FileSave"
+    IDS_BUFFERTOOSMALL      "Buffer passed to Print Dialog too small to accomodate string"
+    IDS_FILTERSTRING        "Write Files(*.WRI)|*.WRI|Word  Files(*.DOC; *.TXT)|*.doc;*.txt|"
+    IDS_UNKNOWNERROR        "Unknown error."
+END

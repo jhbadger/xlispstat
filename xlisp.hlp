@@ -1,0 +1,3962 @@
+;; system variables
+(*OBARRAY* VARIABLE) "The object hash table"
+(*STANDARD-INPUT* VARIABLE) "Default input stream."
+(*STANDARD-OUTPUT* VARIABLE) "Default output stream."
+(*ERROR-OUTPUT* VARIABLE) "Default error output stream."
+(*DEBUG-IO* VARIABLE) "Default break input/output stream."
+(*TRACE-OUTPUT* VARIABLE) "Default trace output stream."
+(*EVALHOOK* VARIABLE)
+"If *EVALHOOK* is not NIL, its value must be a function of two arguments: 
+a form to evaluate and an environment.  This function does the evaluation
+instead of EVAL."
+(*APPLYHOOK* VARIABLE)
+"Used to substitute another function for the implicit APPLY normally
+done within EVAL.  If *APPLYHOOK* is not NIL, its value must be a
+function of two arguments: a function to be applied and a list of
+arguments.  This function does the application instead of APPLY."
+(*TRACELIST* VARIABLE) "List of names of functions and macros to be traced"
+(*TRACENABLE* VARIABLE) "Enable backtrace on errors"
+(*TRACELIMIT* VARIABLE) "Number of levels of trace back information"
+(*BREAKENABLE* VARIABLE) "Enter the break loop on errors?"
+(*READTABLE* VARIABLE) "The current readtable."
+(*GC-FLAG* VARIABLE) "Controls printing of GC messages"
+(*GC-HOOK* VARIABLE) "If not nil, function of two arguments to be called after GC"
+(*PRINT-CASE* VARIABLE) "symbol output case (:upcase or :downcase)"
+(*RANDOM-STATE* VARIABLE) "Current state of the random number generator"
+(*INPUT-STREAM* VARIABLE) "Stream used for buffering between listener and reader."
+(PI VARIABLE)
+"The floating-point number that is approximately equal to the ratio of the
+circumference of a circle to its diameter."
+(-   VARIABLE) "The current input expression"
+(+   VARIABLE) "The last expression read"
+(++  VARIABLE) "The previous value of +"
+(+++ VARIABLE) "The previous value of ++"
+(*   VARIABLE) "The result of the last evaluation"
+(**  VARIABLE) "The previous value of *"
+(*** VARIABLE) "The previous value of **"
+(*DEFAULT-PATH* VARIABLE) "Default path for require"
+
+(*FEATURES* VARIABLE)
+"List of symbols that name features of the current version of XLISP-STAT."
+(*MODULES* VARIABLE)
+"list of names of the modules that have been loaded."
+(*PACKAGE* VARIABLE)
+"The current package."
+(*PRINT-ARRAY* VARIABLE)
+"Print array elements?"
+(*PRINT-CIRCLE* VARIABLE)
+"Print circular structures readably?"
+(*PRINT-ESCAPE* VARIABLE)
+"Print escape characters when appropriate?"
+(*PRINT-GENSYM* VARIABLE)
+"Print uninterned symbols with #:?"
+(*PRINT-LENGTH* VARIABLE)
+"Number of elements to print at each level.  Unlimited if NIL."
+(*PRINT-LEVEL* VARIABLE)
+"Number of levels to print.  Unlimited if NIL."
+(*READ-SUPPRESS* VARIABLE)
+"Suppress reader interpretation of read expressions?"
+(*TERMINAL-IO* VARIABLE)
+"The terminal I/O stream."
+(INTERNAL-TIME-UNITS-PER-SECOND VARIABLE)
+"The number of internal time units that fit into a second."
+(LAMBDA-LIST-KEYWORDS VARIABLE)
+"List of all the lambda-list keywords."
+(NIL VARIABLE)
+"Holds NIL."
+(T VARIABLE)
+"Holds T."
+
+;; Built in types
+(SUBR TYPE) "Built in function"
+(FSUBR TYPE) "Built in special form or macro"
+(CONS TYPE) "A list cell"
+(SYMBOL TYPE) "A symbol"
+(FIXNUM TYPE) "An integer"
+(FLONUM TYPE) "A floating point number"
+(STRING TYPE) "A string"
+(OBJECT TYPE) "An xlisp object"
+(FILE-STREAM TYPE) "A file stream"
+(VECTOR TYPE) "A vector"
+(CLOSURE TYPE) "A function closure or macro"
+(CHARACTER TYPE) "A character"
+(UNNAMED-STREAM TYPE) "An unnamed stream (string input stream, e. g.)"
+(COMPLEX TYPE) "A complex number"
+(ARRAY TYPE) "A displaced multidimensional array"
+
+;; built in object prototypes
+(*OBJECT* VARIABLE) "The top of the object hierarchy."
+(HARDWARE-OBJECT-PROTO VARIABLE) "Internally allocatable object prototype"
+(WINDOW-PROTO VARIABLE) "Window prototype"
+(EDIT-WINDOW-PROTO VARIABLE) "Edit window prototype"
+(LISTENER-PROTO VARIABLE) "Listener window prototype"
+(MENU-PROTO VARIABLE) "Menu prototype"
+(APPLE-MENU-PROTO VARIABLE) "Apple menu prototype"
+(MENU-ITEM-PROTO VARIABLE) "Menu item prototype"
+(DIALOG-PROTO VARIABLE) "Dialog prototype"
+(DIALOG-ITEM-PROTO VARIABLE) "Dialog item prototype"
+(BUTTON-ITEM-PROTO VARIABLE) "Dialog button prototype"
+(TOGGLE-ITEM-PROTO VARIABLE) "Dialog toggle item (check box) prototype"
+(TEXT-ITEM-PROTO VARIABLE) "Dialog text item prototype (editable or static)"
+(CHOICE-ITEM-PROTO VARIABLE) "Dialog choice item (radio button cluster) prototype"
+(SCROLL-ITEM-PROTO VARIABLE) "Dialog scroll bar prototype"
+(LIST-ITEM-PROTO VARIABLE) "Dialog list item prototype"
+(GRAPH-WINDOW-PROTO VARIABLE) "Graphics window prototype"
+(GRAPH-PROTO VARIABLE) "Dynamic plot prototype"
+(SPIN-PROTO VARIABLE) "Rotating plot prototype"
+(SCATMAT-PROTO VARIABLE) "Scatterplot matrix prototype"
+(NAME-LIST-PROTO VARIABLE) "Name list prototype"
+(HISTOGRAM-PROTO VARIABLE) "Histogram prototype"
+(SCATTERPLOT-PROTO VARIABLE) "Scatterplot prototype"
+(COMPOUND-DATA-PROTO VARIABLE) "Compound data object prototype"
+
+;; evaluator functions 
+EVAL
+"Args: (expr)
+Evaluates EXPR in a NULL environment and returns the result."
+APPLY
+"Args: (function &rest args)
+Conses all arguments but the last onto the last and applies FUNCTION to 
+the resulting argument list. Last argument must be a list."
+FUNCALL
+"Args: (function &rest arguments)
+Applies FUNCTION to the ARGUMENTs"
+QUOTE
+"Syntax: (quote x)
+Returns X without evaluating it. ALso 'x."
+FUNCTION
+"Syntax: (function x)
+If X is a lambda expression, creates and returns a lexical closure of X in
+the current lexical environment. If X is a symbol that names a function,
+returns that function. ALso #'x."
+BACKQUOTE
+"Syntax: (backquote template) or `template.
+Fills in TEMPLATE by expanding COMMA and COMMA-AT expressions."
+LAMBDA
+"Syntax: (lambda args {forms}*)
+Makes a function closure."
+
+;; symbol functions
+SET
+"Args: (symbol value)
+Assigns the value of VALUE to the dynamic variable named by SYMBOL (i. e.
+it changes the global definition of SYMBOL), and returns the value assigned."
+SETQ
+"Syntax: (setq {var form}*)
+VARs are not evaluated and must be symbols.  Assigns the value of the first
+FORM to the first VAR, then assigns the value of the second FORM to the second
+VAR, and so on.  Returns the last value assigned."
+SETF
+"Syntax: (setf {place newvalue}*)
+Replaces the value in PLACE with the value of NEWVALUE, from left to right.
+Returns the value of the last NEWVALUE.  Each PLACE may be any one of the
+following:
+  * A symbol that names a variable.
+  * A function call form whose first element is the name of the following
+    functions:
+	nth
+	aref subarray sublist select elt
+	get
+	symbol-value
+	symbol-plist
+	documentation
+	slot-value
+	c?r	c??r	c???r	c????r
+    where '?' stands for either 'a' or 'd'."
+DEFUN
+"Syntax: (defun name lambda-list [doc] {form}*)
+Defines a function as the global definition of the symbol NAME. The
+complete syntax of a lambda-list is:
+	({var}*
+	 [&optional {var}*]
+	 [&rest var]
+	 [&aux {var}*])
+The doc-string DOC, if supplied, is saved as a FUNCTION doc and can be
+retrieved by (documentation 'NAME 'function)."
+DEFMACRO
+"Syntax: (defmacro name defmacro-lambda-list [doc] {form}*)
+Defines a macro as the global definition of the symbol NAME. The complete
+syntax of a lambda-list is:
+	({var}*
+	 [&optional {var}*]
+	 [&rest var]
+	 [&aux {var}*])
+The doc-string DOC, if supplied, is saved as a FUNCTION doc and can be
+retrieved by (documentation 'NAME 'function)."
+GENSYM
+"Args: (&optional (x nil))
+Creates and returns a new uninterned symbol whose name is a prefix string
+(defaults to \"G\"), followed by a decimal number.  The number is incremented
+by each call to GENSYM.  X, if an integer, resets the counter.  If X is a
+string, it becomes the new prefix."
+MAKE-SYMBOL
+"Args: (string)
+Create and return new uninterned symbol with print name STRING."
+INTERN
+"Args: (name)
+Returns a symbol having the specified name, creating it if necessary."
+SYMBOL-NAME
+"Args: (symbol)
+Returns the print name of the symbol SYMBOL."
+SYMBOL-VALUE
+"Args: (symbol)
+Returns the current global value of the variable named by SYMBOL."
+SYMBOL-FUNCTION
+"Args: (symbol)
+Returns the current global function definition of the function named by SYMBOL."
+SYMBOL-PLIST
+"Args: (symbol)
+Returns the property list of SYMBOL."
+GET
+"Args: (symbol indicator)
+Looks on the property list of SYMBOL for the specified INDICATOR.  If this
+is found, returns the associated value.  Otherwise, returns nil."
+GETF
+"Args: (place indicator &optional default)
+Returns property value of INDICATOR in PLACE, or DEFAULT if not found."
+PUTPROP
+"Args: (symbol value indicator)
+Puts property INDICATOR with value VALUE on the property list of SYMBOL.
+Returns VALUE."
+REMPROP
+"Args: (symbol indicator)
+Look on property list of SYMBOL for property with specified
+INDICATOR.  If found, splice this indicator and its value out of
+the plist, and return the tail of the original list starting with
+INDICATOR.  If not found, returns NIL with no side effects.
+(This is what it should  return. Actually always returns nil. ***BUG***)"
+HASH
+" Args (sym n)
+Computes the hash index for symbol SYM in a table of size N."
+			
+;; list functions
+CAR
+"Args: (list)
+Returns the car of LIST.  Returns NIL if LIST is NIL."
+CDR
+"Args: (list)
+Returns the cdr of LIST.  Returns NIL if LIST is NIL."
+CAAAAR
+"Args: (x)
+Equivalent to (CAR (CAR (CAR (CAR X))))."
+CAAADR
+"Args: (x)
+Equivalent to (CAR (CAR (CAR (CDR X))))."
+CAAAR
+"Args: (x)
+Equivalent to (CAR (CAR (CAR X)))."
+CAADAR
+"Args: (x)
+Equivalent to (CAR (CAR (CDR (CAR X))))."
+CAADDR
+"Args: (x)
+Equivalent to (CAR (CAR (CDR (CDR X))))."
+CAADR
+"Args: (x)
+Equivalent to (CAR (CAR (CDR X)))."
+CAAR
+"Args: (x)
+Equivalent to (CAR (CAR X))."
+CADAAR
+"Args: (x)
+Equivalent to (CAR (CDR (CAR (CAR X))))."
+CADADR
+"Args: (x)
+Equivalent to (CAR (CDR (CAR (CDR X))))."
+CADAR
+"Args: (x)
+Equivalent to (CAR (CDR (CAR X)))."
+CADDAR
+"Args: (x)
+Equivalent to (CAR (CDR (CDR (CAR X))))."
+CADDDR
+"Args: (x)
+Equivalent to (CAR (CDR (CDR (CDR X))))."
+CADDR
+"Args: (x)
+Equivalent to (CAR (CDR (CDR X)))."
+CADR
+"Args: (x)
+Equivalent to (CAR (CDR X))."
+CDAADR
+"Args: (x)
+Equivalent to (CDR (CAR (CAR (CDR X))))."
+CDAAR
+"Args: (x)
+Equivalent to (CDR (CAR (CAR X)))."
+CDADAR
+"Args: (x)
+Equivalent to (CDR (CAR (CDR (CAR X))))."
+CDADDR
+"Args: (x)
+Equivalent to (CDR (CAR (CDR (CDR X))))."
+CDADR
+"Args: (x)
+Equivalent to (CDR (CAR (CDR X)))."
+CDAR
+"Args: (x)
+Equivalent to (CDR (CAR X))."
+CDDAAR
+"Args: (x)
+Equivalent to (CDR (CDR (CAR (CAR X))))."
+CDDADR
+"Args: (x)
+Equivalent to (CDR (CDR (CAR (CDR X))))."
+CDDAR
+"Args: (x)
+Equivalent to (CDR (CDR (CAR X)))."
+CDDDAR
+"Args: (x)
+Equivalent to (CDR (CDR (CDR (CAR X))))."
+CDDDDR
+"Args: (x)
+Equivalent to (CDR (CDR (CDR (CDR X))))."
+CDDDR
+"Args: (x)
+Equivalent to (CDR (CDR (CDR X)))."
+CDDR
+"Args: (x)
+Equivalent to (CDR (CDR X))."
+CDAAAR
+"Args: (x)
+Equivalent to (CDR (CAR (CAR (CAR X))))."
+FIRST
+"Args: (x)
+Equivalent to (CAR X)."
+SECOND
+"Args: (x)
+Equivalent to (CAR (CDR X))."
+THIRD
+"Args: (x)
+Equivalent to (CADDR X)."
+FOURTH
+"Args: (x)
+Equivalent to (CADDDR X)."
+
+REST
+"Args: (x)
+Equivalent to (CDR X)."
+
+CONS
+"Args: (x y)
+Returns a new cons (list node) whose car and cdr are X and Y, respectively."
+LIST
+"Args: (&rest args)
+Returns a list of its arguments"
+APPEND
+"Args: (&rest lists)
+Constructs a new list by concatenating its arguments."
+REVERSE
+"Args: (list)
+Returns a new list containing the same elements as LIST but in
+reverse order."
+LAST
+"Args: (list)
+Returns the last cons in LIST"
+NTH
+"Args: (n list)
+Returns the N-th element of LIST, where the car of LIST is the zero-th
+element."
+NTHCDR
+"Args: (n list)
+Returns the result of performing the CDR operation N times on LIST."
+MEMBER
+"Args: (item list &key (test #'eql) test-not)
+Returns the tail of LIST beginning with the first ITEM."
+ASSOC
+"Args: (item alist &key (test #'eql) test-not)
+Returns the first pair in ALIST whose car is equal (in the sense of TEST) to
+ITEM."
+SUBST
+"Args: (new old tree &key (test #'eql) test-not)
+Substitutes NEW for subtrees of TREE that match OLD."
+SUBLIS
+"Args: (alist tree &key (test #'eql) test-not)
+Substitutes from ALIST for subtrees of TREE nondestructively."
+REMOVE
+"Args: (item seq &key (test #'eql) test-not (start 0) (end (length seq)))
+Returns a copy of SEQ with ITEM removed."
+LENGTH
+"Args: (sequence)
+Returns the length of SEQUENCE."
+MAPC
+"Args: (fun list &rest more-lists)
+Applies FUN to successive cars of LISTs.  Returns the first LIST."
+MAPCAR
+"Args: (fun list &rest more-lists)
+Applies FUN to successive cars of LISTs and returns the results as a list."
+MAPL
+"Args: (fun list &rest more-lists)
+Applies FUN to successive cdrs of LISTs.  Returns the first LIST."
+MAPLIST
+"Args: (fun list &rest more-lists)
+Applies FUN to successive cdrs of LISTs and returns the results as a list."
+			
+;; destructive list functions
+RPLACA
+"Args: (x y)
+Replaces the car of X with Y, and returns the modified X."
+RPLACD
+"Args: (x y)
+Replaces the cdr of X with Y, and returns the modified X."
+NCONC
+"Args: (&rest lists)
+Concatenates LISTs by destructively modifying them."
+DELETE
+"Args: (item seq &key (test #'eql) test-not &key (start 0) (end (length seq)))
+Returns a list formed by removing the specified ITEM destructively from
+SEQ."
+
+;; predicate functions
+ATOM
+"Args: (x)
+Returns T if X is not a cons; NIL otherwise."
+SYMBOLP
+"Args: (x)
+Returns T if X is a symbol; NIL otherwise."
+NUMBERP
+"Args: (x)
+Returns T if X is any kind of number; NIL otherwise."
+BOUNDP
+"Args: (symbol)
+Returns T if the global variable named by SYMBOL has a value; NIL otherwise."
+NULL
+"Args: (x)
+Returns T if X is NIL; NIL otherwise."
+LISTP
+"Args: (x)
+Returns T if X is either a cons or NIL; NIL otherwise."
+CONSP
+"Args: (x)
+Returns T if X is a cons; NIL otherwise."
+EQ
+"Args: (x y)
+Returns T if X and Y are the same identical object; NIL otherwise."
+EQL
+"Args: (x y)
+Returns T if X and Y are EQ, or if they are numbers of the same type with
+the same value, or if they are identical characters.  Returns NIL otherwise."
+EQUAL
+"Args: (x y)
+Returns T if X and Y are EQL or if they are of the same type and corresponding
+components are EQUAL.  Returns NIL otherwise. Arrays must be EQ to be EQUAL."
+NOT
+"Args: (x)
+Returns T if X is NIL; NIL otherwise."
+
+;; special forms
+COND
+"Syntax: (cond {(test {form}*)}*)
+Evaluates each TEST in order until one evaluates to a non-NIL value.  Then
+evaluates the associated FORMs in order and returns the value of the last
+FORM.  If no forms follow the TEST, then returns the value of the TEST.
+Returns NIL, if all TESTs evaluate to NIL."
+CASE
+"Syntax: (case keyform {({key | ({key}*)} {form}*)}*)
+Evaluates KEYFORM and tries to find the KEY that is EQL to the value of
+KEYFORM.  If one is found, then evaluates FORMs that follow the KEY and
+returns the value of the last FORM.  If not, simply returns NIL."
+AND
+"Syntax: (and {form}*)
+Evaluates FORMs in order from left to right.  If any FORM evaluates to NIL,
+returns immediately with the value NIL.  Else, returns the value of the
+last FORM."
+OR
+"Syntax: (or {form}*)
+Evaluates FORMs in order from left to right.  If any FORM evaluates to
+non-NIL, quits and returns that value.  If the last FORM is reached,
+returns whatever value it returns."
+LET
+"Syntax: (let ({var | (var [value])}*) {form}*)
+Initializes VARs, binding them to the values of VALUEs (which defaults to NIL)
+all at once, then evaluates FORMs as a PROGN."
+LET*
+"Syntax: (let* ({var | (var [value])}*) {form}*)
+Initializes VARs, binding them to the values of VALUEs (which defaults to NIL)
+from left to right, then evaluates FORMs as a PROGN."
+IF
+"Syntax: (if test then [else])
+If TEST evaluates to non-NIL, then evaluates THEN and returns the result.
+If not, evaluates ELSE (which defaults to NIL) and returns the result."
+PROG
+"Syntax: (prog ({var | (var [init])}*) {tag | statement}*)
+Binds VARs in parallel, and then executes STATEMENTs."
+PROG*
+"Syntax: (prog* ({var | (var [init])}*) {tag | statement}*)
+Binds VARs sequentially, and then executes STATEMENTs."
+PROG1
+"Syntax: (prog1 first {form}*)
+Evaluates FIRST and FORMs in order, and returns the value of FIRST."
+PROG2
+"Syntax: (prog2 first second {forms}*)
+Evaluates FIRST, SECOND, and FORMs in order, and returns the value
+of SECOND."
+PROGN
+"Syntax: (progn {form}*)
+Evaluates FORMs in order, and returns whatever the last FORM returns."
+PROGV
+"Syntax: (progv symbols values {form}*)
+Evaluates FORMs in order, with SYMBOLS dynamically bound to VALUES, and 
+returns whatever the last FORM returns."
+GO
+"Syntax: (go tag)
+Jumps to the specified TAG established by a lexically surrounding PROG
+construct."
+RETURN
+"Syntax: (return [result])
+Returns from the lexically surrounding PROG construct.  The value of RESULT,
+which defaults to NIL, is returned as the value of the PROG construct."
+DO
+"Syntax: (do ({(var [init [step]])}*) (endtest {result}*) {tag | statement}*)
+Creates a NIL block, binds each VAR to the value of the corresponding INIT,
+and then executes STATEMENTs repeatedly until ENDTEST is satisfied.  After
+each iteration, assigns to each VAR the value of the corresponding STEP.  When
+ENDTEST is satisfied, evaluates RESULTs as a PROGN and returns the value of
+the last RESULT (or NIL if no RESULTs are supplied).  Performs variable
+bindings and assignments all at once, just like LET does."
+DO*
+"Syntax: (do* ({(var [init [step]])}*) (endtest {result}*) {tag | statement}*)
+Just like DO, but performs variable bindings and assignments in serial, just
+like LET* and SETQ do."
+DOLIST
+"Syntax: (dolist (var listform [result]) {tag | statement}*)
+Executes STATEMENTs, with VAR bound to each member of the list value of
+LISTFORM.  Then returns the value of RESULT (which defaults to NIL)."
+DOTIMES
+"Syntax: (dotimes (var countform [result]) {tag | statement}*)
+Executes STATEMENTs, with VAR bound to each number between 0 (inclusive) and
+the value of COUNTFORM (exclusive).  Then returns the value of RESULT
+(which defaults to NIL)."
+CATCH
+"Syntax: (catch tag {form}*)
+Sets up a catcher with that value TAG.  Then evaluates FORMs as a PROGN, but
+may possibly abort the evaluation by a THROW form that specifies the value
+EQ to the catcher tag."
+THROW
+"Syntax: (throw tag result)
+Evaluates TAG and aborts the execution of the most recent CATCH form that sets
+up a catcher with the same tag value.  The CATCH form returns whatever RESULT
+returned."
+	
+;; debugging and error handling functions
+ERROR
+"Args: (datum &rest args)
+Signals a fatal error. if DATUM is a string, it is used as format
+string with Args. If it is a symbol, it is used with ARGS so make a
+condition. If DATUM is a condition, there must be no other arguments."
+CERROR
+"Args: (continue-message-string datum &rest args)
+Signals a correctable error. Returns NIL when continued from the break loop."
+CLEAN-UP
+"Args: ()
+Cleans up after an error and moves to next lower break loop level."
+TOP-LEVEL
+"Args: (&optional (print t))
+Returns to the top level. Print message if PRINT is non-NIL."
+CONTINUE
+"Args: ()
+Continues after a correctable error"
+ERRSET
+"Args: (expr [pflag])
+Traps errors occurring during the evaluation of EXPR. PFLAG controls printing
+of the error message. Returns the value of the last expression consed with
+NIL or NIL. "
+"Args: (number)
+Prints NUMBER levels of trace back information. Returns NIL."
+BAKTRACE
+"Args: (&optional number (print-args *baktrace-print-args*))
+Prints NUMBER levels of trace back information. Prints call arguments if
+PRINT-ARGS is nto NIL. Returns NIL."
+EVALHOOK
+"Args: (form evalhookfn applyhookfn &optional (env nil))
+Evaluates FORM with *EVALHOOK* bound to EVALHOOKFN and *APPLYHOOK* bound
+to APPLYHOOKFN.  Ignores these hooks once, for the top-level evaluation
+of FORM.(Note: *APPPLYHOOK* is not yet implemented, and is thus ignored.)"
+			
+;; string functions
+SUBSEQ
+"Args: (sequence start &optional end)
+Extracts and returns the subsequence of SEQUENCE starting at START and
+ending at END, if supplied, or the end of SEQUENCE."
+STRING
+"
+Args: (sym)
+Returns print-name of SYM if SYM is a symbol, or SYM if SYM is a."
+CHAR
+"Args: (string index)
+Returns the INDEX-th character in STRING."
+
+;; I/O functions
+READ
+"Args: (&optional (stream *standard-input*) (eof-error-p t) (eof-value nil) (recursivep nil))
+Reads and returns the next object from STREAM."
+PRINT
+"Args: (object &optional (stream *standard-output*))
+Outputs a newline character, and then prints OBJECT in the most readable
+representation.  Returns OBJECT."
+PRIN1
+"Args: (object &optional (stream *standard-output*))
+Prints OBJECT in the most readable representation.  Returns OBJECT."
+PRINC
+"Args: (object &optional (stream *standard-output*))
+Prints OBJECT without escape characters.  Returns OBJECT."
+TERPRI
+"Args: (&optional (stream *standard-output*))
+Outputs a newline character."
+FLATSIZE
+"Args: (object)
+Returns length of printed representation of OBJECT using PRIN1"
+FLATC
+"Args: (object)
+Returns length of printed representation of OBJECT using PRINC"
+			
+;; file I/O functions
+OPEN
+"Args: (fname &key (direction :input))
+Opens file named by string or symbol FNAME. DIRECTION is :INPUT or :OUTPUT."
+CLOSE
+"Args: (stream)
+Close file stream STREAM."
+READ-CHAR
+"Args: (&optional (stream *standard-input*) (eof-value nil) (eof-error-p t)
+                  (recursive-p nil))
+Reads a character from STREAM."
+PEEK-CHAR
+"Args: (&optional (peek-type nil) (stream *standard-input*)
+                  (eof-value nil) (eof-error-p t) (recursive-p nil))
+Peeks at the next character in the input stream STREAM."
+WRITE-CHAR
+"Args: (char &optional (stream *standard-output*))
+Outputs CHAR and returns it."
+READ-LINE
+"Args: (&optional (stream *standard-input*) (eof-value nil) (eof-error-p t)
+                  (recursive-p nil))
+Returns line of text read from STREAM as a string without the newline
+character."
+
+;; system functions
+LOAD
+"Args: (filename &key (verbose t) (print nil))
+Loads the file named by FILENAME into XLISP. Returns T if load succeeds,
+NIL if file does not exist."
+DRIBBLE
+"Args: (&optional file)
+If string or symbol FILE is supplied creates a transcript file with this name.
+If FILE is missing closes the transcript file."
+SYSTEM
+"Args: (string)
+Runs the operating system command specified by string. Not available on
+all implementations."
+DYN-LOAD
+"Args: (file &key verbose libflags fortran)
+Links the object file FILE with standard C libraries and loads into
+the running XLISP-STAT process. If FORTRAN is not NIL also searches
+standard FORTRAN libraries. LIBFLAGS can be a string used to specify
+additional libraries, for example "-lcmlib". Not available on all
+implementations."
+CALL-CFUN
+"Args: (cfun &rest args)
+CFUN is a string naming a C function. The remaining arguments must be
+integers, sequences of integers, reals or sequences of reals.  CFUN is
+called with the remaining arguments and a list of the lists of the
+values of the arguments after the call is returned. Arguments in the
+call will be pointers to ints or pointers to doubles.  Not available
+on all implementations."
+CALL-FSUB
+"Args: (fsub &rest args)
+FSUB is a string naming a FORTRAN subroutine. The remaining arguments
+must be integers, sequences of integers, reals or sequences of reals.
+FSUB is called with the remaining arguments and a list of the lists of
+the values of the arguments after the call is returned. Arguments in
+the call will be (arrays of) integers or double precision numbers. Not
+available on all implementations."
+CALL-LFUN
+"Args: (lfun &rest args)
+LFUN is a C function written to conform to internal XLISP argument
+reading and value returning conventions. Applies LFUN to ARGS and
+returns the result."
+
+GC
+"Args: ()
+Forces (major) garbage collection. Returns nil."
+EXPAND
+"Args: (number)
+Expand memory by adding NUMBER segments. Returns the number of segments."
+ALLOC
+"Args: (number)
+Changes number of nodes to allocate in each segment to NUMBER. Returns
+old number of nodes to allocate."
+ROOM
+"Args: ()
+Shows memory allocation statistics. Returns nil."
+SAVE
+"Args: (file)
+Saves current memory image in FILE.wks. Does not work right with allocated objects."
+RESTORE
+"Args: (file)
+Restores memory image from FILE.wks. Does not work right with allocated objects."
+
+TYPE-OF
+"Args: (x)
+Returns the type of X."
+EXIT
+"Args: ()
+Exits from XLISP."
+PEEK
+"Args (address)
+Peek at an ADDRESS in memory."
+POKE
+"Args: (address value)
+Poke VALUE into ADDRESS in memory."
+ADDRESS-OF
+"Args (x)
+Get the address of an XLISP node."
+X11-OPTIONS
+"Args: (&key (fast-lines t) (fast-symbols t) (motion-sync t)
+Sets performance options for X11 window system."
+
+;; new functions and special forms
+VECTOR
+"Args: (&rest items)
+Returns a vector with ITEMS as elements."
+BLOCK
+"Syntax: (block name {form}*)
+The FORMs are evaluated in order, but it is possible to exit the block
+using (RETURN-FROM name value).  The RETURN-FROM must be lexically contained
+within the block."
+RETURN-FROM
+"Syntax: (return-from name [result])
+Returns from the lexically surrounding block whose name is NAME.  The value
+of RESULT, which defaults to NIL, is returned as the value of the block."
+TAGBODY
+"Syntax: (tagbody {tag | statement}*)
+Executes STATEMENTs and returns NIL if it falls off the end."
+PSETQ
+"Syntax: (psetq {var form}*)
+Similar to SETQ, but evaluates all FORMs first, and then assigns each value to
+the corresponding VAR.  Returns NIL always."
+FLET
+"Syntax: (flet ({(name lambda-list {decl | doc}* {form}*)}*) . body)
+Evaluates BODY as a PROGN, with local function definitions in effect.  BODY is
+the scope of each local function definition.  Since the scope does not include
+the function definitions themselves, the local function can reference
+externally defined functions of the same name.  See the doc of DEFUN for the
+complete syntax of a lambda-list.  Doc-strings for local functions are simply
+ignored."
+LABELS
+"Syntax: (labels ({(name lambda-list {decl | doc}* {form}*)}*) . body)
+Evaluates BODY as a PROGN, with the local function definitions in effect.
+The scope of the locally defined functions include the function definitions
+themselves, so they can reference externally defined functions of the same
+name.  See the doc of DEFUN for the complete syntax of a lambda-list.
+Doc-strings for local functions are simply ignored."
+MACROLET
+"Syntax: (macrolet ({(name defmacro-lambda-list {decl | doc}* . body)}*)
+          {form}*)
+Evaluates FORMs as a PROGN, with the local macro definitions in effect.
+See the doc of DEFMACRO for the complete syntax of a defmacro-lambda-list.
+Doc-strings for local macros are simply ignored."
+UNWIND-PROTECT
+"Syntax: (unwind-protect protected-form {cleanup-form}*)
+Evaluates PROTECTED-FORM and returns whatever it returned.  Guarantees that
+CLEANUP-FORMs be always evaluated before exiting from the UNWIND-PROTECT
+form."
+PPRINT
+"Args: (object &optional (stream *standard-output*))
+Pretty-prints OBJECT.  Returns OBJECT."
+STRING<
+"Args: (string1 string2
+       &key (start1 0) (end1 (length string1))
+            (start2 0) (end2 (length string2)))
+If STRING1 is lexicographically less than STRING2, then returns the longest
+common prefix of the strings.  Otherwise, returns NIL."
+STRING<=
+"Args: (string1 string2
+       &key (start1 0) (end1 (length string1))
+            (start2 0) (end2 (length string2)))
+If STRING1 is lexicographically less than or equal to STRING2, then returns
+the longest common prefix of the two strings.  Otherwise, returns NIL."
+STRING=
+"Args: (string1 string2
+       &key (start1 0) (end1 (length string1))
+            (start2 0) (end2 (length string2)))
+Returns T if the two strings are character-wise CHAR=; NIL otherwise."
+STRING/=
+"Args: (string1 string2
+       &key (start1 0) (end1 (length string1))
+            (start2 0) (end2 (length string2)))
+Returns NIL if STRING1 and STRING2 are character-wise CHAR=.  Otherwise,
+returns the index to the longest common prefix of the strings."
+STRING>=
+"Args: (string1 string2
+       &key (start1 0) (end1 (length string1))
+            (start2 0) (end2 (length string2)))
+If STRING1 is lexicographically greater than or equal to STRING2, then returns
+the longest common prefix of the strings.  Otherwise, returns NIL."
+STRING>
+"Args: (string1 string2
+       &key (start1 0) (end1 (length string1))
+            (start2 0) (end2 (length string2)))
+If STRING1 is lexicographically greater than STRING2, then returns the
+longest common prefix of the strings.  Otherwise, returns NIL."
+STRING-LESSP
+"Args: (string1 string2
+       &key (start1 0) (end1 (length string1))
+            (start2 0) (end2 (length string2)))
+Similar to STRING<, but ignores cases."
+STRING-NOT-GREATERP
+"Args: (string1 string2
+       &key (start1 0) (end1 (length string1))
+            (start2 0) (end2 (length string2)))
+Similar to STRING<=, but ignores cases."
+STRING-EQUAL
+"Args: (string1 string2
+       &key (start1 0) (end1 (length string1))
+            (start2 0) (end2 (length string2)))
+Given two strings (string1 and string2), and optional integers start1,
+start2, end1 and end2, compares characters in string1 to characters in
+string2 (using char-equal)."
+STRING-NOT-EQUAL
+"Args: (string1 string2
+       &key (start1 0) (end1 (length string1))
+            (start2 0) (end2 (length string2)))
+Similar to STRING=, but ignores cases."
+STRING-NOT-LESSP
+"Args: (string1 string2
+       &key (start1 0) (end1 (length string1))
+            (start2 0) (end2 (length string2)))
+Similar to STRING>=, but ignores cases."
+STRING-GREATERP
+"Args: (string1 string2
+       &key (start1 0) (end1 (length string1))
+            (start2 0) (end2 (length string2)))
+Similar to STRING>, but ignores cases."
+INTEGERP
+"Args: (x)
+Returns T if X is an integer (fixnum or bignum); NIL otherwise."
+FLOATP
+"Args: (x)
+Returns T if X is a floating-point number; NIL otherwise."
+STRINGP
+"Args: (x)
+Returns T if X is a string; NIL otherwise."
+ARRAYP
+"Args: (x)
+Returns T if X is an array; NIL otherwise."
+STREAMP
+"Args: (x)
+Returns T if X is a stream object; NIL otherwise."
+OBJECTP
+"Args: (x)
+Returns T if X is an object, NIL otherwise."
+STRING-UPCASE
+"Args: (string &key (start 0) (end (length string)))
+Returns a copy of STRING with all lower case characters converted to
+uppercase."
+STRING-DOWNCASE
+"Args: (string &key (start 0) (end (length string)))
+Returns a copy of STRING with all upper case characters converted to
+lowercase."
+NSTRING-UPCASE
+"Args: (string &key (start 0) (end (length string)))
+Returns STRING with all lower case characters converted to uppercase."
+NSTRING-DOWNCASE
+"Args: (string &key (start 0) (end (length string)))
+Returns STRING with all upper case characters converted to lowercase."
+STRING-TRIM
+"Args: (char-bag string)
+Returns a copy of STRING with the characters in CHAR-BAG removed from both
+ends."
+STRING-LEFT-TRIM
+"Args: (char-bag string)
+Returns a copy of STRING with the characters in CHAR-BAG removed from the
+left end."
+STRING-RIGHT-TRIM
+"Args: (char-bag string)
+Returns a copy of STRING with the characters in CHAR-BAG removed from the
+right end."
+WHEN
+"Syntax: (when test {form}*)
+If TEST evaluates to non-NIL evaluates FORMs as a PROGN.  If not, returns NIL."
+UNLESS
+"Syntax: (unless test {form}*)
+If TEST evaluates to NIL evaluates FORMs as a PROGN.  If not, returns NIL."
+LOOP
+"Syntax: (loop {form}*)
+Executes FORMs repeatedly until exited by a THROW or RETURN.  The FORMs are
+surrounded by an implicit NIL block."
+FBOUNDP
+"Args: (symbol)
+Returns T if SYMBOL has a global function definition or if SYMBOL names a
+special form or a macro; NIL otherwise."
+PROGV
+"Syntax: (progv symbols values {form}*)
+SYMBOLS must evaluate to a list of symbols. VALUES must evaluate to a list
+of initial values. Evaluates FORMs as a PROGN, with each variable bound
+dynamically to the corresponding value."
+CHARACTERP
+"Args: (x)
+Returns T if X is a character; NIL otherwise."
+CHAR-INT
+"Args: (char)
+Returns the ASCII code of CHAR. Equivalent to CHAR-CODE in XLISP."
+INT-CHAR
+"Args: (integer)
+Performs the inverse of CHAR-INT. Equivalent to CODE-CHAR in XLISP."
+READ-BYTE
+"Args: (stream &optional (eof-error-p t) (eof-value nil))
+Reads the next byte from STREAM."
+WRITE-BYTE
+"Args: (integer &optional stream)
+Outputs INTEGER to the binary stream STREAM.  Returns INTEGER."
+MAKE-STRING-INPUT-STREAM
+"Args: (string &optional (start 0) (end (length string)))
+Returns an input stream which will supply the characters of String between
+Start and End in order."
+MAKE-STRING-OUTPUT-STREAM
+"Args: ()
+Returns an output stream which will accumulate all output given it for
+the benefit of the function GET-OUTPUT-STREAM-STRING."
+GET-OUTPUT-STREAM-STRING
+"Args: (stream)
+Returns a string of all the characters sent to STREAM made by
+MAKE-STRING-OUTPUT-STREAM since the last call to this function."
+GET-OUTPUT-STREAM-LIST
+"Args: (stream)
+Returns list of elements in stream."
+GCD
+"Args: (&rest integers)
+Returns the greatest common divisor of INTEGERs."
+GET-LAMBDA-EXPRESSION
+"Args (closure)
+Extracts lambda expression from CLOSURE."
+MACROEXPAND
+"Args: (form &optional env)
+If FORM is a macro form expands it repeatedly in environment ENV until
+it is not a macro."
+MACROEXPAND-1
+"Args: (form &optional env)
+If FORM is a macro form, then expands it once in environment ENV."
+CHAR<
+"Args: (char &rest more-chars)
+Returns T if the codes of CHARs are in strictly increasing order; NIL
+otherwise."
+CHAR<=
+"Args: (char &rest more-chars)
+Returns T if the codes of CHARs are in strictly non-decreasing order; NIL
+otherwise."
+CHAR=
+"Args: (char &rest more-chars)
+Returns T if all CHARs are the same character; NIL otherwise."
+CHAR/=
+"Args: (char &rest more-chars)
+Returns T if no two of CHARs are the same character; NIL otherwise."
+CHAR>=
+"Args: (char &rest more-chars)
+Returns T if the codes of CHARs are in strictly non-increasing order; NIL
+otherwise."
+CHAR>
+"Args: (char &rest more-chars)
+Returns T if the codes of CHARs are in strictly decreasing order; NIL
+otherwise."
+CHAR-LESSP
+"Args: (char &rest more-chars)
+Returns T if the codes of CHARs are in strictly increasing order; NIL
+otherwise.  For a lower-case character, the code of its upper-case equivalent
+is used."
+CHAR-NOT-GREATERP
+"Args: (char &rest more-chars)
+Returns T if the codes of CHARs are in strictly non-decreasing order; NIL
+otherwise.  For a lower-case character, the code of its upper-case equivalent
+is used."
+CHAR-EQUAL
+"Args: (char &rest more-chars)
+Returns T if all of its arguments are the same character; NIL otherwise.
+Upper case character and its lower case equivalent are regarded the same."
+CHAR-NOT-EQUAL
+"Args: (char &rest more-chars)
+Returns T if no two of CHARs are the same character; NIL otherwise.
+Upper case character and its lower case equivalent are regarded the same."
+CHAR-NOT-LESSP
+"Args: (char &rest more-chars)
+Returns T if the codes of CHARs are in strictly non-increasing order; NIL
+otherwise.  For a lower-case character, the code of its upper-case equivalent
+is used."
+CHAR-GREATERP
+"Args: (char &rest more-chars)
+Returns T if the codes of CHARs are in strictly decreasing order; NIL
+otherwise.  For a lower-case character, the code of its upper-case equivalent
+is used."
+UPPER-CASE-P
+"Args: (char)
+Returns T if CHAR is an upper-case character; NIL otherwise."
+LOWER-CASE-P
+"Args: (char)
+Returns T if CHAR is a lower-case character; NIL otherwise."
+BOTH-CASE-P
+"Args: (char)
+Returns T if CHAR is an alphabetic character; NIL otherwise."
+DIGIT-CHAR-P
+"Args: (char &optional (radix 10))
+If CHAR represents a digit returns the weight as an integer.
+Otherwise, returns nil."
+ALPHANUMERICP
+"Args: (char)
+Returns T if CHAR is either numeric or alphabetic; NIL otherwise."
+CHAR-UPCASE
+"Args: (char)
+Returns the upper-case equivalent of CHAR, if any, or CHAR."
+CHAR-DOWNCASE
+"Args: (char)
+Returns the lower-case equivalent of CHAR, if any, or CHAR."
+DIGIT-CHAR
+"Args: (digit &optional (radix 10))
+Returns a character object that represents the DIGIT, or NIL."
+CHAR-CODE
+"Args: (char)
+Returns ASCII code of CHAR."
+CODE-CHAR
+"Args: (code)
+Returns character object with the specified ASCII code, or NIL."
+ENDP
+"Args: (x)
+Returns T if X is NIL.  Returns NIL if X is a cons.  Otherwise, signals an
+error."
+REMOVE-IF
+"Args: (test seq &key (start 0) (end (length seq)))
+Returns a copy of SEQ with elements satisfying TEST removed."
+REMOVE-IF-NOT
+"Args: (test seq &key (start 0) (end (length seq)))
+Returns a copy of SEQ with elements not satisfying TEST removed."
+DELETE-IF
+"Args: (test seq &key (start 0) (end (length seq)))
+Returns result of destructively removing the elements satisfying TEST
+from SEQ."
+DELETE-IF-NOT
+"Args: (test list &key (start 0) (end (length seq)))
+Returns result of destructively removing the elements not satisfying TEST from SEQ."
+TRACE
+"Syntax: (trace {function-name}*)
+Traces the specified functions.  With no FUNCTION-NAMEs, returns a list of
+functions currently being traced."
+UNTRACE
+"Syntax: (untrace {function-name}*)
+Removes tracing from the specified functions.  With no FUNCTION-NAMEs,
+untraces all functions."
+SORT
+"Args: (list predicate)
+Destructively sorts LIST.  PREDICATE should return non-NIL if its first
+argument is to precede its second argument."
+
+;; *OBJECT*
+(*OBJECT* OBJECT PROTO) "The root object."
+(*OBJECT*  OBJECT :GET-METHOD)
+"Method args: (selector)
+Returns method for SELECTOR symbol from object's precedence list."
+(*OBJECT*  OBJECT :HAS-SLOT)
+"Method args: (slot &optional own)
+Returns T if slot SLOT exists, NIL if not. If OWN is not NIL
+only checks the object; otherwise check the entire precedence list."
+(*OBJECT*  OBJECT :HAS-METHOD)
+"Method args: (selector &optional own)
+Returns T if method for SELECTOR exists, NIL if not. If OWN is not NIL
+only checks the object; otherwise check the entire precedence list."
+(*OBJECT*  OBJECT :ADD-SLOT)
+"Method args: (slot &optional value)
+Installs slot SLOT in object, if it does not already exist, and
+sets its value to VALUE."
+(*OBJECT*  OBJECT :ADD-METHOD)
+"Method args: (selector method)
+Installs METHOD for SELECTOR in object."
+(*OBJECT*  OBJECT :DELETE-SLOT)
+"Method args: (slot)
+Deletes slot SLOT from object if it exists."
+(*OBJECT*  OBJECT :DELETE-METHOD)
+"Method args: (selector)
+Deletes method for SELECTOR in object if it exists."
+(*OBJECT*  OBJECT :SHOW)
+"Method Args: ()
+Prints object's internal data."
+(*OBJECT*  OBJECT :ISNEW)
+"Method args: (&rest args)
+Checks ARGS for keyword arguments matching slots and uses them to
+initialize slots."
+(*OBJECT*  OBJECT :PARENTS)
+"Method args: ()
+Returns copy of parents list."
+(*OBJECT*  OBJECT :PRECEDENCE-LIST)
+"Method args: ()
+Returns copy of the precedence list."
+(*OBJECT*  OBJECT :OWN-SLOTS)
+"Method args: ()
+Returns list of names of slots owned by object."
+(*OBJECT*  OBJECT :OWN-METHODS)
+"Method args ()
+Returns copy of selectors for methods owned by object."
+(*OBJECT*  OBJECT :INTERNAL-DOC)
+"Method args (topic &optional value)
+Retrieves or installs documentation for topic."
+(*OBJECT* OBJECT :REPARENT)
+"Method args: (&rest parents)
+Changes precedence list to correspond to PARENTS. Does not change descendants."
+
+;; compound data objects
+(COMPOUND-DATA-PROTO OBJECT :SELECT-DATA)
+"Sets or retrieves subset of data. Arguments depend on the object."
+(COMPOUND-DATA-PROTO OBJECT :MAKE-DATA)
+"Methos args: (data)
+Make object like self with new data."
+(COMPOUND-DATA-PROTO OBJECT :DATA-SEQ)
+"Methos args: ()
+Return sequence of object's data."
+(COMPOUND-DATA-PROTO OBJECT :DATA-LENGTH)
+"Methos args: ()
+Return length of object's data."
+
+;; WINDOW-PROTO
+(WINDOW-PROTO  OBJECT PROTO)
+"Instance variables: (title location size go-away)
+Basic window prototype. Instance variables used at allocation; can set with
+keywords to :ISNEW."
+(WINDOW-PROTO  OBJECT :SHOW-WINDOW)
+"Method args: ()
+Makes window visible and moves it to the front. Returns NIL."
+(WINDOW-PROTO  OBJECT :HIDE-WINDOW)
+"Method args: ()
+Hides the window without deallocating it. Returns NIL."
+(WINDOW-PROTO  OBJECT :CLOSE)
+"Method args: ()
+Closes the window without deallocating it. Returns NIL."
+(WINDOW-PROTO  OBJECT :TITLE)
+"Method args: (&optional title)
+Sets window title to TITLE if supplied. Returns current title."
+(WINDOW-PROTO  OBJECT :LOCATION)
+"Method args: (&optional left top)
+Moves window content to (LEFT TOP) if supplied. Returns list of 
+current left, top. Adjusts for the menu bar."
+(WINDOW-PROTO  OBJECT :SIZE)
+"Method args: (&optional width height)
+Sets window content width and size to WIDTH and SIZE if supplied.
+Returns list of current WIDTH HEIGHT. Adjusts for the menu bar."
+(WINDOW-PROTO  OBJECT :FRAME-LOCATION)
+"Method args: (&optional left top)
+Moves window frame to (LEFT TOP) if supplied. Returns list of 
+current left, top. Adjusts for the menu bar."
+(WINDOW-PROTO  OBJECT :FRAME-SIZE)
+"Method args: (&optional width height)
+Sets window frame width and size to WIDTH and SIZE if supplied. 
+Returns list of current WIDTH and HEIGHT. Adjusts for the menu bar."
+(WINDOW-PROTO  OBJECT :UNDO)
+"Method args: ()
+Does nothing."
+(WINDOW-PROTO  OBJECT :CUT-TO-CLIP)
+"Method args: ()
+Does nothing."
+(WINDOW-PROTO  OBJECT :COPY-TO-CLIP)
+"Method args: ()
+Does nothing."
+(WINDOW-PROTO  OBJECT :PASTE-FROM-CLIP)
+"Method args: ()
+Does nothing."
+(WINDOW-PROTO  OBJECT :CLEAR)
+"Method args: ()
+Does nothing."
+(WINDOW-PROTO  OBJECT :PASTE-STREAM)
+"Method args: ()
+Does nothing."
+(WINDOW-PROTO  OBJECT :PASTE-STRING)
+"Method args: ()
+Does nothing."
+(WINDOW-PROTO  OBJECT :SELECTION-STREAM)
+"Method args: ()
+Does nothing."
+(WINDOW-PROTO  OBJECT :ACTIVATE)
+"Method args: ()
+Does nothing."
+(WINDOW-PROTO  OBJECT :UPDATE)
+"Method args: ()
+Does nothing."
+(WINDOW-PROTO  OBJECT :FIND)
+"Method args: ()
+Does nothing."
+
+;; EDIT-WINDOW-PROTO
+(EDIT-WINDOW-PROTO  OBJECT PROTO)
+"Instance variables: (input-enabled output-stream bind-to-file)
+Edit window prototype. Instance variables used at allocation; can set with
+:SINEW keywords. Inherits from WINDOW-PROTO"
+(EDIT-WINDOW-PROTO  OBJECT :ISNEW)
+"Method args: (&key title location size go-away input-enabled
+                    output-stream bind-to-file)
+Initializes instance variables and sends itself the :ALLOCATE message.
+Instance variables are used on allocation. GO-AWAY says whether window has a
+close box, OUTPUT-STREAM can be used to write to the window, and BIND-TO-FILE
+will cause a get-file-dialog to appear when the window is allocated."
+(EDIT-WINDOW-PROTO  OBJECT :ALLOCATE)
+"Method args: ()
+Allocates and opens the window. Obtains file with get-file-dialog if slot
+BIND-TO-FILE is true."
+(EDIT-WINDOW-PROTO  OBJECT :CUT-TO-CLIP)
+"Method args: ()
+Cut selection to clip board."
+(EDIT-WINDOW-PROTO  OBJECT :COPY-TO-CLIP)
+"Method args: ()
+Copy selection to clip board."
+(EDIT-WINDOW-PROTO  OBJECT :PASTE-FROM-CLIP)
+"Method args: ()
+Paste selection to clip board."
+(EDIT-WINDOW-PROTO  OBJECT :REVERT)
+"Method args: ()
+Reverts to file on disk; opens dialog to check first."
+(EDIT-WINDOW-PROTO  OBJECT :SAVE)
+"Method args: ()
+Save file. Use save-file dialog to get a name if not bound to file."
+(EDIT-WINDOW-PROTO  OBJECT :SAVE-AS)
+"Method args: ()
+Save file under name obtained by save-file-dialog and bind window to the file."
+(EDIT-WINDOW-PROTO  OBJECT :SAVE-COPY)
+"Method args: ()
+Save copy of file under name obtained by save-file-dialog; don't change file binding."
+(EDIT-WINDOW-PROTO  OBJECT :PASTE-STREAM)
+"Method args: (string)
+Inserts the characters in STRING at the current insertion point, replacing any
+current selection."
+(EDIT-WINDOW-PROTO  OBJECT :PASTE-STRING)
+"Method args: (stream)
+Inserts the characters in STREAM at the current insertion point, replacing any
+current selection."
+(EDIT-WINDOW-PROTO  OBJECT :FLUSH-WINDOW)
+"Method args: (&optional count)
+Flushes the first COUNT characters from the window. Flushes all characters if
+COUNT is not supplied."
+(EDIT-WINDOW-PROTO  OBJECT :SELECTION-STREAM)
+"Method args: ()
+Returns a stream containing the characters of the current selection."
+(EDIT-WINDOW-PROTO  OBJECT :CLOSE)
+"Method args: ()
+Closes and deallocates the window. Asks about saving the file if necessary."
+(EDIT-WINDOW-PROTO  OBJECT :REMOVE)
+"Method args: ()
+Closes and deallocates the window. Asks about saving the file if necessary."
+(EDIT-WINDOW-PROTO  OBJECT :DISPOSE)
+"Method args: ()
+Closes and deallocates the window. Asks about saving the file if necessary."
+(EDIT-WINDOW-PROTO  OBJECT :ACTIVATE)
+"Method args: ()
+Does nothing."
+(EDIT-WINDOW-PROTO  OBJECT :UPDATE)
+"Method args: ()
+Does nothing."
+(EDIT-WINDOW-PROTO  OBJECT :FIND-STRING)
+"Method args: (string)
+Finds and selects STRING if it is in the file. Returns T if found, NIL if not.
+Search is case insensitive."
+
+;; LISTENER-PROTO
+(LISTENER-PROTO  OBJECT :ISNEW)
+"Method args: ()
+Initializes new listener object."
+(LISTENER-PROTO  OBJECT :ALLOCATE)
+"Method args: ()
+Connects object to internal listener window."
+
+;; MENU-PROTO
+(MENU-PROTO  OBJECT PROTO)
+"Instance variables: (title items enabled id)
+Basic menu prototype. Instance variables used internally."
+(MENU-PROTO  OBJECT :ISNEW)
+"Method args: (title)
+Sets menu title to TITLE and sends it the itself :ALLOCATE message."
+(MENU-PROTO  OBJECT :ALLOCATE)
+"Method args: ()
+Allocates an internal menu for the object."
+(MENU-PROTO  OBJECT :DISPOSE)
+"Method args: ()
+Disposes of the internal menu."
+(MENU-PROTO  OBJECT :INSTALL)
+"Method args ()
+Installs the menu in the menu bar (Macintosh only)."
+(MENU-PROTO  OBJECT :REMOVE)
+"Method args: ()
+Removes the menu from the menu bar (Macintosh only)."
+(MENU-PROTO  OBJECT :ENABLED)
+"Method args: (&optional enabled)
+If ENABLED is supplied enables or disables the menu if ENABLED is true or
+NIL. Returns T if menu is enabled, NIL otherwise."
+(MENU-PROTO  OBJECT :UPDATE)
+"Method args: ()
+Sends each menu item the :UPTADE message."
+(MENU-PROTO  OBJECT :ALLOCATED-P)
+"Method args: ()
+Returns true if menu is allocated, NIL otherwise."
+(MENU-PROTO  OBJECT :TITLE) 
+"Method args: (&optional TITLE)
+If TITLE is supplied sets menu title to TITLE. Returns menu title."
+(MENU-PROTO  OBJECT :ITEMS)
+"Method args: ()
+Returns list of menu items."
+(MENU-PROTO  OBJECT :INSTALLED-P)
+"Method args: ()
+Returns true if menu is in the menu bar, NIL otherwise."
+(MENU-PROTO  OBJECT :APPEND-ITEMS)
+"Method args: (&rest items)
+adds ITEMS to the menu and Returns NIL."
+(MENU-PROTO  OBJECT :DELETE-ITEMS)
+"Method args: (&rest items)
+Removes ITEMS from menu and returns NIL. Signals an error if an
+item is not in the menu"
+(MENU-PROTO  OBJECT :SELECT)
+"Method args: (index)
+Sends item (elt items (- INDEX 1)) the :DO-ACTION message."
+(MENU-PROTO  OBJECT :POPUP)
+"Method args: (x y)
+Waits for a mouse click if mouse is not already down at call time, then
+pops up menu at screen coordinates (X Y)."
+
+;; APPLE-MENU-PROTO
+(APPLE-MENU-PROTO  OBJECT :ISNEW)
+"Method args: (title)
+Sets menu title to TITLE and sends it the itself :ALLOCATE message."
+(APPLE-MENU-PROTO  OBJECT :SELECT)
+"Method args: (index)
+Sends item (elt items (- INDEX 1)) the :DO-ACTION message or opens the
+desk accessory."
+
+;; MENU-ITEM-PROTO
+(MENU-ITEM-PROTO  OBJECT PROTO)
+"Instance variables: (title key mark style action enabled menu)
+Menu item. Instance variables used on installation; can set using
+keywords to :ISNEW."
+(MENU-ITEM-PROTO  OBJECT :ISNEW)
+"Method args: (title &key key mark style action (enabled t))
+Initializes a new menu item object."
+(MENU-ITEM-PROTO  OBJECT :TITLE)
+"Method args: (&optional title)
+Sets item title to TITLE if supplied and returns title."
+(MENU-ITEM-PROTO  OBJECT :KEY)
+"Method args: (&optional char)
+Sets item keyboard equivalent to CHAR, if supplied, and returns current key
+(Macintosh only)."
+(MENU-ITEM-PROTO  OBJECT :MARK)
+"Method args: (&optional MARK)
+Sets item mark to MARK if MARK is a character, to a check if MARK is T
+and to no mark if MARK is NIL. Returns current mark (Macintosh only)."
+(MENU-ITEM-PROTO  OBJECT :STYLE)
+"Method args: (&optional style)
+Sets and returns item style. STYLE can be a symbol or list of symbols from
+BOLD, ITALIC, UNDERLINE, SHADOW, CONDENSE, EXTEND (Macintosh only)."
+(MENU-ITEM-PROTO  OBJECT :ACTION)
+"Method args: (&optional FCN)
+Sets ACTION slot to FCN if supplied; returns current ACTION value."
+(MENU-ITEM-PROTO  OBJECT :ENABLED)
+"Method args: (&optional enable)
+Enables or disables item if ENABLED is supplied; returns T if enabled,
+NIL if not."
+(MENU-ITEM-PROTO  OBJECT :INSTALLED-P)
+"Method args: ()
+Returns T if item is installed in a menu, NIL if not."
+(MENU-ITEM-PROTO  OBJECT :UPDATE)
+"Method args: ()
+Does nothing."
+(MENU-ITEM-PROTO  OBJECT :DO-ACTION)
+"Method args: ()
+Funcalls the value of the ACTION slot."
+
+;; DIALOG-PROTO
+(DIALOG-PROTO  OBJECT PROTO)
+"Dialog window prototype."
+(DIALOG-PROTO  OBJECT :ISNEW) 
+"Method args: (items &key title location size go-away type default-button)
+Initializes and allocates a dialog. ITEMS is a list of dialog items; type
+should be MODAL or MODELESS. Default is MODAL. Type only affect window
+appearance, not the dialog's behavior."
+(DIALOG-PROTO  OBJECT :ALLOCATE)
+"Method args: ()
+Allocates and opens a dialog window."
+(DIALOG-PROTO  OBJECT :REMOVE)
+"Method args: ()
+Closes and deallocates the dialog window."
+(DIALOG-PROTO  OBJECT :DISPOSE)
+"Method args: ()
+Closes and deallocates the dialog window."
+(DIALOG-PROTO  OBJECT :CLOSE)
+"Method args: ()
+Closes and deallocates the dialog window."
+(DIALOG-PROTO  OBJECT :ALLOCATED-P)
+"Method args: ()
+Returns T if dialog is allocated, NIL if not."
+(DIALOG-PROTO  OBJECT :DEFAULT-BUTTON)
+"Message args: (button)
+Makes BUTTON the default button."
+(DIALOG-PROTO  OBJECT :MODAL-DIALOG)
+"Method args: ()
+Puts dialog into modal mode, waits for a dialog event, and returns the item
+in which the event occurred."
+(DIALOG-PROTO :ITEMS)
+"Method args: ()
+Returns list of dialog items."
+
+;; DIALOG-ITEM-PROTO
+(DIALOG-ITEM-PROTO  OBJECT PROTO)
+"Dialog item prototype."
+(DIALOG-ITEM-PROTO  OBJECT :DO-ACTION)
+"Method args: ()
+Funcalls value of ACTION slot if it is not NIL."
+(DIALOG-ITEM-PROTO  OBJECT :ACTION)
+"Method args (&optional fcn)
+Sets or returns value of ACTION slot."
+
+;; BUTTON-ITEM-PROTO
+(BUTTON-ITEM-PROTO  OBJECT :ISNEW)
+"Method args: (text &key location size action)
+Initializes a button item."
+
+;; TOGGLE-ITEM-PROTO
+(TOGGLE-ITEM-PROTO  OBJECT PROTO)
+"Toggle item prototype."
+(TOGGLE-ITEM-PROTO  OBJECT :ISNEW)
+"Method args: (text &key location size action value)
+Initializes a toggle (check box) item."
+(TOGGLE-ITEM-PROTO  OBJECT :VALUE)
+"Method args: (value)
+Sets or gets toggle item value. Value is T or NIL."
+
+;; TEXT-ITEM-PROTO
+(TEXT-ITEM-PROTO  OBJECT PROTO)
+"Text item prototype."
+(TEXT-ITEM-PROTO  OBJECT :ISNEW)
+"Method args: (text &key location size action (editable nil))
+Initializes a text item (editable or static)."
+(TEXT-ITEM-PROTO  OBJECT :TEXT)
+"Method args: (string)
+Sets or gets text item's text."
+  
+;; CHOICE-ITEM-PROTO
+(CHOICE-ITEM-PROTO  OBJECT PROTO)
+"Choice (radio button cluster) item prototype."
+(CHOICE-ITEM-PROTO  OBJECT :ISNEW)
+"Method args: (strings &key location size action value)
+Initializes a choice (radio button cluster) item. STRINGS is a list of strings."
+(CHOICE-ITEM-PROTO  OBJECT :VALUE)
+"Method args: (value)
+Sets or gets choice item value. Value is the zero-based index of the selected item."
+
+;; SCROLL-ITEM-PROTO
+(SCROLL-ITEM-PROTO  OBJECT PROTO)
+"Scroll bar item."
+(SCROLL-ITEM-PROTO  OBJECT :ISNEW)
+"Method args: (&key location size action (min-value 0) (max-value 100) (page-increment 5) 
+value)
+Initializes a scroll bar item. Orientation is determined by SIZE; default is horizontal."
+(SCROLL-ITEM-PROTO  OBJECT :VALUE)
+"Method args: (value)
+Sets or gets scroll item value. Value is truncated to [min-value, max-value]."
+(SCROLL-ITEM-PROTO  OBJECT :MAX-VALUE)
+"Method args: (value)
+Sets or gets scroll item minimum value."
+(SCROLL-ITEM-PROTO  OBJECT :MIN-VALUE)
+"Method args: (value)
+Sets or gets scroll item maximum value."
+(SCROLL-ITEM-PROTO  OBJECT :SCROLL-ACTION)
+"Method args: ()
+Funcalls ACTION slot value if it is not NIL."
+
+;; LIST-ITEM-PROTO
+(LIST-ITEM-PROTO  OBJECT PROTO)
+"List item."
+(LIST-ITEM-PROTO  OBJECT :ISNEW)
+"Method args: (strings &key location size action (columns 1))
+Initializes a list item. STRINGS should be a sequence of two dimensional array
+of strings. COLUMNS is the number of columns visible in the display."
+(LIST-ITEM-PROTO  OBJECT :DO-ACTION)
+"Method args: (&optional (double nil))
+Funcalls value of ACTION slot, if it is not NIL, with argument DOUBLE."
+(LIST-ITEM-PROTO  OBJECT :SET-TEXT)
+"Method args: (index string)
+Sets text at INDEX to STRING. INDEX should be a number or a list of two numbers,
+depending on whether the list cas constructed with a sequence or an array."
+(LIST-ITEM-PROTO  OBJECT :SELECTION)
+"Method args: (&optional index)
+Sets or returns index of selected cell. INDEX should be a number for a sequence
+and a list of two numbers for an array, or NIL to turn off selection."
+
+;; GRAPH-WINDOW-PROTO
+(GRAPH-WINDOW-PROTO  OBJECT PROTO)
+"Basic graphics window prototype."
+(GRAPH-WINDOW-PROTO  OBJECT :ISNEW)
+" Method args: (&key (title \"Graph Window\") location size
+                      (go-away t) menu (black-on-white t)
+                      has-h-scroll has-v-scroll menu-title)
+Initializes and send :allocate message to basic plot window."
+(GRAPH-WINDOW-PROTO  OBJECT :ALLOCATE)
+"Method args: ()
+Allocates new graph window based on content of slots."
+
+(GRAPH-WINDOW-PROTO  OBJECT :IDLE-ON)
+"
+Method args: (&optional on)
+Sets or returns idling state. On means :do-idle method is sent each pass through
+the event loop."
+
+(GRAPH-WINDOW-PROTO  OBJECT :MENU)
+"Method args: (&optional menu)
+Sets or retrieves window's menu."
+
+(GRAPH-WINDOW-PROTO  OBJECT :UPDATE)
+"Method args: (resized)
+Sends self the :RESIZED method if RESIZED is true, redraws the frame and
+controls, and sends self the :REDRAW message."
+(GRAPH-WINDOW-PROTO  OBJECT :ACTIVATE)
+"Method args: (active)
+Installs menu if ACTIVE is true; removes it otherwise. (Macintosh only.)"
+(GRAPH-WINDOW-PROTO  OBJECT :REMOVE)
+"Method args: ()
+Closes and deallocates the graph window."
+(GRAPH-WINDOW-PROTO  OBJECT :DISPOSE)
+"Method args: ()
+Closes and deallocates the graph window."
+(GRAPH-WINDOW-PROTO  OBJECT :CLOSE)
+"Method args: ()
+Closes and deallocates the graph window."
+(GRAPH-WINDOW-PROTO  OBJECT :WHILE-BUTTON-DOWN)
+"Method args: (fcn &optional (motion-only t))
+Calls fcn repeatedly while mouse button is down. FCN should take two arguments,
+the current x and y coordinates of the mouse. Returns NIL. Should be called
+when button is already down."
+(GRAPH-WINDOW-PROTO  OBJECT :TITLE)
+"Method args: (&optional string)
+Sets or retrieves window title."
+(GRAPH-WINDOW-PROTO  OBJECT :DO-IDLE)
+"Method args: ()
+Message received from system in idle state when idling is on."
+(GRAPH-WINDOW-PROTO  OBJECT :REDRAW)
+"Method args: ()
+Message received from system when window needs redrawing."
+(GRAPH-WINDOW-PROTO  OBJECT :RESIZE)
+"Method args: ()
+Message received from system when window is resized."
+
+(GRAPH-WINDOW-PROTO  OBJECT :CANVAS-WIDTH)
+"Method args: ()
+Returns current canvas width."
+(GRAPH-WINDOW-PROTO  OBJECT :CANVAS-HEIGHT)
+"Method args: ()
+Returns current canvas height."
+(GRAPH-WINDOW-PROTO  OBJECT :LINE-TYPE)
+"Method args: (&optional type)
+Sets or returns current line type. Choices are SOLID and DASHED."
+(GRAPH-WINDOW-PROTO  OBJECT :DRAW-MODE)
+"Method args: (&optional mode)
+Sets or returns current drawing mode. Choices are NORMAL and XOR."
+(GRAPH-WINDOW-PROTO  OBJECT :DRAW-COLOR)
+"Method args: (&optional color)
+Sets or retrieves current drawing color. Choices are in the list *COLORS*."
+(GRAPH-WINDOW-PROTO  OBJECT :BACK-COLOR)
+"Method args: (&optional color)
+Sets or retrieves current background color. Choices are in the list *COLORS*."
+(GRAPH-WINDOW-PROTO  OBJECT :USE-COLOR)
+"Method args: (&optional use)
+Sets or retrieves current color use state. Has no effect on B/W systems."
+(GRAPH-WINDOW-PROTO  OBJECT :REVERSE-COLORS)
+"Method args: ()
+Reverses drawing and background colors and sends self the :REDRAW message."
+(GRAPH-WINDOW-PROTO  OBJECT :VIEW-RECT)
+"Method args: ()
+Returns the current view rectangle as list of the form
+(LEFT TOP WIDTH HEIGHT)"
+(GRAPH-WINDOW-PROTO  OBJECT :LINE-WIDTH)
+"Method args: (&optional width)
+Sets or retrieves current line width."
+(GRAPH-WINDOW-PROTO  OBJECT :CLIP-RECT)
+"Method args: (&optional left top width height)
+Sets or retrieves current clip rectangle. If NIL is supplied clipping is turned off.
+A result of NIL means clipping is disabled."
+(GRAPH-WINDOW-PROTO  OBJECT :CURSOR)
+"Method args: (&optional cursor)
+Sets or retrieves the current window cursor. Choices are in the list *cursors*."
+
+(GRAPH-WINDOW-PROTO  OBJECT :HAS-H-SCROLL)
+"Method args: (&optional x)
+Determines or sets whether window has a horizontal scrollbar. If X is 
+supplied and is NIL the scroll bar is removed. If X is a number a scroll
+bar is added and the canvas width is set to the number (between 0 and 3200).
+If X is T a scroll bar is added and the canvas width is set to the maximum
+of the screen's width and height."
+(GRAPH-WINDOW-PROTO  OBJECT :HAS-V-SCROLL)
+"Method args: (&optional x)
+Determines or sets whether window has a vertical scrollbar. If X is 
+supplied and is NIL the scroll bar is removed. If X is a number a scroll
+bar is added and the canvas height is set to the number (between 0 and 3200).
+If X is T a scroll bar is added and the canvas height is set to the maximum
+of the screen's width and height."
+(GRAPH-WINDOW-PROTO  OBJECT :SCROLL)
+"Method args: (x y)
+Sets or returns current position of left top corner of view rectangle.
+X or Y are ignored if no horizontal or vertical scroll bar is present."
+(GRAPH-WINDOW-PROTO  OBJECT :H-SCROLL-INCS)
+"Method args: (inc page-inc)
+Sets or retrieves the increments scrolled by the buttons and page areas
+of the horizontal scroll bar."
+(GRAPH-WINDOW-PROTO  OBJECT :V-SCROLL-INCS)
+"Method args: (inc page-inc)
+Sets or retrieves the increments scrolled by the buttons and page areas
+of the vertical scroll bar."
+
+(GRAPH-WINDOW-PROTO  OBJECT :DRAW-LINE)
+"Method args: (x1 y1 x2 y2)
+Draws line from (x1 y1) to (x2 y2)."
+(GRAPH-WINDOW-PROTO  OBJECT :ERASE-RECT)
+"Method args: (left top width height)
+Frames the rectangle (LEFT TOP WIDTH HEIGHT)."
+(GRAPH-WINDOW-PROTO  OBJECT :FRAME-RECT)
+"Method args: (left top width height)
+Fills the rectangle (LEFT TOP WIDTH HEIGHT) with the background color."
+(GRAPH-WINDOW-PROTO  OBJECT :PAINT-RECT)
+"Method args: (left top width height)
+Fills the rectangle (LEFT TOP WIDTH HEIGHT) with the drawing color."
+(GRAPH-WINDOW-PROTO  OBJECT :ERASE-OVAL)
+"Method args: (left top width height)
+Fills the oval in (LEFT TOP WIDTH HEIGHT) with the background color."
+(GRAPH-WINDOW-PROTO  OBJECT :FRAME-OVAL)
+"Method args: (left top width height)
+Frames the oval in (LEFT TOP WIDTH HEIGHT)."
+(GRAPH-WINDOW-PROTO  OBJECT :PAINT-OVAL)
+"Method args: (left top width height)
+Fills the oval in (LEFT TOP WIDTH HEIGHT) with the drawing color."
+(GRAPH-WINDOW-PROTO  OBJECT :FRAME-POLY)
+"Method args: (poly &optional (from-origin t))
+Outlines polygon. POLY is a list of lists of two numbers. If FROM-ORIGIN is 
+true coordinates are relative to the origin; otherwise they are relative to
+the previous point."
+(GRAPH-WINDOW-PROTO  OBJECT :PAINT-POLY)
+"Method args: (poly &optional (from-origin t))
+Paints content of polygon in current draw color. POLY is a list of lists of two
+numbers. If FROM-ORIGIN is true coordinates are relative to the origin; 
+otherwise they are relative to the previous point."
+(GRAPH-WINDOW-PROTO  OBJECT :ERASE-POLY)
+"Method args: (poly &optional (from-origin t))
+Erases content of polygon. POLY is a list of lists of two numbers. If
+FROM-ORIGIN is true coordinates are relative to the origin; otherwise
+they are relative to the previous point."
+(GRAPH-WINDOW-PROTO  OBJECT :ERASE-ARC)
+"Method args: (left top width height start delta)
+Fills the arc in (LEFT TOP WIDTH HEIGHT) from START by DELTA with the
+background color. Angles are in degrees."
+(GRAPH-WINDOW-PROTO  OBJECT :FRAME-ARC)
+"Method args: (left top width height start delta)
+Frames the arc in (LEFT TOP WIDTH HEIGHT) from START by DELTA. Angles are in
+degrees."
+(GRAPH-WINDOW-PROTO  OBJECT :PAINT-ARC)
+"Method args: (left top width height start delta)
+Fills the oval in (LEFT TOP WIDTH HEIGHT) from START by DELTA with the
+drawing color. Angles are in degrees."
+
+(GRAPH-WINDOW-PROTO  OBJECT :TEXT-ASCENT)
+"Method args: ()
+Returns ascent in pixels for the window's text font."
+(GRAPH-WINDOW-PROTO  OBJECT :TEXT-DESCENT)
+"Method args: ()
+Returns descent in pixels for the window's text font."
+(GRAPH-WINDOW-PROTO  OBJECT :TEXT-WIDTH)
+"Method args: (string)
+Returns widh in pixels of STRING in the window's font."
+(GRAPH-WINDOW-PROTO  OBJECT :DRAW-STRING)
+"Method args: (string x y)
+Draws STRING horizontally starting at (x y)."
+(GRAPH-WINDOW-PROTO  OBJECT :DRAW-STRING-UP) 
+"Method args: (string x y)
+Draws STRING vertically starting at (x y)."
+(GRAPH-WINDOW-PROTO  OBJECT :DRAW-TEXT)
+"Method args: (string x y h v)
+Draws STRING horizontally positioned relative to (x y). H controls horizontal
+justification. 0 = left justified, 1 = centered, 2 = right justified. V controls
+vertical positioning. 0 = above (x y), 1 = below (x y)."
+(GRAPH-WINDOW-PROTO  OBJECT :DRAW-TEXT-UP)
+"Method args: (string x y h v)
+Same as :DRAW-TEXT but rotated by 90 degrees."
+(GRAPH-WINDOW-PROTO  OBJECT :DRAW-SYMBOL)
+"Method args: (symbol hilited x y)
+Draws SYMBOL at (x y). Choices are in list *PLOT-SYMBOLS*"
+(GRAPH-WINDOW-PROTO  OBJECT :REPLACE-SYMBOL)
+"Method args: (oldsym oldh newsym newh x y)
+Replaces OLDSYM at (x y) by NEWSYM. Hilighting states are set by OLDH and NEWH.
+Available symbols are in the list *PLOT-SYMBOLS*"
+(GRAPH-WINDOW-PROTO  OBJECT :DRAW-BITMAP)
+"Method args: (image left top)
+Draws IMAGE, a matrix of 0's and 1's, with top left corner at (LEFT TOP)"
+(GRAPH-WINDOW-PROTO  OBJECT :DRAW-POINT)
+"Method args: (x y)
+Draws a single pixel at (X Y)"
+
+(GRAPH-WINDOW-PROTO  OBJECT :START-BUFFERING)
+"Method args: ()
+Starts sending drawing result so buffer or increases buffering level if already
+buffering."
+(GRAPH-WINDOW-PROTO  OBJECT :BUFFER-TO-SCREEN)
+"Method args: (&optional left top width height)
+Reduces buffering level. If level reaches zero copies content of rectangle
+(LEFT TOP WIDTH HEIGHT to window. Default rectangle is the window's view rectangle."
+
+(GRAPH-WINDOW-PROTO  OBJECT :COPY-TO-CLIP)
+"Method args: ()
+Sends the plot the :REDRAW message, surrounded by open and close picture commands.
+Then puts the picture on the clip board."
+(GRAPH-WINDOW-PROTO  OBJECT :DRAG-GREY-RECT)
+"Method args: (x y width height)
+Drags grey rectangle starting at (LIST (- X WIDTH) (- Y HEIGHT) WIDTH HEIGHT)
+while mouse button is down. Returns the final rectangle. Should be called when
+the mouse is down."
+  
+;; GRAPH-PROTO
+(GRAPH-PROTO  OBJECT PROTO)
+"Basic graphics window prototype."
+(GRAPH-PROTO  OBJECT :ISNEW)
+" Method args: (vars &key (title \"Graph\") location size
+                          (go-away t) menu (black-on-white t)
+                          has-h-scroll has-v-scroll menu-title
+                          variable-labels scale)
+Initializes and send :allocate message to basic plot window."
+(GRAPH-PROTO  OBJECT :ALLOCATE)
+"Method args: ()
+Allocates a new graph."
+
+(GRAPH-PROTO  OBJECT :RESIZE)
+"
+Method args: ()
+Adjusts internal layout after resizing."
+(GRAPH-PROTO  OBJECT :REDRAW)
+"Method args: ()
+Redraws entire plot."
+(GRAPH-PROTO  OBJECT :REDRAW-CONTENT)
+"Method args: ()
+Redraws plot's content."
+(GRAPH-PROTO  OBJECT :ADJUST-SCREEN)
+"Method args: ()
+Checks all points and adjusts their screen states to match internal state."
+(GRAPH-PROTO  OBJECT :ADJUST-POINTS-IN-RECT)
+"Method args: (left top width height state)
+Adjusts points in rectangle to have specified state. STATE should be HILITED or SELECTED.
+If it is HILITED, highlighted points outside the rectangle are unhighlighted."
+(GRAPH-PROTO  OBJECT :ADJUST-SCREEN-POINT)
+"Method args: (i)
+Adjusts the screen highlight state of point I to match internal state. Internal state
+should not be INVISIBLE."
+
+(GRAPH-PROTO  OBJECT :CONTENT-RECT)
+"Method args: (&optional left top width height)
+Sets or retrieves current content rectangle."
+(GRAPH-PROTO  OBJECT :CONTENT-ORIGIN)
+"Method args: (&optional x y)
+Sets or retrieves the current content origin."
+(GRAPH-PROTO  OBJECT :CONTENT-VARIABLES)
+"Method args: (&optional xvar yvar)
+Sets or retrieves the indices of the current content variables."
+(GRAPH-PROTO  OBJECT :CLICK-RANGE)
+"Method args: (&optional width height)
+Sets or retrieves the size of the current mouse click range."
+(GRAPH-PROTO  OBJECT :MOUSE-MODE)
+"Method args (&optional mode)
+Sets or retrieves current mouse mode."
+(GRAPH-PROTO  OBJECT :SHOWING-LABELS)
+"Method args: (&optional showing)
+Sets or retrieves current labeling state (true or NIL)."
+(GRAPH-PROTO  OBJECT :MARGIN)
+"Method args: (&optional left top right bottom &key (draw t))
+Sets or retrieves current list of margin sizes."
+(GRAPH-PROTO  OBJECT :FIXED-ASPECT)
+"Method args: (&optional fixed)
+Sets or retrieves current size adjustment option (true or NIL)."
+
+(GRAPH-PROTO  OBJECT :X-AXIS)
+"Method args: (&optional showing labeled ticks)
+Sets or retrieves current acis label state. SHOWING and LABELED should be
+true or NIL; TICKS should be a number. All three should be supplied for setting
+a new state. A list of the three properties is returned."
+(GRAPH-PROTO  OBJECT :Y-AXIS)
+"Method args: (&optional showing labeled ticks)
+Sets or retrieves current acis label state. SHOWING and LABELED should be
+true or NIL; TICKS should be a number. All three should be supplied for setting
+a new state. A list of the three properties is returned."
+(GRAPH-PROTO  OBJECT :BRUSH)
+"Method args: (x y width height)
+Sets or retrieves current brush. Brush is specified in terms of the lower lefthand
+corner and its width and height."
+(GRAPH-PROTO  OBJECT :ERASE-BRUSH)
+"Method args: ()
+Removes brush from the screen."
+(GRAPH-PROTO  OBJECT :DRAW-BRUSH)
+"Method args: ()
+Draws brush at its current position."
+(GRAPH-PROTO  OBJECT :MOVE-BRUSH)
+"Method args: (x y)
+Moves the brush's lower left hand corner to (X, Y)."
+(GRAPH-PROTO  OBJECT :RESIZE-BRUSH)
+"Method args: ()
+Opens the brush resizing dialog and resets the brush if the OK button is clicked."
+
+(GRAPH-PROTO  OBJECT :DO-CLICK)
+"Method args: (x y extend option)
+Sends appropriate action message for mouse mode to plot."
+(GRAPH-PROTO  OBJECT :DO-MOTION)
+"Method args: (x y)
+Sends appropriate action message for mouse mode to plot."
+(GRAPH-PROTO  OBJECT :DO-KEY)
+"Method args: (char shift option)
+Message received when user hits a key."
+(GRAPH-PROTO  OBJECT :UNSELECT-ALL-POINTS)
+"Method args: ()
+Unselects all points."
+(GRAPH-PROTO  OBJECT :ERASE-SELECTION)
+"Method args: ()
+Sets selected points states to invisible and sends :ADJUST-SCREEN message."
+(GRAPH-PROTO  OBJECT :MASK-SELECTION)
+"Method args: ()
+Masks selected points and sends :ADJUST-SCREEN message "
+(GRAPH-PROTO  OBJECT :UNMASK-ALL-POINTS)
+"Method args: ()
+Unmasks all points and sends :ADJUST-SCREEN message "
+(GRAPH-PROTO  OBJECT :SHOW-ALL-POINTS)
+"Method args: ()
+Sets all point states to normal and sends :ADJUST-SCREEN message "
+(GRAPH-PROTO  OBJECT :ALL-POINTS-SHOWING-P)
+"Method ars: ()"
+(GRAPH-PROTO  OBJECT :ALL-POINTS-UNMASKED-P)
+"Method ars: ()"
+(GRAPH-PROTO  OBJECT :ANY-POINTS-SELECTED-P)
+"Method ars: ()"
+
+(GRAPH-PROTO  OBJECT :LINKED)
+"Method ars: (&optional on)
+Sets or retrieves plot's linking state."
+
+(GRAPH-PROTO  OBJECT :NUM-VARIABLES)
+"Method args: ()
+Returns the number of variables in the plot."
+(GRAPH-PROTO  OBJECT :VARIABLE-LABEL)
+"Method args: (var &optional label)
+Sets or returns label for variable with index VAR. Vectorized."
+(GRAPH-PROTO  OBJECT :RANGE)
+"Method args: (index &optional low high)
+Sets or retrieves variable's original coordinate range. Vectorized."
+(GRAPH-PROTO  OBJECT :SCALED-RANGE)
+"Method args: (index &optional low high)
+Sets or retrieves variable's transformed coordinate range. Vectorized."
+(GRAPH-PROTO  OBJECT :SCREEN-RANGE)
+"Method args: (index &optional low high)
+Sets or retrieves variable's screen coordinate range. Vectorized."
+(GRAPH-PROTO  OBJECT :TRANSFORMATION)
+"Method args: (&optional a &key (draw t))
+Sets or retrieves transformation. A should be a matrix or NIL. If draw is true
+the :REDRAW-CONTENT message is sent."
+(GRAPH-PROTO  OBJECT :APPLY-TRANSFORMATION)
+"Method args: (a &key draw basis)
+Applies matrix A to current transformation. If draw is true the :REDRAW-CONTENT
+message is sent."
+
+(GRAPH-PROTO  OBJECT :ADD-POINTS)
+"Method args: (points &key point-labels (draw t))
+Adds points to plot. POINTS is a list of sequences, POINT-LABELS a list of
+strings. If DRAW is true the new points are added to the screen."
+(GRAPH-PROTO  OBJECT :CLEAR-POINTS)
+"Method args: (&key (draw t))
+Removes all points from the plot. If DRAW is true the :REDRAW-CONTENT
+message is sent."
+(GRAPH-PROTO  OBJECT :NUM-POINTS)
+"Method args: ()
+Returns the number of points in the plot."
+(GRAPH-PROTO  OBJECT :POINT-COORDINATE)
+"Method args: (var point &optional value)
+Sets or retrieves coordinate for variable VAR and point POINT in the original
+coordinate system. Vectorized."
+(GRAPH-PROTO  OBJECT :POINT-CANVAS-COORDINATE)
+"Method args: (var point)
+Returns rounded coordinate for variable VAR and point POINT in the canvas
+coordinate system. Vectorized."
+(GRAPH-PROTO  OBJECT :POINT-TRANSFORMED-COORDINATE)
+"Method args: (var point)
+Returns coordinate for variable VAR and point POINT in the transformed
+coordinate system. Vectorized."
+(GRAPH-PROTO  OBJECT :POINT-MASKED)
+"Method args: (point &optional masked)
+Sets or retrieves masked state (true or NIL) of point POINT. Vectorized."
+(GRAPH-PROTO  OBJECT :POINT-COLOR)
+"Method args: (point &optional color)
+Sets or retrieves color of point POINT. Vectorized."
+(GRAPH-PROTO  OBJECT :POINT-STATE)
+"Method args: (point &optional state)
+Sets or retrieves state (invisible, normal, hilited or selected) of point
+POINT. Vectorized."
+(GRAPH-PROTO  OBJECT :POINT-LABEL)
+"Method args: (point &optional label)
+Sets or retrieves label of point POINT. Vectorized."
+(GRAPH-PROTO  OBJECT :POINT-SYMBOL)
+"Method args: (point &optional symbol)
+Sets or retrieves symbol of point POINT. Vectorized."
+(GRAPH-PROTO  OBJECT :POINT-SELECTED)
+"Method args: (point &optional selected)
+Sets or returns selection status (true or NIL) of POINT. Sends 
+:ADJUST-SCREEN message if states are set. Vectorized."
+(GRAPH-PROTO  OBJECT :POINT-HILITED)
+"Method args: (point &optional hilited)
+Sets or returns highlighting status (true or NIL) of POINT. Sends 
+:ADJUST-SCREEN message if states are set. Vectorized."
+(GRAPH-PROTO  OBJECT :POINT-SHOWING)
+"Method args: (point &optional selected)
+Sets or returns visibility status (true or NIL) of POINT. Sends 
+:ADJUST-SCREEN message if states are set. Vectorized."
+(GRAPH-PROTO  OBJECT :UNSHOW-ALL-POINTS)
+"Method args: ()
+Makes all points invisible."
+(GRAPH-PROTO  OBJECT :SELECTION)
+"Method args: (&optional list)
+Sets or Return indices of current selection."
+(GRAPH-PROTO  OBJECT :POINTS-HILITED)
+"Method args: (&optional list)
+Sets or Return indices of currently highlighted points."
+(GRAPH-PROTO  OBJECT :POINTS-SHOWING)
+"Method args: (&optional list)
+Sets or Return indices of currently visible points."
+(GRAPH-PROTO  OBJECT :POINTS-SELECTED)
+"Method args: (&optional list)
+Sets or Return indices of current selection."
+
+(GRAPH-PROTO  OBJECT :ADD-LINES)
+"Method args: (lines &key type (draw t))
+Adds lines to plot. LINES is a list of sequences, the coordinates of the line starts.
+TYPE is normal or dashed. If DRAW is true the new lines are added to the screen."
+(GRAPH-PROTO  OBJECT :CLEAR-LINES)
+"Method args: (&key (draw t))
+Removes all lines from the plot. If DRAW is true the :REDRAW-CONTENT
+message is sent."
+(GRAPH-PROTO  OBJECT :NUM-LINES)
+"Method args: ()
+Returns the number of line starts in the plot."
+(GRAPH-PROTO  OBJECT :LINESTART-COORDINATE)
+"Method args: (var line &optional value)
+Sets or retrieves coordinate for variable VAR and line start LINE in the original
+coordinate system. Vectorized."
+(GRAPH-PROTO  OBJECT :LINESTART-CANVAS-COORDINATE)
+"Method args: (var line)
+Returns rounded coordinate for variable VAR and line start LINE in the canvas
+coordinate system. Vectorized."
+(GRAPH-PROTO  OBJECT :LINESTART-TRANSFORMED-COORDINATE)
+"Method args: (var line)
+Returns coordinate for variable VAR and line start LINE in the transformed
+coordinate system. Vectorized."
+(GRAPH-PROTO  OBJECT :LINESTART-MASKED)
+"Method args: (line &optional masked)
+Sets or retrieves masked state (true or NIL) of line start LINE. Vectorized."
+(GRAPH-PROTO  OBJECT :LINESTART-COLOR)
+"Method args: (line &optional color)
+Sets or retrieves color of line start LINE. Vectorized."
+(GRAPH-PROTO  OBJECT :LINESTART-NEXT)
+"Method args: (line &optional next)
+Sets or returns index of line start to which line is to be drawn. Negative values
+mean no line. Vectorized."
+(GRAPH-PROTO  OBJECT :LINESTART-TYPE)
+"Method args: (line &optional type)
+Sets or retrieves line type. Vectorized."
+(GRAPH-PROTO  OBJECT :LINESTART-WIDTH)
+"Method args: (line &optional width)
+Sets or retrieves the line width for the line start. Vectorized."
+
+(GRAPH-PROTO  OBJECT :DRAW-DATA-POINTS)
+"Method args: (var1 var2 m n)
+Draws points with indices between m (inclusive) and n (exclusive) using VAR1 and VAR2 
+coordinates."
+(GRAPH-PROTO  OBJECT :DRAW-DATA-LINES)
+"Method args: (var1 var2 m n)
+Draws lines with indices between m (inclusive) and n (exclusive) using VAR1 and VAR2 
+coordinates."
+
+(GRAPH-PROTO  OBJECT :ROTATE-2)
+"Method args: (var1 var2 angle &key (draw t))
+Rotates int the plane of variables with indices VAR1 and VAR2 by ANGLE, in
+radians. sends the :REDRAW-CONTENT message if DRWA is true."
+
+(GRAPH-PROTO  OBJECT :ADJUST-TO-DATA) 
+"Method args: (&key (draw t))
+Sets ranges to the actual range of variables in the original coordinate
+system. If DRAW is true sends :RESIZE and :REDRAW messages."
+(GRAPH-PROTO  OBJECT :VISIBLE-RANGE)
+"Method args: (var)
+Returns list of min and max of variable VAR over visible, unmasked points,
+lines and strings. Vectorized."
+(GRAPH-PROTO  OBJECT :SCALE-TO-RANGE)
+"Method args: (var low high &key (draw t))
+Scales and shifts data to map visible range into specified range. Sends
+:RESIZE and :REDRAW messages if DRAW is true."
+(GRAPH-PROTO  OBJECT :SCALE)
+"Method args: (var &optional scale &key (draw t))
+Sets or retrieves current scale for variable VAR. Sends :RESIZE and :REDRAW
+messages if DRAW is true."
+(GRAPH-PROTO  OBJECT :SHIFT)
+"Method args: (var &optional shift &key (draw t))
+Sets or retrieves current shift for variable VAR. Sends :RESIZE and :REDRAW
+messages if DRAW is true."
+
+(GRAPH-PROTO  OBJECT :CLEAR-MASKS)
+"Method args: ()
+Unmasks all points, lines and strings."
+(GRAPH-PROTO  OBJECT :SLICE-VARIABLE)
+"Method args: (var low high)
+Masks points lines and strings with variable VAR original coordinates outside
+of (LOW, HIGH)."
+(GRAPH-PROTO  OBJECT :REAL-TO-CANVAS) 
+"Method args: (x y)
+Returns list of canvas coordinates of point (X, Y), in the original coordinate system,
+based on current content variables."
+(GRAPH-PROTO  OBJECT :SCALED-TO-CANVAS) 
+"Method args: (x y)
+Returns list of canvas coordinates of point (X, Y), in the scaled coordinate system,
+based on current content variables."
+(GRAPH-PROTO  OBJECT :CANVAS-TO-REAL) 
+"Method args: (x y)
+Returns list of real coordinates, in the original coordinate system, of
+canvas point (X, Y), based on current content variables."
+(GRAPH-PROTO  OBJECT :CANVAS-TO-SCALED) 
+"Method args: (x y)
+Returns list of scaled coordinates, in the scaled coordinate system, of
+canvas point (X, Y), based on current content variables."
+(GRAPH-PROTO  OBJECT :POINTS-IN-RECT)
+"
+Method args: (left top width height)
+Returns list of indices of points in screen rectangle."
+
+;; SPIN-PROTO
+(SPIN-PROTO  OBJECT PROTO) "Rotating plot"
+(SPIN-PROTO  OBJECT :ALLOCATE) "documentation not yet available"
+
+(SPIN-PROTO  OBJECT :SHOWING-AXES)
+"Method args: (&optional showing)
+Sets or retrieves axis showing status (true or NIL)."
+(SPIN-PROTO  OBJECT :DEPTH-CUING)
+"Method args: (&optional cuing)
+Sets or retrieves cuing status (true or NIL)."
+(SPIN-PROTO  OBJECT :DO-IDLE)
+"Method args: ()
+Sends :ROTATE message."
+(SPIN-PROTO  OBJECT :ANGLE)
+"Method args: (&optional angle)
+Sets or retrieves current rotation angle, in radians."
+(SPIN-PROTO  OBJECT :ROTATE)
+"Method args: ()
+Rotates once in the current plane by the current angle."
+
+;; SCATMAT-PROTO
+(SCATMAT-PROTO  OBJECT PROTO) "Scatterplot matrix"
+  
+;; NAME-LIST-PROTO
+(NAME-LIST-PROTO  OBJECT PROTO) "Name list"
+(NAME-LIST-PROTO  OBJECT :ADD-POINTS)
+"Method args: (points &key point-labels (draw t))
+Adds points to plot. POINTS is a number or a list of sequences, POINT-LABELS a list of
+strings. If DRAW is true the new points are added to the screen."
+
+;; HISTOGRAM-PROTO
+(HISTOGRAM-PROTO  OBJECT PROTO) "Histogram"
+(HISTOGRAM-PROTO  OBJECT :ADD-POINTS)
+"Method args: (points (draw t))
+Adds points to plot. POINTS is a sequence or a list of sequences. If DRAW is
+true the new points are added to the screen."
+(HISTOGRAM-PROTO  OBJECT :NUM-BINS)
+"Method args: (&optional bins &key (draw t))
+Sets or retrieves number of bins in the histogram. Sends :REDRAW-CONTENT message
+if DRAW is true."
+(HISTOGRAM-PROTO  OBJECT :BIN-COUNTS)
+"Args: ()
+Returns list of the bin counts for the histogram."
+
+;; SCATTERPLOT-PROTO
+(SCATTERPLOT-PROTO  OBJECT Proto) "Scatterplot"
+(SCATTERPLOT-PROTO  OBJECT :ADD-POINTS)
+"Method args: (points &key point-labels (draw t))
+or:          (x y  &key point-labels (draw t))
+Adds points to plot. POINTS is a list of sequences, 
+POINT-LABELS a list of strings. If DRAW is true the new points
+are added to the screen. For a 2D plot POINTS can be replaced
+by two sequences X and Y."
+(SCATTERPLOT-PROTO  OBJECT :ADD-LINES)
+"Method args: (lines &key type (draw t))
+or:          (x y  &key point-labels (draw t))
+Adds lines to plot. LINES is a list of sequences, the 
+coordinates of the line  starts. TYPE is normal or dashed. If
+DRAW is true the new lines are added to the screen. For a 2D
+plot LINES can be replaced by two sequences X and Y."
+
+
+;; Regular Functions
+
+;; dialog
+SYSBEEP 
+"Args (&optional (n 10))
+Beep for 10 units."
+NUM-TO-STRING 
+"Args (num)
+Return string representation of NUM."
+ABOUT-XLISP-STAT 
+"Args: ()
+Show \About XLISP-STAT dialog on Macintosh, return NIL"
+
+;; edit.c
+OPEN-FILE-DIALOG
+"Args ()
+Present standard Macintosh Open File dialog; return file name string or NIL."
+FRONT-WINDOW 
+"Args: ()
+Macintosh. Return front window object, if it is an XLISP-STAT window, NIL otherwise."
+HIDE-FRONT-WINDOW
+"Args: ()
+Hide the front window."
+SYSTEM-EDIT
+"
+Args (item)
+Check if edit selection is handled by a desk accessory. If so return T,
+otherwise return NIL."
+
+;; common
+APROPOS
+"Args: (string)
+Prints symbols whose print-names contain STRING as substring.
+If STRING is a symbol its print name is used."
+APROPOS-LIST
+"Args: (string)
+Returns, as a list, all symbols whose print-names contain STRING as substring.
+If STRING is a symbol its print name is used."
+IDENTITY
+"Args: (x)
+Simply returns X."
+MAKE-LIST
+"Args: (size &key (initial-element nil))
+Creates and returns a list containing SIZE elements, each of which is
+initialized to INITIAL-ELEMENT."
+ADJOIN
+"Args: (item list &key (test #'eql) test-not (key #'identity))
+Adds ITEM to LIST unless ITEM is already a member of LIST."
+FILE-POSITION
+"Args (stream &optional position)
+Returns current position of file pointer in file stream STREAM. Sets
+pointer to POSITION if supplied."
+FORMAT
+"Args: (destination control &rest args)
+Very basic implementation of Common Lisp format function. Only A, S, D, F, E,
+G, %, and ~ directives are supported. D, % and ~ can take one argument, R, E
+and G can take two."
+FORCE-OUTPUT
+"Args: (&optional (stream *standard-output*))
+Attempts to force any buffered output to be sent."
+COPY-LIST
+"Args: (list)
+Returns a new copy of LIST."
+COPY-SEQ
+"Args: (sequence)
+Returns a copy of SEQUENCE."
+REDUCE
+"Args: (function sequence &key initial-value)
+Combines all the elements of SEQUENCE using a binary operation FUNCTION. If
+INITIAL-VALUE is supplied it is logically placed before SEQUENCE."
+MAP
+"Args: (result-type function sequence &rest more-sequences)
+FUNCTION must take as many arguments as there are sequences provided.
+RESULT-TYPE must be the a sequence type specifier or NIL.  The result
+is a sequence of the specified type such that the i-th element of the
+result is the result of applying FUNCTION to the i-th elements of the
+SEQUENCEs. If the result type is NIL, results are ignored and NIL is
+returned."
+ELT
+"Args: (a i)
+Returns element I of sequence A. ELT can be used in setf."
+COERCE
+"Args: (x type)
+Coerces X to an object of the type TYPE."
+COMPLEXP
+"Args: (x)
+Returns T if X is a complex number; NIL otherwise."
+COMPLEX
+"Args: (realpart &optional (imagpart 0))
+Returns a complex number with the given real and imaginary parts."
+CONJUGATE
+"Args: (number)
+Returns the complex conjugate of NUMBER."
+REALPART
+"Args: (number)
+Extracts the real part of NUMBER."
+IMAGPART
+"Args: (number)
+Extracts the imaginary part of NUMBER."
+DEFCONSTANT
+"Syntax: (defconstant name initial-value [doc])
+Declares that the variable NAME is a constant whose value is the value of
+INITIAL-VALUE.  If DOC is supplied, it is saved as a VARIABLE doc."
+DEFPARAMETER
+"Syntax: (defparameter name initial-value [doc])
+Declares the variable NAME as a special variable and initializes the value.
+If DOC is supplied, it is saved as a VARIABLE doc."
+DEFVAR
+"Syntax: (defvar name [initial-value [doc]])
+Declares the variable NAME as a special variable and, optionally, initializes
+it. If DOC is supplied, it is saved as a VARIABLE doc."
+MAKUNBOUND
+"Args: (symbol)
+Sets the function slot of SYMBOL to *UNBOUND*. Returns SYMBOL."
+FMAKUNBOUND
+"Args: (symbol)
+Sets the value slot of SYMBOL to *UNBOUND*. Returns SYMBOL."
+TIME 
+"Syntax: (time form)
+Form is evaluated and its result returned. In addition the time required 
+for the evaluation is printed."
+GETENV
+"Args: ()
+Returns current lexical environment."
+GET-INTERNAL-REAL-TIME
+"Args: ()
+Returns the real time in the internal time format."
+GET-INTERNAL-RUN-TIME
+"Args: ()
+Returns the run time in the internal time format."
+
+CONCATENATE
+"Args: (type &rest sequences)
+Returns new sequence containing all elements of SEQUENCES in order."
+SOME
+"Args (pred &rest sequences)
+Returns true if some elements of SEQUENCES satisfy PRED."
+EVERY
+"Args (pred &rest sequences)
+Returns true if every element of SEQUENCES satisfy PRED."
+NOTANY
+"Args (pred &rest sequences)
+Returns true if no element of SEQUENCES satisfies PRED."
+NOTEVERY
+"Args (pred &rest sequences)
+Returns true if some element of SEQUENCES does not satisfy PRED."
+UNION
+"Args: (list1 list2 &key :test :test-not)
+Returns list of all elements in either LIST1 or LIST2 or both."
+INTERSECTION
+"Args: (list1 list2 &key :test :test-not)
+Returns list of all elements in both LIST1 and LIST2."
+SET-DIFFERENCE
+"Args: (list1 list2 &key :test :test-not)
+Returns list of all elements in LIST1 but not in LIST2."
+SUBSETP
+"Args: (list1 list2 &key :test :test-not)
+Returns T if all elements of LIST2 are in LIST1."
+REMOVE-DUPLICATES
+"Args: (sequence &key (from-end nil) (test #'eql) test-not (start 0)
+                     (end (length sequence)) (key #'identity))
+Returns a copy of sequence, if necessary, formed by removing duplicated
+elements from SEQUENCE."
+DELETE-DUPLICATES
+"Args: (sequence &key (from-end nil) (test #'eql) test-not (start 0)
+                     (end (length sequence)) (key #'identity))
+Returns a copy of sequence, if necessary, formed by removing duplicated
+elements from SEQUENCE."
+BUTLAST
+"Args: (list &optional (n 1))
+Returns copy of LIST with last N elements removed."
+MAKE-STRING
+"Args n &key initial-element)
+Returns string of length N. Default INITIAL-ELEMENT is a blank."
+ROW-MAJOR-AREF
+"Args: (array index)
+Returns element of ARRAY with row major index INDEX".
+
+;; xsarrays
+ARRAYP
+"Args: (x)
+Returns T if X is an array; NIL otherwise."
+ARRAY-IN-BOUNDS-P
+"Args: (array &rest subscripts)
+Returns T if SUBSCRIPTS are valid subscripts for ARRAY; NIL otherwise."
+ARRAY-DIMENSIONS
+"Args: (array)
+Returns a list whose elements are the dimensions of ARRAY"
+ARRAY-ELEMENT-TYPE
+"Args: (array)
+Returns the type of the elements of ARRAY"
+ARRAY-RANK
+"Args: (array)
+Returns the number of dimensions of ARRAY."
+ARRAY-TOTAL-SIZE
+"Args: (array)
+Returns the total number of elements of ARRAY."
+ARRAY-DIMENSION
+"Args: (array)
+Returns a list whose elements are the dimensions of ARRAY"
+ARRAY-ROW-MAJOR-INDEX
+"Args: (array &rest subscripts)
+Returns the index into the data vector of ARRAY for the element of ARRAY
+specified by SUBSCRIPTS."
+AREF
+"Args: (array &rest subscripts)
+Returns the element of ARRAY specified by SUBSCRIPTS."
+MAKE-ARRAY
+"Args: (dimensions
+       &key initial-element (initial-contents nil)
+            (displaced-to nil))
+Creates an array of the specified DIMENSIONS.  The default for INITIAL-
+ELEMENT depends on ELEMENT-TYPE."
+
+;; distributions
+BIVNORM-CDF
+"Args: (x y r)
+Returns the value of the standard bivariate normal distribution function 
+with correlation R at (X, Y). Vectorized."
+NORMAL-CDF
+"Args: (x)
+Returns the value of the standard normal distribution function at X.
+Vectorized."
+BETA-CDF
+"Args: (x alpha beta)
+Returns the value of the Beta(ALPHA, BETA) distribution function at X.
+Vectorized."
+GAMMA-CDF
+"Args: (x alpha)
+Returns the value of the Gamma(alpha, 1) distribution function at X.
+Vectorized."
+CHISQ-CDF
+"Args: (x df)
+Returns the value of the Chi-Square(DF) distribution function at X. Vectorized."
+T-CDF
+"Args: (x df)
+Returns the value of the T(DF) distribution function at X. Vectorized."
+F-CDF
+"Args: (x ndf ddf)
+Returns the value of the F(NDF, DDF) distribution function at X. Vectorized."
+CAUCHY-CDF
+"Args: (x)
+Returns the value of the standard Cauchy distribution function at X.
+Vectorized."
+LOG-GAMMA
+"Args: (x)
+Returns the log gamma function of X. Vectorized."
+NORMAL-QUANT
+"Args (p)
+Returns the P-th quantile of the standard normal distribution. Vectorized."
+CAUCHY-QUANT
+"Args (p)
+Returns the P-th quantile(s) of the standard Cauchy distribution. Vectorized."
+BETA-QUANT
+"Args: (p alpha beta)
+Returns the P-th quantile of the Beta(ALPHA, BETA) distribution. Vectorized."
+GAMMA-QUANT
+"Args: (p alpha)
+Returns the P-th quantile of the Gamma(ALPHA, 1) distribution. Vectorized."
+CHISQ-QUANT
+"Args: (p df)
+Returns the P-th quantile of the Chi-Square(DF) distribution. Vectorized."
+T-QUANT
+"Args: (p df)
+Returns the P-th quantile of the T(DF) distribution. Vectorized."
+F-QUANT
+"Args: (p ndf ddf)
+Returns the P-th quantile of the F(NDF, DDF) distribution. Vectorized."
+NORMAL-DENS
+"Args: (x)
+Returns the density at X of the standard normal distribution. Vectorized."
+CAUCHY-DENS
+"Args: (x)
+Returns the density at X of the standard Cauchy distribution. Vectorized."
+BETA-DENS
+"Args: (x alpha beta)
+Returns the density at X of the Beta(ALPHA, BETA) distribution. Vectorized."
+GAMMA-DENS
+"Args: (x alpha)
+Returns the density at X of the Gamma(ALPHA, 1) distribution. Vectorized."
+CHISQ-DENS
+"Args: (x alpha)
+Returns the density at X of the Chi-Square(DF) distribution. Vectorized."
+T-DENS
+"Args: (x alpha)
+Returns the density at X of the T(DF) distribution. Vectorized."
+F-DENS
+"Args: (x ndf ddf)
+Returns the density at X of the F(NDF, DDF) distribution. Vectorized."
+UNIFORM-RAND
+"Args: (n)
+Returns a list of N uniform random variables from the range (0, 1).
+Vectorized."
+NORMAL-RAND
+"Args: (n)
+Returns a list of N standard normal random numbers. Vectorized."
+CAUCHY-RAND
+"Args: (n)
+Returns a list of N standard Cauchy random numbers. Vectorized."
+T-RAND
+"Args: (n df)
+Returns a list of N T(DF) random variables. Vectorized."
+F-RAND
+"Args: (n ndf ddf)
+Returns a list of N F(NDF, DDF) random variables. Vectorized."
+GAMMA-RAND
+"Args: (n a)
+Returns a list of N Gamma(A, 1) random variables. Vectorized."
+CHISQ-RAND
+"Args: (n df)
+Returns a list of N Chi-Square(DF) random variables. Vectorized."
+BETA-RAND
+"Args: (n a b)
+Returns a list of N beta(A, B) random variables. Vectorized."
+
+;; ddistributions.c
+BINOMIAL-CDF
+"Args (x n p)
+Returns value of the Binomial(N, P) distribution function at X. Vectorized."
+POISSON-CDF
+"Args (x mu)
+Returns value of the Poisson(MU) distribution function at X. Vectorized."
+BINOMIAL-PMF
+"Args (k n p)
+Returns value of the Binomial(N, P) pmf function at integer K. Vectorized."
+POISSON-PMF
+"Args (k mu)
+Returns value of the Poisson(MU) pmf function at integer K. Vectorized."
+
+BINOMIAL-QUANT
+"Args: (x n p)
+Returns x-th quantile (left continuous inverse) of Binomial(N, P) cdf.
+Vectorized."
+POISSON-QUANT
+"Args: (x mu)
+Returns x-th quantile (left continuous inverse) of Poisson(MU) cdf.
+Vectorized."
+BINOMIAL-RAND
+"Args: (k n p)
+Returns list of K draws from the Binomial(N, P) distribution. Vectorized."
+POISSON-RAND
+"Args: (k mu)
+Returns list of K draws from the Poisson(MU) distribution. Vectorized."
+
+;; linalg.c
+LU-DECOMP
+"Args: (a)
+A is a square matrix of numbers (real or complex). Computes the LU
+decomposition of A and returns a list of the form (LU IV D FLAG), where
+LU is a matrix with the L part in the lower triangle, the U part in the 
+upper triangle (the diagonal entries of L are taken to be 1), IV is a vector
+describing the row permutation used, D is 1 if the number of permutations
+is odd, -1 if even, and FLAG is T if A is numerically singular, NIL otherwise.
+Used bu LU-SOLVE."
+LU-SOLVE
+"Args: (lu b)
+LU is the result of (LU-DECOMP A) for a square matrix A, B is a sequence.
+Returns the solution to the equation Ax = B. Signals an error if A is singular."
+DETERMINANT
+"Args: (m)
+Returns the determinant of the square matrix M."
+INVERSE
+"Args: (m)
+Returns the inverse of the the square matrix M; signals an error if M is ill
+conditioned or singular"
+EIGEN
+"Args: (a)
+Returns list of list of eigenvalues and list of eigenvectors of square,
+symmetric matrix A. Third element of result is NIL if algorithm converges.
+If the algorithm does not converge, the third element is an integer I.
+In this case the eigenvalues 0, ..., I are not reliable."
+SV-DECOMP
+"Args: (a)
+A is a matrix of real numbers with at least as many rows as columns.
+Computes the singular value decomposition of A and returns a list of the form
+(U W V FLAG) where U and V are matrices whose columns are the left and right
+singular vectors of A and W is the sequence of singular values of A. FLAG is T
+if the algorithm converged, NIL otherwise."
+QR-DECOMP
+"Args: (a &optional pivot)
+A is a matrix of real numbers with at least as many rows as columns. Computes
+the QR factorization of A and returns the result in a list of the form (Q R).
+If PIVOT is true the columns of X are first permuted to place insure the
+absolute values of the diagonal elements of R are nonincreasing. In this case
+the result includes a third element, a list of the indices of the columns in
+the order in which they were used."
+CHOL-DECOMP
+"Args: (a)
+Modified Cholesky decomposition. A should be a square, symmetric matrix.
+Computes lower triangular matrix L such that L L^T = A + D where D is a diagonal
+matrix. If A is strictly positive definite D will be zero. Otherwise D is as
+small as possible to make A + D numerically strictly positive definite. Returns
+a list (L (max D))."
+RCONDEST
+"Args: (a)
+Returns an estimate of the reciprocal of the L1 condition number of an upper
+triangular matrix a."
+MAKE-ROTATION
+"Args: (x y &optional alpha)
+Returns a rotation matrix for rotating from X to Y, or from X toward Y 
+by angle ALPHA, in radians. X and Y are sequences of the same length."
+SPLINE
+"Args: (x y &key xvals)
+Returns list of x and y values of natural cubic spline interpolation of (X,Y).
+X must be strictly increasing. XVALS can be an integer, the number of equally
+spaced points to use in the range of X, or it can be a sequence of points at 
+which to interpolate."
+KERNEL-SMOOTH
+"Args: (x y &key xvals width type)
+Returns list of x and y values of kernel smooth of (X,Y). XVALS can be an
+integer, the number of equally spaced points to use in the range of X, or it
+can be a sequence of points at which to interpolate. WIDTH specifies the
+window width. TYPE specifies the lernel and should be one of the symbols G, T,
+U or B for Gaussian, triangular, uniform or bisquare. The default is B."
+KERNEL-DENS
+"Args: (x &key xvals width type)
+Returns list of x and y values of kernel density estimate of X. XVALS can be an
+integer, the number of equally spaced points to use in the range of X, or it
+can be a sequence of points at which to interpolate. WIDTH specifies the
+window width. TYPE specifies the lernel and should be one of the symbols G, T,
+U or B for gaussian, triangular, uniform or bisquare. The default is B."
+FFT
+"Args: (x &optional inverse)
+Returns unnormalized Fourier transform of X, or inverse transform if INVERSE
+is true."
+
+;; matrices1
+MATMULT
+"Args: (a b)
+Returns the matrix product of matrices a and b. If a is a vector it is treated
+as a row vector; if b is a vector it is treated as a column vector."
+%*
+"Args: (a b)
+Returns the matrix product of matrices a and b. If a is a vector it is treated
+as a row vector; if b is a vector it is treated as a column vector."
+INNER-PRODUCT
+"Args: (x y)
+Returns inner product of sequences X and Y."
+CROSS-PRODUCT
+"Args: (x)
+If X is a matrix returns (matmult (transpose X) X). If X is a vector returns
+(inner-product X X)."
+DIAGONAL
+"Args: (x)
+If X is a matrix, returns the diagonal of X. If X is a sequence, returns a
+diagonal matrix of rank (length X) with diagonal elements eq to the elements
+of X."
+IDENTITY-MATRIX
+"Args: (n)
+Returns the identity matrix of rank N."
+OUTER-PRODUCT
+"Args: (x y &optional (fcn #'*))
+Returns the generalized outer product of x and y, using fcn. Tat is, the result
+is a matrix of dimension ((length x) (length y)) and the (i j) element of the
+result is computed as (apply fcn (aref x i) (aref y j))."
+ROW-LIST
+"Args: (m)
+Returns a list of the rows of M as vectors"
+COLUMN-LIST
+"Args: (m)
+Returns a list of the columns of M as vectors"
+BIND-ROWS
+"Args (&rest args)
+The ARGS can be matrices, vectors, or lists. Arguments are bound into a matrix
+along their rows.
+Example: (bind-rows #2a((1 2)(3 4)) #(5 6)) returns #2a((1 2)(3 4)(5 6))"
+BIND-COLUMNS
+"Args (&rest args)
+The ARGS can be matrices, vectors, or lists. Arguments are bound into a matrix
+along their columns.
+Example: (bind-columns #2a((1 2)(3 4)) #(5 6)) returns #2a((1 2 5)(3 4 6))"
+TRANSPOSE
+"Args: (m)
+Returns the transpose of the matrix M."
+
+;; matrices2
+MAKE-SWEEP-MATRIX
+"Args: (x y &optional weights)
+X is a matrix, Y and WEIGHTS are sequences. Returns the sweep matrix for the
+(possibly weighted) regression of Y on X."
+SWEEP-OPERATOR
+"Args: (a indices &optional tolerances)
+A is a matrix, INDICES a sequence of the column indices to be swept. Returns
+a list of the swept result and the list of the columns actually swept. (See
+MULTREG documentation.) If supplied, TOLERANCES should be a list of real
+numbers the same length as INDICES. An index will only be swept if its pivot
+element is larger than the corresponding element of TOLERANCES."
+
+;; basics
+SEQUENCEP
+"Args: (x)
+Returns T if X is a sequence, NIL otherwise."
+COPY-VECTOR
+"Args: (VECTOR)
+Returns a copy of VECTOR with elements eq to the elements of VECTOR"
+COPY-ARRAY
+"Args: (array)
+Returns a copy of ARRAY with elements eq to the elements of ARRAY."
+SPLIT-LIST
+"Args: (list n)
+Returns a list of lists each of length N of the elements of LIST.
+Example: (split-list '(1 2 3 4 5 6) 2) returns ((1 2) (3 4) (5 6))"
+WHICH
+"Args: (x)
+X is an array or a list. Returns a list of the indices where X is not NIL."
+ISEQ
+"Args: (n &optional m)
+With one argument returns a list of consecutive integers from 0 to N - 1.
+With two returns a list of consecutive integers from N to M.
+Examples: (iseq 4) returns (0 1 2 3)
+          (iseq 3 7)  returns (3 4 5 6 7)
+          (iseq 3 -3) returns (3 2 1 0 -1 -2 -3)"
+REPEAT
+"Args: (vals times)
+Repeats VALS. If TIMES is a number and VALS is a non-null, non-array atom, a list
+of length TIMES with all elements eq to VALS is returned. If VALS is a list and
+TIMES is a number then VALS is appended TIMES times. If TIMES is a list of numbers
+then VALS must be a list of equal length and the simpler version of repeat is
+mapped down the two lists.
+Examples: (repeat 2 5)                 returns (2 2 2 2 2)
+          (repeat '(1 2) 3)            returns (1 2 1 2 1 2)
+	  (repeat '(4 5 6) '(1 2 3))   returns (4 5 5 6 6 6)
+	  (repeat '((4) (5 6)) '(2 3)) returns (4 4 5 6 5 6 5 6)"
+SAMPLE
+"Args: (x n &optional (replace nil))
+Returns a list of a random sample of size N from sequence X drawn with or
+without replacement."
+SELECT
+"Args: (a &rest indices)
+A can be a list or an array. If A is a list and INDICES is a single number
+then the appropriate element of A is returned. If  is a list and INDICES is
+a list of numbers then the sublist of the corresponding elements is returned.
+If A in an array then the number of INDICES must match the ARRAY-RANK of A.
+If each index is a number then the appropriate array element is returned.
+Otherwise the INDICES must all be lists of numbers and the corresponding
+submatrix of A is returned. SELECT can be used in setf."
+PERMUTE-ARRAY
+"Args: (a p)
+Returns a copy of the array A permuted according to the permutation P."
+
+;; compound
+COMPOUND-DATA-P
+"Args: (x)
+Returns T if X is a compound data item, NIL otherwise."
+MAP-ELEMENTS
+"Args: (function data &rest more-data)
+FUNCTION must take as many arguments as there are DATA arguments supplied.
+DATA arguments must either all be sequences or all be arrays of the same
+shape. The result is of the same type and shape as the first DATA argument,
+with elements the result of applying FUNCTION elementwise to the DATA
+arguments"
+COMPOUND-DATA-SEQ
+"Args (x)
+Returns data sequence in X."
+COMPOUND-DATA-LENGTH
+"Args (x)
+Returns length of data sequence in X."
+
+;; math.c
++
+"Args: (&rest numbers)
+Returns the sum of its arguments.  With no args, returns 0. Vectorized."
+-
+"Args: (number &rest more-numbers)
+Subtracts the second and all subsequent NUMBERs from the first. With one arg,
+negates it. Vectorized."
+*
+"Args: (&rest numbers)
+Returns the product of its arguments. With no args, returns 1. Vectorized."
+/
+"Args: (number &rest more-numbers)
+Divides the first NUMBER (element-wise) by each of the subsequent NUMBERS.
+With one arg, returns its reciprocal. Vectorized."
+REM
+"Args: (x y)
+Returns the remainder of dividing x by y. Vectorized."
+MOD
+"Args: (x y)
+Returns x mod y. Vectorized."
+PMIN
+"Args: (&rest items)
+Parallel minimum of ITEMS. Vectorized."
+PMAX
+"Args: (&rest items)
+Parallel maximum of ITEMS. Vectorized."
+^
+"Args: (base-number power-number)
+Returns BASE-NUMBER raised to the power POWER-NUMBER. Vectorized."
+**
+"Args: (base-number power-number)
+Returns BASE-NUMBER raised to the power POWER-NUMBER. Vectorized."
+EXPT
+"Args: (base-number power-number)
+Returns BASE-NUMBER raised to the power POWER-NUMBER. Vectorized."
+LOG
+"Args: (number)
+Returns the natural logarithm(s) of NUMBER. Vectorized."
+
+ABS
+"Args: (number)
+Returns the absolute value or modulus of NUMBER. Vectorized."
+1+
+"Args: (number)
+Returns NUMBER + 1. Vectorized."
+1-
+"Args: (number)
+Returns NUMBER - 1. Vectorized."
+SIN
+"Args: (radians)
+Returns the sine of RADIANS. Vectorized."
+COS
+"Args: (radians)
+Returns the cosine of RADIANS. Vectorized."
+TAN
+"Args: (radians)
+Returns the tangent of RADIANS. Vectorized."
+EXP
+"Args: (x)
+Calculates e raised to the power x, where e is the base of natural
+logarithms. Vectorized."
+SQRT
+"Args: (number)
+Returns the square root of NUMBER. Vectorized."
+TRUNCATE
+"Args: (number)
+Returns real NUMBER as an integer, rounded toward 0. Vectorized.  With
+simple arguments, returns remainder as second value."
+FLOAT
+"Args: (number)
+Converts real number to a floating-point number.  If NUMBER is
+already a float, FLOAT simply returns NUMBER. Vectorized."
+RANDOM
+"Args: (number)
+Generates a uniformly distributed pseudo-random number between zero (inclusive)
+and NUMBER (exclusive). Vectorized."
+FLOOR
+"Args: (number)
+Returns the largest integer( not larger than the NUMBER. Vectorized.
+With simple arguments, returns remainder as second value."
+CEILING
+"Args: (number)
+Returns the smallest integer(s) not less than or NUMBER. Vectorized.
+With simple arguments, returns remainder as second value."
+ROUND
+"Args: (number)
+Rounds NUMBER to nearest integer. Vectorized.  With simple arguments,
+returns remainder as second value."
+ASIN
+"Args: (number)
+Returns the arc sine of NUMBER. Vectorized."
+ACOS
+"Args: (number)
+Returns the arc cosine of NUMBER. Vectorized."
+ATAN
+"Args: (number)
+Returns the arc tangent of NUMBER. Vectorized."
+PHASE
+"Args: (number)
+Returns the angle part of the polar representation of a complex number.
+For non-complex numbers, this is 0."
+
+MINUSP
+"Args: (number)
+Returns T if NUMBER < 0; NIL otherwise. Vectorized."
+ZEROP
+"Args: (number)
+Returns T if NUMBER = 0; NIL otherwise. Vectorized."
+PLUSP 
+"Args: (number)
+Returns T if NUMBER > 0; NIL otherwise. Vectorized."
+EVENP
+"Args: (integer)
+Returns T if INTEGER is even.  Returns NIL if INTEGER is odd. Vectorized."
+ODDP
+"Args: (integer)
+Returns T if INTEGER is odd; NIL otherwise. Vectorized."
+
+LOGAND
+" Args: ({number}*)
+Bit-wise logical AND of NUMBERs. Vectorized."
+LOGIOR
+" Args: ({number}*)
+Bit-wise logical OR of NUMBERs. Vectorized."
+" Args: ({number}*)
+Bit-wise logical XOR of NUMBERs. Vectorized."
+LOGNOT
+"Args: (number)
+Bit-wise logical NOT of NUMBER. Vectorized."
+LOGXOR
+"Args: (&rest integers)
+Returns the bit-wise EXCLUSIVE OR of its arguments."
+
+<
+"Args: (&rest numbers)
+Returns T if NUMBERS are in strictly increasing order; NIL otherwise.
+Vectorized."
+<=
+"Args: (&rest numbers)
+Returns T if NUMBERS are in nondecreasing order; NIL otherwise. Vectorized."
+=
+"Args: (&rest numbers)
+Returns T if NUMBERS are all equal; NIL otherwise. Vectorized."
+/=
+"Args: (&rest numbers)
+Returns T if NUMBERS no two adjacent numbers are equal; NIL otherwise. Vectorized."
+>=
+"Args: (&rest numbers)
+Returns T if NUMBERS are in nonincreasing order; NIL otherwise. Vectorized."
+>
+"Args: (&rest numbers)
+Returns T if NUMBERS are in strictly decreasing order; NIL otherwise. Vectorized."
+
+;; objects
+KIND-OF-P
+"Args: (x y)
+Returns T is X and Y are objects and X inherits from Y, NIL otherwise."
+SLOT-VALUE
+"Args: (slot &optional value)
+Must be used in a method. Returns the value of current objects slot named SLOT.
+If Value is supplied SLOT is set to VALUE. Can be used in setf."
+MAKE-OBJECT
+"Args: (&rest parents)
+Returns a new object with parents PARENTS. If PARENTS is NIL (list *OBJECT*)
+is used."
+SEND
+"Args: (object selector &rest args)
+Applies first method for SELECTOR found in OBJECT's precedence list to
+OBJECT and ARGS."
+SEND-SUPER
+"Args: (selector &rest args)
+Apply inherited method. Must be used within a method. Specifically, Applies 
+first method for SELECTOR found in the cdr of the precedence list of the owner
+of the current method to the current object and args."
+CALL-METHOD
+"Args (object selector &rest args)
+Funcalls method for SELECTOR found in OBJECT to SELF. Can only be used in a method."
+CALL-NEXT-METHOD
+"Args (&rest args)
+Funcalls next method for current selector and precedence list. Can only be used in a method."
+DEFMETH
+"Syntax: (defmeth object name lambda-list [doc] {form}*)
+OBJECT must evaluate to an existing object. Installs a method for NAME in
+the value of OBJECT and installs DOC in OBJECTS's documentation."
+DEFPROTO
+"Syntax (defproto name &optional ivars cvars (parent *object*) doc)
+Makes a new object prototype with instance variables IVARS, 'class'
+variables CVARS and parents PARENT. PARENT can be a single object or
+a list of objects. IVARS and CVARS must be lists."
+
+;; optimize
+BRACKET-SEARCH
+"Args: (f a b &key (max-iters 50) (verbose nil))
+F is a real valued function of one argument, A and B are real numbers.
+Tries to bracket a local minimum of f. Returns a list of the form 
+((A C B) (FA FC FB)), with A <= C <= B and FA = (f A) , etc. If the search
+was successful then FC < min(FA, FB). Prints iteration information if
+VERBOSE is not NIL."
+GOLDEN-SEARCH
+"Args: (f a b &key start (tolerance .000001) (verbose nil))
+F is a real valued function of one argument, A and B are real numbers.
+Uses a golden section search to locate the minimum of F. Convergence
+occurs roughly when the change in X is less than tolerance * (1 + x).
+Returns list of the form (X FX), with FX = (F X). Prints iteration
+information if VERBOSE is not NIL."
+PARABOLIC-SEARCH
+"Args: (f a b &key start (tolerance .00001) (max-iters 100) (verbose nil))
+F is a real valued function of one argument, A and B are real numbers.
+Uses a hybrid parabolic approximation/golden section search to locate
+the minimum of F. Convergence occurs roughly when the change in X is
+less than tolerance * (1 + x). Returns list of the form (X FX N), 
+with FX = (F X) and N is the number of iterations. Prints iteration information
+if VERBOSE is not NIL."
+
+;; sortdata.c
+SORT-DATA
+"Args: (sequence)
+Returns a sequence with the numbers or strings in the sequence X in order."
+ORDER
+"Args (x)
+Returns a sequence of the indices of elements in the sequence of numbers
+or strings X in order."
+RANK
+"Args (x)
+Returns a sequence with the elements of the list or array of numbers or
+strings X replaced by their ranks."
+
+;; statistics.c
+QUANTILE
+"Args: (x p)
+Returns the P-th quantile(s) of X. Vectorized on P."
+SUM
+"Args: (&rest number-data)
+Returns the sum of all the elements of its arguments. Returns 0 if there
+are no arguments. Vector reducing."
+PROD
+"Args: (&rest number-data)
+Returns the product of all the elements of its arguments. Returns 1 if there
+are no arguments. Vector reducing."
+MIN
+"Args: (number &rest more-numbers)
+Returns the least of its arguments. Vector reducing"
+MAX
+"Args: (number &rest more-numbers)
+Returns the greatest of its arguments. Vector reducing"
+COUNT-ELEMENTS
+"Args: (number &rest more-numbers)
+Returns the number of its arguments. Vector reducing"
+ELEMENT-SEQ
+"Args: (x)
+Returns sequence of the elements of compound item X."
+IF-ELSE
+"Args: (first x y)
+Takes simple or compound data items FIRST, X and Y and returns result of
+elementswise selecting from X if FIRST is not NIL and from Y otherwise."
+MEAN
+"Args: (x)
+Returns the mean of the elements x. Vector reducing."
+NUMGRAD
+"Args: (f x &optional scale derivstep)
+Computes the numerical gradient of F at X."
+NUMHESS
+"Args: (f x &optional scale derivstep)
+Computes the numerical Hessian matrix of F at X."
+
+;; uni
+MAKE-RANDOM-STATE
+"Args (&optional state generator)
+If STATE is NIL or omitted returns a copy of the current value of
+*random-state*. If STATE is a state object a copy of STATE is returned.
+If STATE is T a new, \"randomly\" initialized state object is returned.
+In this case the current generator is used unless an alternate GENERATOR
+is specified as an integer 0, 1, 2,  or 3."
+RANDOM-STATE-P
+"Args (x)
+Returns T if X can be used as a RANDOM-STATE."
+
+;; windows
+SCREEN-SIZE
+"Args: ()
+Returns list (WIDTH HEIGHT) of screen dimensions."
+SCREEN-HAS-COLOR
+"Args: ()
+Returns T is system supports color, NIL otherwise."
+
+;; xsiviewwindow.c
+RESET-GRAPHICS-BUFFER
+"Args: ()
+Resets the graphics buffer."
+
+;; xsiviewinternal
+UNLINK-ALL-WINDOWS
+"Args: ()
+Unlinks all plots."
+
+;; xsiview
+GET-NICE-RANGE
+"Args: (low high ticks)
+Returns list of the form (LOW HIGH TICKS) that makes for nice tick marks."
+
+;; xsgraphics
+HISTOGRAM
+"Args: (data &key (title \"Histogram\"))
+Opens a window with a histogram of DATA. TITLE is the window title. The number
+of bins used can be adjusted using the histogram menu. The histogram can be
+linked to other plots with the link-views command. Returns a plot object."
+PLOT-POINTS
+"Args: (x y &key (title \"Scatter Plot\") variable-labels point-labels symbol color)
+Opens a window with a scatter plot of X vs Y, where X and Y are compound
+number-data. VARIABLE-LABELS and POINT-LABELS, if supplied, should be lists of
+character strings. TITLE is the window title. The plot can be linked to
+other plots with the link-views command. Returns a plot object."
+PLOT-LINES
+"Args: (x y &key (title \"Line Plot\") variable-labels type width color)
+Opens a window with a connected line plot of X vs Y, where X and Y are
+compound number-data. VARIABLE-LABELS, if supplied, should be lists of
+character strings. TITLE is the window title. The plot can be linked to
+other plots with the link-views command. Returns a plot object."
+SPIN-PLOT
+"Args: (data &key (title \"Spinning Plot\") variable-labels point-labels
+                 (scale t))
+DATA is a list of three compound number-data objects of equal length. Opens
+a window with a rotating plot of the three elements of DATA. VARIABLE-LABELS
+and POINT-LABELS, if supplied, should be lists of character strings. TITLE
+is the window title. If scale is NIL data are assumed to be between -1 and 1.
+The plot can be linked to other plots with the link-views command. Returns
+a plot object."
+SCATTERPLOT-MATRIX
+"Args: (data &key (title \"Spinning Plot\") variable-labels point-labels
+                 (scale t))
+DATA is a list of two or more compound number-data objects of equal length.
+Opens a window with a brushable scatter plot matrix of the elements of DATA.
+VARIABLE-LABELS and POINT-LABELS, if supplied, should be lists of character strings.
+TITLE is the window title. If scale is NIL data are assumed to be between -1
+and 1.The plot can be linked to other plots with the link-views command.
+Returns a plot object."
+NAME-LIST
+"Args: (names &key (title \"Name List\"))
+NAMES is a number or a list of character strings. Opens a window with a list
+of the supplied character strings or entries numbered from 0 to NAMES - 1.
+This display can be linked to plots with the link-views function. Returns a
+plot object."
+BEST-CURSOR-SIZE
+"Args: (&optional width height)
+Returns list of best cursor width and height close to WIDTH and HEIGHT
+to use on the active display. Only available under X11 windows."
+PARSE-COLOR
+"Args: (string)
+Returns list of RGB values for STRING, an X11 color specification.
+Only available under X11 windows."
+FREE-COLOR 
+"Args: (symbol)
+Frees the color associated with SYMBOL."
+FREE-CURSOR
+"Args: (symbol)
+Frees the cursor associated with SYMBOL."
+MAKE-COLOR
+"Args: (symbol red green blue)
+Allocates color specified by real fractinal RGB values and associates
+it with SYMBOL."
+MAKE-CURSOR
+"Args: (symbol image &optional mask x-hot y-hot)
+Allocates cursor and associates it with SYMBOL. IMAGE and MASK are matrices of
+0's and 1's, x-hot and y-hot are integers representing the hot spot."
+
+LOGTEST
+"Args: (integer1 integer2)
+Returns T if LOGAND of INTEGER1 and INTEGER2 is not zero; NIL otherwise."
+CIS
+"Args: (radians)
+Returns e raised to i*RADIANS."
+SINH
+"Args: (number)
+Returns the hyperbolic sine of NUMBER."
+COSH
+"Args: (number)
+Returns the hyperbolic cosine of NUMBER."
+TANH
+"Args: (number)
+Returns the hyperbolic tangent of NUMBER."
+ASINH
+"Args: (number)
+Returns the hyperbolic arc sine of NUMBER."
+ACOSH
+"Args: (number)
+Returns the hyperbolic arc cosine of NUMBER."
+ATANH
+"Args: (number)
+Returns the hyperbolic arc tangent of NUMBER."
+NUNION
+"Args: (list1 list2 &key (test #'eql) test-not (key #'identity))
+Returns the union of LIST1 and LIST2.  LIST1 and/or LIST2 may be destroyed."
+NINTERSECTION
+"Args: (list1 list2 &key (test #'eql) test-not (key #'identity))
+Returns the intersection of LIST1 and LIST2.  LIST1 may be destroyed."
+NSET-DIFFERENCE
+"Args: (list1 list2 &key (test #'eql) test-not (key #'identity))
+Returns a list of elements of LIST1 that do not appear in LIST2.  LIST1 may
+be destroyed."
+ALPHA-CHAR-P
+"Args: (char)
+Returns T if CHAR is an alphabetic character, A-Z or a-z; NIL otherwise."
+CONSTANTP
+"Args: (item)
+Returns T if item always evaluates to the same thing; NIL otherwise."
+MAPCAN
+"Args: (fun list &rest more-lists)
+Applies FUN to successive cars of LISTs, NCONCs the results, and returns it."
+MAPCON
+"Args: (fun list &rest more-lists)
+Applies FUN to successive cdrs of LISTs, NCONCs the results, and returns it."
+OPEN-STREAM-P
+"Args: (stream)
+Returns non-NIL if STREAM is not a closed file stream."
+INPUT-STREAM-P
+"Args: (stream)
+Returns non-NIL if STREAM can handle input operations; NIL otherwise."
+OUTPUT-STREAM-P
+"Args: (stream)
+Returns non-nil if STREAM can handle output operations; NIL otherwise."
+TYPEP
+"Args: (x type)
+Returns T if X is of the type TYPE; NIL otherwise."
+FRESH-LINE
+"Args: (&optional (stream *standard-output*))
+Outputs a newline if it is not positioned at the beginning of a line.  Returns
+T if it output a newline; NIL otherwise."
+APPLYHOOK
+"Args: (function args evalhookfn applyhookfn)
+Applies FUNCTION to ARGS, with *EVALHOOK* bound to EVALHOOKFN and with
+*APPLYHOOK* bound to APPLYHOOKFN.  Ignores the hook function once, for the
+top-level application of FUNCTION to ARGS."
+NREVERSE
+"Args: (sequence)
+Returns a sequence of the same elements as SEQUENCE but in reverse order.
+SEQUENCE may be destroyed."
+GETHASH
+"Args: (key hash-table &optional (default nil))
+Finds the entry in HASH-TABLE whose key is KEY and returns the associated
+value and T, as multiple values.  Returns DEFAULT and NIL if there is no
+such entry."
+REMHASH
+"Args: (key hash-table)
+Removes any entry for KEY in HASH-TABLE.  Returns T if such an entry
+existed; NIL otherwise."
+MAKE-HASH-TABLE
+"Args: (&key (test 'eql) (size 1024) (rehash-size 1.5) (rehash-threshold 0.7))
+Creates and returns a hash table."
+CLRHASH
+"Args: (hash-table)
+Removes all entries of HASH-TABLE and returns the hash table itself."
+MAPHASH
+"Args: #'hash-table
+For each entry in HASH-TABLE, calls FUNCTION on the key and value of the
+entry; returns NIL."
+HASH-TABLE-COUNT
+"Args: (hash-table)
+Returns the number of entries in the given Hash-Table."
+LIST*
+"Args: (arg &rest others)
+Returns a list of its arguments with the last cons being a dotted pair of
+the next to the last argument and the last argument."
+COUNT-IF
+"Args: (test sequence
+        &key from-end (start 0) (end (length sequence)) (key #'identity))
+Returns the number of elements in SEQUENCE satisfying TEST."
+COUNT-IF-NOT
+"Args: (test sequence
+        &key from-end (start 0) (end (length sequence)) (key #'identity))
+Returns the number of elements in SEQUENCE not satisfying TEST."
+COUNT
+"Args: (item sequence
+        &key (test #'eql) test-not from-end (start 0)
+             (end (length sequence)) (key #'identity))
+Returns the number of elements in SEQUENCE satisfying TEST with ITEM."
+FIND-IF
+"Args: (test sequence
+        &key from-end (start 0) (end (length sequence)) (key #'identity))
+Returns the index of the first element in SEQUENCE that satisfies TEST; NIL if
+no such element exists."
+FIND-IF-NOT
+"Args: (test sequence
+        &key from-end (start 0) (end (length sequence)) (key #'identity))
+Returns the index of the first element in SEQUENCE that does not satisfy
+TEST; NIL if no such element exists."
+FIND
+"Args: (item sequence
+        &key (test #'eql) test-not from-end (start 0)
+             (end (length sequence)) (key #'identity))
+Returns the first element in SEQUENCE satisfying TEST with ITEM; NIL if no
+such element exists."
+POSITION-IF
+"Args: (test sequence
+        &key from-end (start 0) (end (length sequence)) (key #'identity))
+Returns the index of the first element in SEQUENCE that satisfies TEST; NIL
+if no such element exists."
+POSITION-IF-NOT
+"Args: (test sequence
+        &key from-end (start 0) (end (length sequence)) (key #'identity))
+Returns the index of the first element in SEQUENCE that does not satisfy TEST;
+NIL if no such element exists."
+POSITION
+"Args: (item sequence
+        &key (test #'eql) test-not from-end (start 0)
+             (end (length sequence)) (key #'identity))
+Returns the index of the first element in SEQUENCE that satisfies TEST with
+ITEM; NIL if no such element exists."
+SEARCH
+"Args: (sequence1 sequence2
+        &key (test #'eql) test-not (start1 0) (start2 0)
+             (end1 (length sequence1)) (end2 (length sequence2))
+             (key #'identity))
+A search is conducted for the first subsequence of SEQUENCE2 which
+element-wise matches SEQUENCE1.  If there is such a subsequence in SEQUENCE2,
+the index of the its leftmost element is returned; otherwise, NIL is
+returned."
+FILE-LENGTH
+"Args: (file-stream)
+Returns the length of the specified file stream."
+TRUENAME
+"Args: (pathname)
+Returns the pathname for the actual file described by PATHNAME."
+DELETE-FILE
+"Args: (file)
+Deletes FILE."
+ASH
+"Args: (integer count)
+Shifts INTEGER left by COUNT places.  Shifts right if COUNT is negative."
+LCM
+"Args: (integer &rest more-integers)
+Returns the least common multiple of the arguments."
+
+EXPORT
+"Args: (symbols &optional (package *package*))
+Makes SYMBOLS external symbols of PACKAGE.  SYMBOLS must be a list of
+symbols or a symbol."
+FIND-ALL-SYMBOLS
+"Args: (string-or-symbol)
+Returns a list of all symbols that have the specified name."
+FIND-PACKAGE
+"Args: (name)
+Returns the specified package if it already exists; NIL otherwise.
+NAME may be a string that is the name or nickname of the package.
+NAME may also be a symbol, in which case the symbol's print name is
+used."
+FIND-SYMBOL
+"Args: (name &optional (package *package*))
+Returns the symbol named NAME in PACKAGE.  If such a symbol is found,
+then the second value is :INTERN, :EXTERNAL, or :INHERITED to indicate
+how the symbol is accessible.  If no symbol is found then both values
+are NIL."
+FUNCTIONP
+"Args: (x)
+Returns T if X is a function.  Returns NIL otherwise."
+HASH-TABLE-P
+"Args: (x)
+Returns T if X is a hash table object; NIL otherwise."
+IMPORT
+"Args: (symbols &optional (package *package*))
+Makes SYMBOLS internal symbols of PACKAGE.  SYMBOLS must be a list of
+symbols or a symbol."
+IN-PACKAGE
+"Syntax: (package-name)
+Sets *PACKAGE* to the package with PACKAGE-NAME. PACKAGE-NAME is not
+evaluated. Signals an error if package does not exist."
+LIST-ALL-PACKAGES
+"Args: ()
+Returns a list of all existing packages."
+LIST-LENGTH
+"Args: (list)
+Returns the length of LIST, or NIL if LIST is circular."
+MAKE-PACKAGE
+"Args: (package-name &key (nicknames nil) (use '(lisp)))
+Makes a new package having the specified PACKAGE-NAME and NICKNAMES.
+The package will inherit all external symbols from each package in the
+USE list."
+MULTIPLE-VALUE-CALL
+"Syntax: (multiple-value-call function {form}*)
+Calls FUNCTION with all the values of FORMs as arguments."
+MULTIPLE-VALUE-PROG1
+"Syntax: (multiple-value-prog1 form {form}*)
+Evaluates the first FORM, saves all the values produced, then evaluates
+the other FORMs.  Returns the saved values."
+NSTRING-CAPITALIZE
+"Args: (string &key (start 0) (end (length string)))
+Returns STRING with the first character of each word converted to
+upper-case, and remaining characters in the word converted to lower
+case."
+NSUBLIS
+"Args: (alist tree &key (test #'eql) test-not (key #'identity))
+Substitutes from ALIST for subtrees of TREE."
+NSUBST
+"Args: (new old tree &key (test #'eql) test-not (key #'identity))
+Substitutes NEW for subtrees in TREE that match OLD."
+NSUBST-IF
+"Args: (new test tree &key (key #'identity))
+Substitutes NEW for subtrees of TREE that satisfy TEST."
+NSUBST-IF-NOT
+"Args: (new test tree &key (key #'identity))
+Substitutes NEW for subtrees of TREE that do not satisfy TEST."
+PACKAGE-NAME
+"Args: (package)
+Returns the string that names the specified PACKAGE."
+PACKAGE-NICKNAMES
+"Args: (package)
+Returns as a list the nickname strings for the specified PACKAGE."
+PACKAGE-SHADOWING-SYMBOLS
+"Args: (package)
+Returns the list of symbols that have been declared as shadowing
+symbols in PACKAGE."
+PACKAGE-USE-LIST
+"Args: (package)
+Returns the list of packages used by PACKAGE."
+PACKAGE-USED-BY-LIST
+"Args: (package)
+Returns the list of packages that use PACKAGE."
+PACKAGEP
+"Args: (x)
+Returns T if X is a package; NIL otherwise."
+PSETF
+"Syntax: (psetf {place newvalue}*)
+Similar to SETF, but evaluates all NEWVALUEs first, and then replaces
+the value in each PLACE with the value of the corresponding NEWVALUE.
+Returns NIL always."
+RENAME-PACKAGE
+"Args: (package new-name &optional (new-nicknames nil))
+Replaces the old name and nicknames of PACKAGE with NEW-NAME and
+NEW-NICKNAMES."
+SHADOW
+"Args: (symbols &optional (package *package*))
+Creates an internal symbol in PACKAGE with the same name as each of
+the specified SYMBOLS.  SYMBOLS must be a list of symbols or a
+symbol."
+SHADOWING-IMPORT
+"Args: (symbols &optional (package *package*))
+Imports SYMBOLS into PACKAGE, disregarding any name conflict.  If a
+symbol of the same name is already present, then it is uninterned.
+SYMBOLS must be a list of symbols or a symbol."
+STRING-CAPITALIZE
+"Args: (string &key (start 0) (end (length string)))
+Returns a copy of STRING with the first character of each word
+converted to upper-case, and remaining characters in the word
+converted to lower case."
+FIFTH
+"Args: (x)
+Equivalent to (CAR (CDDDDR X))."
+EIGHTH
+"Args: (x)
+Equivalent to (CADDDR (CDDDDR X))."
+NINTH
+"Args: (x)
+Equivalent to (CAR (CDDDDR (CDDDDR X)))."
+EVAL-WHEN
+"Syntax: (eval-when ({situation}*) {form}*)
+A situation must be either :COMPILE-TOPLEVEL, :LOAD-TOPLEVEL, or
+:EXECUTE. The old situations COMPILE, LOAD and EVAL are also
+supported.  The interpreter evaluates only when :EXECUTE is specified.
+If :COMPILE-TOPLEVEL is specified, FORMs are evaluated at compile
+time.  If ;LOAD-TOPLEVEL is specified, the compiler arranges so that
+FORMs be evaluated when the compiled code is loaded."
+DEFSETF
+"Syntax: (defsetf access-fun {update-fun [doc] |
+                             lambda-list (store-var) {decl | doc}* {form}*)
+Defines how to SETF a generalized-variable reference of the form
+(ACCESS-FUN ...). (defsetf access-fun update-fun) defines an expansion
+from (setf (ACCESS-FUN arg1 ... argn) value) to (UPDATE-FUN arg1 ...
+argn value). (defsetf access-fun lambda-list (store-var) . body)
+defines a macro which expands (setf (ACCESS-FUN arg1 ... argn) value)
+into the form (let* ((temp1 ARG1) ... (tempn ARGn) (temp0 value))
+rest) where REST is the value of BODY with parameters in LAMBDA-LIST
+bound to the symbols TEMP1 ... TEMPn and with STORE-VAR bound to the
+symbol TEMP0."
+DOCUMENTATION
+"Args: (symbol doc-type)
+Returns SYMBOL documentation of type DOC-TYPE."
+PROVIDE
+"Args: (name)
+Adds NAME to the list of modules."
+REQUIRE
+"Args: (name)
+Loads module NAME, unless it has already been loaded. If PATH is supplied it
+is used as the file name; otherwise NAME is used. If file NAME is not in the
+current directory *default-path* is searched."
+PROBE-FILE
+"Args: (file)
+Returns the truename of file if the file exists.
+Returns NIL otherwise."
+MATRIXP
+"Args: (m)
+Returns T if M is a matrix, NIL otherwise."
+EQUALP
+"Args: (x y)
+Returns T if (equal x y), or x, y are numbers and (= x y), or
+x and y are strings and (string-equal x y)."
+Y-OR-N-P
+"Args: (&rest args)
+Prints STRING, if provided,  and reads an answer until an answer of Y or N
+is obtained. Returns T for Y, NIL for N."
+INCF
+"Syntax: (incf place [delta])
+Adds the number produced by DELTA (which defaults to 1) to the
+number in PLACE."
+DECF
+"Syntax: (decf place [delta])
+Subtracts the number produced by DELTA (which defaults to 1) from
+the number in PLACE."
+PUSH
+"Syntax: (push item place)
+Pushes ITEM onto list in generalized variable PLACE."
+POP
+"Syntax: (pop place)
+Pops one item off the front of the list in PLACE and returns it."
+PUSHNEW
+"Syntax: (push item place &key :test :test-not)
+Pushes ITEM onto PLACE if it is not already there."
+REMF
+"Syntax: (remf place indicator)
+PLACE may be any place expression acceptable to SETF, and is expected
+to hold a property list or NIL.  This list is destructively altered to
+remove the property specified by INDICATOR.  Returns T if such a
+property was present; NIL otherwise."
+ROTATEF
+"Syntax: (rotatef {place}*)
+Evaluates PLACEs in turn, then assigns to each PLACE the value of the form to
+its right.  The rightmost PLACE gets the value of the leftmost PLACE.
+Returns NIL always."
+WITH-INPUT-FROM-STRING
+"Syntax: (with-input-from-string (stream string) {form}*)
+Opens stream for reading from STRING, binds to STREAM and evaluates
+FORMs with this binding."
+WITH-OUTPUT-TO-STRING
+"Syntax: (with-output-to-string (stream) {form}*)
+Opens string output stream, binds to STREAM and evaluates FORMs with
+this binding. Returns output stream string."
+WITH-OPEN-FILE
+"Syntax: (with-open-file (stream filename {options}*) {form}*)
+Opens file stream for FILENAME with specified options, binds to 
+STREAM and evaluates FORMs with this binding. Closes stream regardless
+of errors."
+READ-FROM-STRING
+"Args: (string &optional (eof-error-p t) (eof-value nil)
+               &key (start 0) (end (length string))
+                    (preserve-whitespace nil))
+Reads an object from STRING."
+REALP
+"Args: (x)
+Returns true if X is a real number."
+PAIRLIS
+"Args: (keys data &optional (alist nil))
+Constructs an association list from KEYS and DATA adding to ALIST."
+COPY-ALIST
+"Args: (alist)
+Returns a new copy of ALIST."
+COPY-TREE
+"Args: (object)
+Recursively copies conses in OBJECT and returns the result."
+COPY-TREE
+"Args: (object)
+Recursively copies conses in OBJECT and returns the result."
+SIGNUM
+"Args: (number)
+If NUMBER is zero, returns NUMBER; else returns (/ NUMBER (ABS NUMBER)).
+Vectorized."
+FILL
+"Args: (sequence item &key (start 0) (end (length sequence)))
+Replaces the specified elements of SEQUENCE all with ITEM."
+REPLACE
+"Args: (sequence1 sequence2
+        &key (start1 0) (end1 (length sequence1))
+             (start2 0) (end2 (length sequence2)))
+Destructively modifies SEQUENCE1 by copying successive elements into it from
+SEQUENCE2."
+ACONS
+"Args: (key datum alist)
+Constructs a new alist by adding the pair (KEY . DATUM) to ALIST."
+SET-EXCLUSIVE-OR
+"Args: (list1 list2 &key (test #'eql) test-not (key #'identity))
+Returns a list of elements appearing exactly once in LIST1 and LIST2."
+NSET-EXCLUSIVE-OR
+"Args: (list1 list2 &key (test #'eql) test-not (key #'identity))
+Returns a list with elements which appear but once in LIST1 and LIST2."
+GET-MACRO-CHARACTER
+"Args: (char &optional (readtable *readtable*))
+Returns the function associated with CHAR and, as a second value,
+returns the non-terminating-p flag."
+SAVEFUN
+"Args: (fun)
+Save function definition of symbol FUN to file FUN.lsp."
+DEBUG
+"Args: ()
+Enable breaking on error on."
+NODEBUG
+"Args: ()
+Disable breaking on error on."
+DO-SYMBOLS
+"Syntax: (do-symbols (var [package [result-form]]) {decl}* {tag | statement}*)
+Executes STATEMENTs once for each symbol in the PACKAGE (which
+defaults to the current package), with VAR bound to the current
+symbol.  Then evaluates RESULT-FORM (which defaults to NIL) and
+returns the value(s)."
+DO-EXTERNAL-SYMBOLS
+"Syntax: (do-external-symbols (var [package [result-form]])
+          {decl}* {tag | statement}*)
+Executes STATEMENTs once for each external symbol in the PACKAGE
+(which defaults to the current package), with VAR bound to the current
+symbol.  Then evaluates RESULT-FORM (which defaults to NIL) and
+returns the value(s)."
+DO-ALL-SYMBOLS
+"Syntax: (do-all-symbols (var [result-form]) {decl}* {tag | statement}*)
+Executes STATEMENTs once for each symbol in each package, with VAR
+bound to the current symbol.  Then evaluates RESULT-FORM (which
+defaults to NIL) and returns the value(s)."
+MULTIPLE-VALUE-LIST
+"Syntax: (multiple-value-list form)
+Evaluates FORM, and returns a list of multiple values it returned."
+MULTIPLE-VALUE-BIND
+"Syntax: (multiple-value-bind ({var}*) values-form {decl}* {form}*)
+Binds the VARiables to the results of VALUES-FORM, in order
+(defaulting to NIL) and evaluates FORMs in order."
+MULTIPLE-VALUE-SETQ
+"Syntax: (multiple-value-setq variables form)
+Sets each variable in the list VARIABLES to the corresponding value of
+FORM. Returns the value assigned to the first variable."
+DECLARE
+"Syntax: (declare {decl-spec}*)
+Gives a declaration."
+FINISH-OUTPUT
+"Args: (&optional (stream *standard-output*))
+Attempts to ensure that all output sent to STREAM has reached its
+destination, and only then returns."
+CLEAR-OUTPUT
+"Args: (&optional (stream *standard-output*))
+Clears the output stream STREAM."
+PRIN1-TO-STRING
+"Args: (object)
+Returns as a string the printed representation of OBJECT in the mostly
+readable representation. Equivalent to (WRITE-TO-STRING OBJECT :ESCAPE T)."
+PRINC-TO-STRING
+"Args: (object)
+Returns as a string the printed representation of OBJECT without escape
+characters.  Equivalent to (WRITE-TO-STRING OBJECT :ESCAPE NIL)."
+KEYWORDP
+"Args: (x)
+Returns T if X is a symbol and it belongs to the KEYWORD package; NIL
+otherwise."
+NRECONC
+"Args: (x y)
+Equivalent to (NCONC (NREVERSE X) Y)."
+DESCRIBE
+"Args: (x)
+Prints a description of the object X."
+GET-PROPERTIES
+"Args: (place indicator-list)
+Looks for the elements of INDICATOR-LIST in the property list stored in PLACE.
+If found, returns the indicator, the value, and T as multiple-values.  If not,
+returns NILs as its three values."
+PARSE-INTEGER
+"Args: (string
+       &key (start 0) (end (length string)) (radix 10) (junk-allowed nil))
+Parses STRING for an integer and returns it."
+COMPILED-FUNCTION-P
+"Args: (x)
+Returns T if X is a SUBR or byte-compiled function; NIL otherwise."
+GENTEMP
+"Args: (&optional (prefix \"t\") (package *package*))
+Creates a new symbol interned in the package PACKAGE with the given PREFIX."
+BIT-VECTOR-P
+"Args: (x)
+Returns T if X is a bit vector; NIL otherwise."
+SCHAR
+"Args: (simple-string index)
+Returns the character object representing the INDEX-th character in
+STRING.  This is faster than CHAR."
+SET-MACRO-CHARACTER
+"Args: (char function
+       &optional (non-terminating-p nil) (readtable *readtable*))
+Causes CHAR to be a macro character that, when seen by READ, causes
+FUNCTION to be called."
+SEVENTH
+"Args: (x)
+Equivalent to (CADDR (CDDDDR X))."
+SIXTH
+"Args: (x)
+Equivalent to (CADR (CDDDDR X))."
+SVREF
+"Args: (simple-vector index)
+Returns the INDEX-th element of SIMPLE-VECTOR."
+SYMBOL-PACKAGE
+"Args: (symbol)
+Returns the contents of the package cell of the symbol SYMBOL."
+TENTH
+"Args: (x)
+Equivalent to (CADR (CDDDDR (CDDDDR X)))."
+UNEXPORT
+"Args: (symbols &optional (package *package*))
+Makes SYMBOLS no longer accessible as external symbols in PACKAGE.
+SYMBOLS must be a list of symbols or a symbol."
+UNINTERN
+"Args: (symbol &optional (package *package*))
+Makes SYMBOL no longer present in PACKAGE.  Returns T if SYMBOL was
+present; NIL otherwise.  If PACKAGE is the home package of SYMBOL,
+then makes SYMBOL uninterned."
+UNUSE-PACKAGE
+"Args: (packages-to-unuse &optional (package *package*))
+Removes PACKAGES-TO-UNUSE from the use list for PACKAGE."
+USE-PACKAGE
+"Args: (packages-to-use &optional (package *package*))
+Adds all packages in PACKAGE-TO-USE list to the use list for PACKAGE
+so that the external symbols of the used packages are available as
+internal symbols in PACKAGE."
+VALUES
+"Args: (&rest args)
+Returns ARGs in order, as values."
+VALUES-LIST
+"Args: (list)
+Returns all of the elements of LIST in order, as values."
+VECTORP
+"Args: (x)
+Returns T if X is a vector; NIL otherwise."
+WITH-OPEN-STREAM
+"Syntax: (with-open-stream (var stream) {decl}* {form}*)
+Evaluates FORMs as a PROGN with VAR bound to the value of STREAM.  The stream
+is automatically closed on exit."
+WRITE
+"Args: (object &key (stream *standard-output*) (escape *print-escape*)
+                   (radix *print-radix*) (base *print-base*)
+                   (circle *print-circle*) (pretty *print-pretty*)
+                   (level *print-level*) (length *print-length*)
+                   (case *print-case*) (array *print-array*)
+                   (gensym *print-gensym*))
+Prints OBJECT in the specified mode.  See the variable docs of *PRINT-...*
+for the mode."
+WRITE-LINE
+"Args: (string &optional (stream *standard-output*)
+              &key (start 0) (end (length string)))
+Outputs STRING and then outputs a newline character.  Returns STRING."
+WRITE-STRING
+"Args: (string &optional (stream *standard-output*)
+              &key (start 0) (end (length string)))
+Outputs STRING and returns it."
+WRITE-TO-STRING
+"Args: (object &key (escape *print-escape*) (radix *print-radix*)
+                   (base *print-base*) (circle *print-circle*)
+                   (pretty *print-pretty*) (level *print-level*)
+                   (length *print-length*) (case *print-case*)
+                   (array *print-array*) (gensym *print-gensym*))
+Returns as a string the printed representation of OBJECT in the
+specified mode.  See the variable docs of *PRINT-...* for the mode."
+CCASE
+"Syntax: (ccase keyplace {({key | ({key}*)} {form}*)}*)
+Evaluates KEYPLACE and tries to find the KEY that is EQL to the value of
+KEYPLACE.  If one is found, then evaluates FORMs that follow the KEY and
+returns the value(s) of the last FORM.  If not, signals a correctable
+TYPE-ERROR and establishes a STORE-VALUE restart."
+CHECK-TYPE
+"Syntax: (check-type place typespec [string])
+Signals a continuable TYPE-ERROR and establishes a STORE-VALUE restart
+if the contents of PLACE are not of the specified type."
+CTYPECASE
+"Syntax: (ctypecase keyplace {(type {form}*)}*)
+Evaluates KEYPLACE and tries to find the TYPE in which the value of
+KEYPLACE belongs.  If one is found, then evaluates FORMs that follow
+the KEY and returns the value(s) of the last FORM.  If not, signals a
+correctable TYPE-ERROR and establishes a STORE-VALUE restart."
+ECASE
+"Syntax: (ecase keyform {({key | ({key}*)} {form}*)}*)
+Evaluates KEYFORM and tries to find the KEY that is EQL to the value of
+KEYFORM.  If one is found, then evaluates FORMs that follow the KEY and
+returns the value(s) of the last FORM.  If not, signals a TYPE-ERROR."
+ETYPECASE
+"Syntax: (etypecase keyform {(type {form}*)}*)
+Evaluates KEYFORM and tries to find the TYPE in which the value of
+KEYFORM belongs.  If one is found, then evaluates FORMs that follow
+the KEY and returns the value(s) of the last FORM.  If not, signals a
+TYPE-ERROR."
+TYPECASE
+"Syntax: (typecase keyform {(type {form}*)}*)
+Evaluates KEYFORM and tries to find the TYPE in which the value of
+KEYFORM belongs.  If one is found, then evaluates FORMs that follow
+the KEY and returns the value of the last FORM.  If not, simply
+returns NIL."
+STEP
+"Syntax: (step form)
+Evaluates FORM in the single-step mode and returns the value."
+SIGNAL
+"Args: (datum &rest args)
+Signals a condition. If DATUM is a string, it is used with ARGS to
+construct a SIMPLE-CONDITION. If DATUM is a symbol, it is used with
+ARGS to make a condition. If it is a condition, the ARGS must be
+empty. Returns NIL if the condition is not handled."
+WARN
+"Args: (datum &rest args)
+Signals a condition of type WARNING. If DATUM is a string, it is used
+with ARGS to construct a SIMPLE-WARNING. If DATUM is a symbol, it is
+used with ARGS to make a condition. If it is a condition, the ARGS
+must be empty. Returns NIL if the condition is not handled."
+PROCLAIM
+"Args: (decl-spec)
+Puts the declaration given by DECL-SPEC into effect globally."
+BREAK
+"Args: (&optional (format-string nil) &rest args)
+Enters a break loop.  If FORMAT-STRING is non-NIL, formats FORMAT-STRING
+and ARGS to *ERROR-OUTPUT* before entering a break loop."
+ASSERT
+"Syntax: (assert test-form [({place}*) [datum {arg}*]])
+Signals an error if the value of TEST-FORM is NIL.  DATUM is a format
+string, a condition type, or a condition."
+COMPILE
+"Args: (name &optional (definition nil) &key (leave-gazonk nil))
+If DEFINITION is NIL, NAME must be the name of a not-yet-compiled
+function.  Then COMPILE compiles the function, installs it as the
+global function definition of NAME, and returns NAME.  If DEFINITION
+is non-NIL, it must be a lambda expression and NAME must be a symbol.
+COMPILE compiles the lambda expression, installs is as the function
+definition of NAME if name is not NIL, and returns NAME, if not NIL,
+or the compiled function if NAME is NIL."
+COMPILE-FILE
+"Args: (input-pathname
+       &key output-file (load nil) (print *compile-print*)
+            (verbose *compile-verbose*))
+Compiles the file specified by INPUT-PATHNAME and generates a .fsl
+file specified by OUTPUT-FILE.  If the filetype is not specified in
+INPUT-PATHNAME, then .lsp is used as the default file type for the
+source file.  :LOAD specifies whether to load the generated fasl file
+after compilation.  A non-NIL value of :VERBODE allows information
+about the file being compiled to be printed. A non-NIL value of :PRINT
+allows forces the compiler to indicate the form currently being
+compiled."
+DELETE-PACKAGE
+"Args: (package)
+Deletes package from package system data structures."
+DEFPACKAGE 
+"Syntax: (defpackage name {option*})
+Options are: (:size n) (:nicknames {name}*) (:shadow {name}*)
+             (:use {name}*) (:import-from {name}*) (:intern {name}*)
+             (:export {name}*)
+Makes or modifies package to satisfy options."
+HASH-TABLE-REHASH-SIZE
+"Args: (table)
+Returns amount to increase table by on rehash."
+HASH-TABLE-REHASH-THRESHOLD 
+"Args: (table)
+Returns level at which to rehash."
+HASH-TABLE-SIZE
+"Args: (table)
+Returns current table size."
+HASH-TABLE-TEST
+"Args: (table)
+Returns hash table test."
+NTH-VALUE
+"Syntax: (nth-value n form)
+Returns N-th value produced by FORM, or NIL if there are fewer values."
+IGNORE-ERRORS
+"Syntax (ignore-errors {form}*)
+Execues FORMS and returns values of final form if there are no errors.
+If there are errors, returns values NIL and the error condition."
+SAVE-WORKSPACE
+"Args: (name)
+Saves current workspace in NAME and exits. Gives NAME a .wks extension if
+not supplied."
+ABORT
+"Args: (&optional condition)
+Invokes ABORT restart associated with CONDITION."
+MUFFLE-WARNING
+"Args: (&optional condition)
+Invokes MUFFLE-WARNING restart associated with CONDITION."
+STORE-VALUE 
+"Args: (value &optional condition)
+Invokes STORE-VALUE restart associated with CONDITION."
+USE-VALUE 
+"Args: (value &optional condition)
+Invokes STORE-VALUE restart associated with CONDITION."
+TOP-LEVEL-LOOP
+"Args: ()
+Standard top level loop."
+DEFSTRUCT
+"Syntax: (defstruct
+         {name | (name {(:conc-name prefix-string) |
+                        (:constructor symbol) |
+                        (:predicate symbol) | 
+                        (:include symbol) |
+                        (:print-function function)}*)}
+         [doc]
+         {slot-name | (slot-name [default-value-form]) }*)
+Defines a structure.  The doc-string DOC, if supplied, is saved as a
+STRUCTURE doc and can be retrieved by (documentation 'NAME
+'structure)."
+WITH-SIMPLE-RESTART
+"Syntax: (with-simple-restart (name string {arg}*) {form}*)
+Establishes restart NAME with report made from format string STRING
+and ARG's, and executes FORM's. Returns values of final forms or he
+values NIL and T if the restart is invoked."
+DEFINE-CONDITION
+"Syntax: (define-condition name ({parent}*) [({slotspec}*) {option}*])
+Defines a new restart type NAME. There must be zero or one parents."
+COMPUTE-RESTARTS
+"Args: (&optional condition)
+Returns list of all current restarts associated with CONDITION, with
+more recently established restarts first."
+FIND-RESTART
+"Args: (name &optional condition)
+Returns most recent restart NAME associated with CONDITION, or NIL if
+none is found."
+PCLOSE 
+"Syntax: (pclose stream)
+Closes STREAM opened with POPEN. Returns T if the command executed
+successfully, otherwise, returns the exit status of the opened
+command."
+POPEN 
+"(Syntax: (popen command :direction (direction :input))
+Sends COMMAND to a subshell and, if the process is started
+successfully, returns a stream of direction DIRECTION, which can be
+either :input (to read from the pipe) or :output (to write to the
+pipe). NIL is returned files or processes couldn't be created. The
+success of the command execution can be checked by examining the
+return value of pclose."
+MAP-INTO
+"Args: (result function sequence &rest more-sequences)
+FUNCTION must take as many arguments as there are sequences provided.
+RESULT must be the a sequence.  The FUNCTION is applied elementwise
+to the arguments and the values are stored i RESULT."
+FUNCTION-LAMBDA-EXPRESSION 
+"Args: (fcn)
+Returns three values for the function FCN: The function's lambda
+expression, or NIL if not available, NIL if the function was defined
+in the null environment, T otherwise, and the name of the function, if
+available, or NIL."
+DESTRUCTURING-BIND 
+"Syntax: (destructuring-bind lambda-list expr {declaration}* {form}*)
+Binds variables in LAMBDA-LIST to corresponding values in tree from
+evaluating EXPR and evaluates FORM's in the resulting environment.
+Entries in lambda-list may be variable names or other lambda lists."
+COMPLEMENT
+"Args: (fcn)
+Returns function whose value is NOT applied to result of evaluating FCN
+to the same arguments."
+INVOKE-DEBUGGER
+"Args (condition)
+Attempts to handle condition interactively."
+INVOKE-RESTART
+"Args: (restart &rest args)
+Invokes RESTART with ARGS, or signals an error if RESTART is not valid."
+INVOKE-RESTART-INTERACTIVELY
+"Args: (restart)
+Prompts for any necessary arguments using RESTART's interacctive function
+and invokes RESTART, or signals an error if RESTART is not valid."
+MAKE-CONDITION
+"Args: (type &rest slot-ints)
+Creates and returns TYPE condition initializes using SLOT-INITS."
+HANDLER-BIND 
+"Syntax: (handler-bind ({(typespec handler)}*) {forms}*)
+Evaluates FORM's with HANDLER's established for TYPESPEC conditions.
+HANDLER's should evaluate to functions of one argument, the condition."
+HANDLER-CASE
+"Syntax: (handler-case expr {(typespec ([var]) {form}*)}*)
+Execute EXPR with handlers satisfying TYPESPEC's established. If
+handler is called, VAR is bound to condition and FORM's are executed."
+RESTART-BIND
+"Syntax: (restart-bind ({(name function {keyword value}*)}*) {form}*)
+Executes FORM's with restart FUNCTION's for NAME's. Keywords can be
+:TEST-FUNCTION, :INTERACTIVE-FUNCTION, and :REPORT-FUNCTION."
+RESTART-CASE
+"Syntax: (restart-case expr {(name arglist {keyword value}* {form}*)}*)
+Execute EXPR with restarts NAME's that execute FORM's when called.
+Keywords can be :TEST, :INTERACTIVE, and :REPORT."
+DEFTYPE
+"Syntax: (deftype name lambda-list {decl | doc}* {form}*)
+Defines a new type-specifier abbreviation in terms of an 'expansion'
+function (lambda lambda-list1 {decl}* {form}*) where lambda-list1 is
+identical to LAMBDA-LIST except that all optional parameters with no
+default value in LAMBDA-LIST default to the symbol '*'.  When the type
+system encounters a type specifier (NAME arg1 ... argn), it calls the
+expansion function with the arguments arg1 ... argn, and uses the
+returned value instead of the original type specifier.  When the
+symbol NAME is used as a type specifier, the expansion function is
+called with no argument."
+NAMESTRING
+"Args: (pathname)
+Returns the full form of PATHNAME as a string."
+FILE-NAMESTRING
+"Args: (pathname)
+Returns the name (with type) of PATHNAME as a string."
+DIRECTORY-NAMESTRING
+"Args: (pathname)
+Returns the directory part of PATHNAME as a string."
+PATHNAME
+"Args: (x)
+Turns X into a pathname.  X may be a string, stream, or pathname."
+PATHNAME-HOST
+"Args: (pathname)
+Returns the host slot of PATHNAME."
+PATHNAME-DEVICE
+"Args: (pathname)
+Returns the device slot of PATHNAME."
+PATHNAME-VERSION
+"Args: (pathname)
+Returns the version slot of PATHNAME."
+PARSE-NAMESTRING
+"Args: (thing &optional host (defaults *default-pathname-defaults*)
+             &key (start 0) (end (length thing)) (junk-allowed nil))
+Parses a string representation of a pathname into a pathname."
+PATHNAME-DIRECTORY
+"Args: (pathname)
+Returns the directory slot of PATHNAME."
+PATHNAME-NAME
+"Args: (pathname)
+Returns the name slot of PATHNAME."
+PATHNAME-TYPE
+"Args: (pathname)
+Returns the type slot of PATHNAME."
+MAKE-PATHNAME
+"Args: (&key (defaults (parse-namestring \"\"
+                        (pathname-host *default-pathname-defaults*)))
+            (host (pathname-host defaults))
+            (device (pathname-device defaults))
+            (directory (pathname-directory defaults))
+            (name (pathname-name defaults))
+            (type (pathname-type defaults))
+            (version (pathname-version defaults)))
+Create a pathname from HOST, DEVICE, DIRECTORY, NAME, TYPE and VERSION."
+MERGE-PATHNAMES
+"Args: (pathname
+       &optional (defaults *default-pathname-defaults*) default-version)
+Fills in unspecified slots of PATHNAME from DEFAULTS.  DEFAULT-VERSION
+is ignored in KCL."
+RENAME-FILE
+"Args: (file new-name)
+Renames the file FILE to NEW-NAME.  FILE may be a string, a pathname, or
+a stream."
+FILE-WRITE-DATE
+"Args: (file)
+Returns the time at which the specified file is written, as an integer in
+universal time format.  FILE may be a string or a stream."
+SET-WORKING-DIRECTORY
+"Args: (directory)
+Sets working directory to directory specified in string DIRECTORY. Returns
+true if successful, NIL if not."
+GET-WORKING-DIRECTORY
+"Args: ()
+Returns string naming current working directory, or NIL if working directory
+can't be determined."
+DIRECTORY
+"Args: (pathname &key all)
+Returns a list of files that match PATHNAME. If :ALL is true, all files
+and directories are listed; otherwise only regular files are listed."
+(*USE-NOTIFIER* VARIABLE)
+"Whether to use the notifier when asking for input while in background."
+LAUNCH-APPLICATION
+"Args: (name-or-sig &optional (foreground t))
+Launches process using pathname or signature code NAME-OR-ID. New process
+is made front process if FOREGROUND is not NIL. Returns process info if
+successful, NIL otherwise."
+ENCODE-SIGNATURE
+"Args: (sigstring)
+Converts four-character signature string to signature code."
+GET-PROCESS-LIST
+"Args: ()
+Returns list of process info records for active processes."
+GET-FRONT-PROCESS
+"Args: ()
+Returns process info for front process."
+SET-FRONT-PROCESS
+"Args: (process)
+Sent front process. PROCESS can be a process name, signature, or process
+info record."
+SEND-APPLE-EVENT
+"Args: (class type address &key :data :wait-reply :timeout
+                                :can-switch-layer)
+Send an apple event to another application.CLASS and TYPE are
+four-character strings specifying event class ans type. Address is t
+for the current process, a process name, a signature code, a process
+information record, or a target information record."
+BROWSE-APPLE-EVENT-TARGETS
+"Args: (&key :prompt :application-list-label (:type \"PPCToolBox\")
+            :name :signature
+Puts up a dialog for selecting the target for an apple event. Returns a
+target information record, or NIL if cancelled. Specifying NAME or
+SIGNATUE restricts the applications shown to ones with the specified
+name or signature."
+GET-APPLE-EVENT-TARGET-LIST
+"Args: (&key :object :type :zone)
+Return list of apple event target information records for specified
+machine. Default is the local machine. OBJECT is an alternate machine
+name, ZONE specifies an alternate AppleTalk zone.
+GET-APPLE-EVENT-TARGET
+Args: (name-or-sig &key :object :type :zone)
+Returns a single target, or \NIL\ if none is found. NAME-OR-SIG is a
+name string or signature code for a running application. OBJECT is an
+alternate machine name, ZONE specifies an alternate AppleTalk zone."
+COPY-STRUCTURE
+"Args: (STRUCTURE)
+Returns a copy of the structure."
+COPY-SYMBOL
+"Args: (symbol &optional (copy-props nil))
+Returns a new uninterned symbol with the same print name as SYMBOL.
+If COPY-PROPS is false, the new symbol is neither bound nor fbound and
+has a null property list. If COPY-PROPS is true, then the initial
+value of the new symbol is the value of SYMBOL, the initial function
+definition of the new symbol is the functional value of SYMBOL, and
+the property list of the new symbol is a copy of the property list of
+SYMBOL."
+TAILP
+"Args: (sublist list)
+Returns T if SUBLIST is one of the conses in LIST; NIL otherwise."
+LDIFF
+"Args: (list sublist)
+Returns a new list, whose elements are those of LIST that appear before
+SUBLIST.  If SUBLIST is not a tail of LIST, a copy of LIST is returned."
+MEMBER-IF
+"Args: (test list &key (key #'identity))
+Returns the tail of LIST beginning with the first element satisfying TEST."
+GET-DECODED-TIME
+"Args: ()
+Returns the current time in decoded time format.  Returns nine values:
+second, minute, hour, date, month, year, day-of-week,
+daylight-saving-time-p, and time-zone."

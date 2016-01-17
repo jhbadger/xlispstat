@@ -1,0 +1,562 @@
+\documentclass[11pt]{article}
+
+%\usepackage{html}
+\newcommand{\htmladdnormallinkfoot}[2]{{#1}\footnote{#2}}
+
+\topmargin 0pt
+\advance \topmargin by -\headheight
+\advance \topmargin by -\headsep
+\textheight 8.9in
+\oddsidemargin 0pt
+\evensidemargin \oddsidemargin
+\marginparwidth 0.5in
+\textwidth 6.5in
+
+\newcommand{\macbold}[1]{{\bf #1}}
+\newcommand{\dcode}[1]{{\tt #1}}
+\newcommand{\LS}{Lisp}
+\newcommand{\XLS}{XLISP-STAT}
+\newcommand{\WXLS}{WXLS}
+\newcommand{\LSE}{LSPEDIT}
+
+\newcommand{\lfun}[1]{{\tt #1}}
+\newcommand{\lkeyword}[1]{{\tt :#1}}
+\newcommand{\NIL}{{\tt nil}}
+\newcommand{\TRUE}{{\tt t}}
+
+\title{\XLS\ for Microsoft Windows 3.1}
+\author{Luke Tierney\\School of Statistics\\University of Minnesota}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\section{Basics}
+This note outlines an implementation of \XLS\ for Microsoft Windows
+3.1. The executable is called \WXLS. \WXLS\ must be run in protected
+mode and requires at least a 386 processor with at least 2MB of
+memory. Only one instance of \WXLS\ can be run at one time. A Win32
+version is now available as well. The Win32 executable is called
+\WXLS32. It requires Win32s to run under Windows 3.1.
+
+This implementation uses an MDI-style interface. The listener,
+graphics windows, and modeless dialog windows are subwindows of an
+MDI client window. Menus appear in the client window's menu bar. The
+implementation is quite similar to the Macintosh version. This note
+assumes you are familiar with the description of the Macintosh version
+given Appendix B.2 of Tierney~(1990).
+
+The current implementation is experimental; the current release at the
+time of writing is {\em 3.39}.  I have only tested this version on a
+486DX2 computer with 16MB of memory and a math coprocessor. Please let
+me know if you run into any problems. A detailed description of the
+problem and the hardware configuration would be most helpful.
+
+\subsection{The Listener}
+The listener provides parenthesis matching. Hitting the {\em tab}\/
+key indents code to an appropriate level. The listener follows
+standard Windows 3.1 conventions for handling arrow keys, cut and
+paste accelerators, etc.. In addition, hitting {\em SHIFT-ENTER}\/
+moves the cursor to the end of the current input expression.
+
+Hitting and holding down {\em CONTROL-BREAK}\/ should interrupt the
+current calculation. You may need to wait a bit since key events are
+only checked periodically during calculations.
+
+Closing the listener is equivalent to minimizing it; you cannot remove
+the listener. Minimizing a graphics window is equivalent to hiding
+(i.e.  sending it the \dcode{:hide-window} message). Closing a graph
+window removes it.
+
+\subsection{Editing Files}
+A separate program, \LSE, provides a very simple \LS\ file
+editor.\footnote{This editor is based on the code examples in
+Microsoft (1990).} Like the listener, \LSE\ supports parenthesis
+matching and code indentation. In addition, the \macbold{Edit} menu in
+\LSE\ contains an item for pasting a selected expression into an \XLS\
+application. This is accomplished using the Windows Dynamic Data
+Exchange (DDE) mechanism. It seems to work with one instance of \LSE\
+and one of \XLS\ running. It should also work if there are multiple
+instances of \LSE\ running.  It would get very confused if there were
+multiple instances of \XLS, but the current version does not allow
+this.
+
+\subsection{Menus}
+As with the Macintosh version, menus can be installed in and removed
+from the menu bar by sending them the \dcode{:install} and
+\dcode{:remove} messages. The \macbold{File} and \macbold{Edit} menus
+that appear in the menu bar on startup are \LS\ menus. They are the
+values of the global variables \dcode{*file-menu*} and
+\dcode{*edit-menu*}. The third menu, the \macbold{Windows} menu, is
+part of the MDI interface and is {\em not}\/ a \LS\ menu; you cannot
+change or remove it.
+
+When a graphics window is the front window and you select the
+\macbold{Copy} item from the \macbold{Edit} menu, a copy of the graph
+is placed in the clipboard. This is done by turning on buffering,
+sending the window the \dcode{:redraw} message, copying the contents
+of the buffer to a bitmap, and placing that bitmap in the clipboard.
+
+\subsection{User Preferences}
+User preferences can be set in a file {\tt wxls.ini} (or {\tt
+wxls32.ini} for the Win32 version) in the windows system directory.
+This file can contain several variables in sections {\tt [Xlisp]},
+{\tt [Listener]}, and {\tt [Graphics]}:
+\begin{center}
+  \begin{tabular}{ll}
+    Section & Variables\\
+    \hline
+    {\tt [Xlisp]} & {\tt Libdir}, {\tt Workspace}\\
+    {\tt [Listener]} & {\tt Font}, {\tt FontSize}\\
+    {\tt [Graphics]} & {\tt Font}, {\tt FontSize}, {\tt Color}\\
+    \hline
+  \end{tabular}
+\end{center}
+The {\tt Libdir} variable should be set to the directory containing
+the executable and runtime files; this should be done at installation
+time by loading {\tt config.lsp}. The {\tt Workspace} variable allows
+an alternate initial workspace to be specified. Both can be overridden
+on the command line by specifying {\tt -d} or {\tt -w} options,
+respectively. The {\tt Color} variable can be used to turn color use
+off if allocating a color background buffer would require too much
+memory. As an example, a {\tt wxls.ini} file containing
+\begin{verbatim}
+[Xlisp]
+Libdir=C:\WXLS
+[Listener]
+Font="Courier New Bold"
+FontSize=13
+[Graphics]
+Color=off
+\end{verbatim}
+specifies a library directory, a listener font, and turns color off.
+
+\subsection{Miscellaneous Notes}
+The feature \dcode{msdos} is included in the \dcode{*features*} list
+and can be used for conditional evaluation of DOS-specific code.
+
+Since the DOS operating system uses the backslash character \verb+\+
+as the directory separator and the backslash character is also the
+\LS\ escape character, a file name string that is specified within
+\XLS, for example as an argument to the \dcode{load} command, must be
+entered with two backslashes. For example, a file \dcode{foo.lsp} in
+the subdirectory \dcode{bar} of the current directory would be loaded
+using
+\begin{verbatim}
+(load "bar\\foo.lsp")
+\end{verbatim}
+or by
+\begin{verbatim}
+(load "bar\\foo")
+\end{verbatim}
+if the \dcode{.lsp} extension is dropped.
+
+DOS imposes an 8-character limit on base file names. When asked to
+access a file with a longer base name, file system functions truncate
+the base name to 8 characters. Thus
+\begin{verbatim}
+(load "regression.lsp")
+\end{verbatim}
+is equivalent to
+\begin{verbatim}
+(load "regressi.lsp")
+\end{verbatim}
+If you have files that uses a longer name on other systems you can
+therefore truncate their names as long as they are unique in the first
+8 characters.
+
+There are several features that are either missing, not yet
+implemented, or only partially implemented:
+\begin{itemize}
+\item Clipping is not yet implemented in the graphics system. I have
+  not yet figured out how to remove clip regions from a device
+  context.
+\item A mouse is essentially required for the graphics windows and
+  dialogs.  A proper alternate keyboard interface is not yet
+  available.
+\item Listener and graphics windows do not have a maximize button. The
+  reason for this is that strange things seem to happen when the menu
+  bar is modified while windows are maximized.  You can maximize the
+  MDI frame and then resize windows within the frame.
+\item \WXLS\ has access to all the memory Windows makes available to
+  it, but because of the segmented architecture of the 80X86
+  processor, no single item larger than 64K can be allocated. This
+  limits the total number of elements in a \LS\ array to 16K and the
+  total size of a numerical array used in the linear algebra functions
+  to about 8K elements. There is little guarantee that violations of
+  these limits will be handled gracefully. This limitation does not exist
+  in the Win32 version \WXLS32.
+\item The Win16 version has a system stack of only 20K. The Win32 version is
+  limited to a system stack of about 70K when run under Win32s, but should
+  have a much larger stack of 250K under Windows NT.
+\end{itemize}
+
+\section{More Advanced Features}
+\subsection{Dynamic Link Libraries}
+Dynamic link libraries can be used from both \WXLS\ and \WXLS32, but
+\WXLS\ can only use 16-bit DLL's and \WXLS32 can only use 23-bit
+DLL's.
+
+Dynamic Link Libraries (DLL's) can be used to provide additional
+cursor resources created with SDK or other toolkits, or to provide
+dynamically callable subroutines. The file \dcode{xlsx.c} contains
+startup and cleanup code for a DLL that seems to work with Borland
+C++. This code can be linked with cursor resources or with code into a
+DLL.
+
+Once you have a DLL, the function \dcode{load-dll} can be used to load
+a DLL. The return value of this function is an integer representing
+the DLL handle. The function \dcode{free-dll} can be used to release
+the library.
+
+\subsection{Cursors}
+When the \dcode{make-cursor} function is used to load a cursor from a
+DLL it is given three arguments. The first is a symbol naming the
+cursor.  The second is an integer representing a DLL handle (the DLL
+must have been loaded with \dcode{load-dll}). The third argument can
+be either an integer resource index or a string naming the cursor
+resource. If the DLL \dcode{stick.dll} contains a cursor resource
+defined by a resource file line like
+\begin{verbatim}
+Stick   CURSOR   STICK.CUR
+\end{verbatim}
+then it can be loaded as a cursor named \dcode{stick} using the
+expressions
+\begin{verbatim}
+(setf stick-dll (load-dll "stick.dll"))
+\end{verbatim}
+to load the library and
+\begin{verbatim}
+(make-cursor 'stick stick-dll "Stick")
+\end{verbatim}
+to load the cursor.
+
+The function \dcode{msw-cursor-size} returns a list of the width and
+height of a cursor on the graphics device. \XLS\ expands or truncates
+arrays supplied as arguments to \dcode{make-cursor} to this size.
+
+\subsection{Dynamic Loading}
+Subroutines in DLL's can also be called from within \XLS.  The
+subroutine should be defined as for dynamic loading on the Macintosh
+and should use C, not Pascal, calling conventions.  The header file
+\dcode{xlsx.h} contains the required definitions and macros.  The
+\dcode{call-cfun} function requires two arguments to identify the
+routine to be loaded, a DLL handle and an ordinal index or a name
+string.  Suppose the file \dcode{foo.c} shown on page 362 of Tierney
+(1990) is linked with the DLL code \dcode{xlsx.c} using the module
+definition file \dcode{foo.def} given by
+\begin{verbatim}
+LIBRARY FOO
+EXETYPE WINDOWS
+CODE    PRELOAD MOVEABLE DISCARDABLE
+DATA    PRELOAD MOVEABLE SINGLE
+EXPORTS FOO=_foo
+        WEP
+\end{verbatim}
+If the DLL is loaded as
+\begin{verbatim}
+(setf foo-dll (load-dll "foo.dll"))
+\end{verbatim}
+then the routine \dcode{foo} can be called using either
+\begin{verbatim}
+(call-cfun foo-dll "foo" 5 (float (iseq 1 5)) 0.0)
+\end{verbatim}
+or
+\begin{verbatim}
+(call-cfun foo-dll 1 5 (float (iseq 1 5)) 0.0)
+\end{verbatim}
+The second approach works since \dcode{foo} is the first routine in
+the exports table.
+
+\subsection{Dynamic Data Exchange}
+\subsubsection{A Minimal Interface}
+A very minimal DDE interface is provided. The interface is very simple
+and based on the DDEML library. As a server, WXLS allows connections
+to the topic {\tt XLISP-STAT} under the service name {\tt XLISP-STAT}.
+It accepts two kinds of transactions:
+\begin{itemize}
+\item Execute transactions in which the command is a sequence of lisp
+  expressions. The LSPEDIT application sends the current selection as
+  an execute transaction when the {\bf Eval Selection} menu item is
+  chosen.
+\item Request transactions for the item {\tt VALUE}. This returns a
+  string with a printed representation of the value returned by the
+  last expression in the most recent execute transaction of the
+  conversation.
+\end{itemize}
+As a client, there are three functions you can use that correspond
+fairly closely to their DDEML equivalents: \lfun{dde-connect},
+\lfun{dde-disconnect}, and \lfun{dde-client-transaction}.
+
+\lfun{dde-connect} takes two arguments, strings naming a service and
+a topic.  The topic string is optional; it defaults to the service
+string. The return value is a descriptor of the conversation if the
+connection is established, otherwise it is \NIL. At the moment
+conversation descriptors are integer indices into a table, and the
+number of concurrent conversation is limited to 30. This may change.
+
+\lfun{dde-disconnect} takes a conversation descriptor and attempts to
+close the conversation. If successful it returns \TRUE, otherwise
+\NIL.  If dde-disconnect is called with no arguments, then all
+currently active conversations are terminated. In this case the return
+value is \TRUE\ if any are terminated, \NIL\ if not.
+
+\lfun{dde-client-transaction} requires a conversation descriptor as
+its first argument. The remaining arguments are keyword arguments:
+\begin{description}
+\item \lkeyword{type}: Should be \lkeyword{request}, \lkeyword{poke},
+  or \lkeyword{execute}; the default is \lkeyword{execute}.
+\item \lkeyword{data}: A string, only only used by execute and poke
+  transactions.
+\item \lkeyword{item}: An item name string, currently only used by
+  poke and request transactions.
+\item \lkeyword{timeout}: a positive integer specifying the timeout in
+  milliseconds. The default is 60000.
+\item \lkeyword{binary}: Used by request transactions.  If false, the
+  default, then the result string is created from all characters up to
+  but excluding the first null character, if there is one.  If true, a
+  string of all characters is returned.
+\end{description}
+For a successful request transaction, the result is a string or binary
+array. All other successful transactions return \TRUE. If the
+transaction fails, \NIL\ is returned.
+
+As an example, you could have WXLS communicate with WXLS by DDE (why
+you would want to I do not know, but it works):
+\begin{verbatim}
+> (dde-connect "xlisp-stat")
+0
+> (dde-client-transaction 0 :data "(+ 1 2)")
+T
+> (dde-client-transaction 0 :type :request :item "value")
+"3"
+> (dde-disconnect 0)
+T
+\end{verbatim}
+You can also communicate with the program manager:
+\begin{verbatim}
+> (dde-connect "progman")
+0
+> (dde-client-transaction 0 :type :request :item "Groups")
+"Accessories\r
+Gnu Emacs\r
+Microsoft Visual C++ 5.0\r
+Metrowerks CodeWarrior\r
+StartUp\r
+Adobe Acrobat\r
+Macromedia Shockwave\r
+StuffIt\r
+Watcom C_C++\r
+Watcom C_C++ Tools Help\r
+Watcom C_C++ Additional Help\r
+Borland C++ 5.02\r
+Corman Lisp 1.21\r
+Microsoft Reference\r
+"
+> (dde-client-transaction 0 :data "[ShowGroup(Gnu Emacs,1)]")
+T
+> (dde-disconnect 0)
+T
+\end{verbatim}
+The first transaction is an execute transaction that opens the Main
+group's window. The second is a request that obtains a list of the
+current groups.
+
+There is one additional client function, \lfun{dde-services}.  This
+function takes two optional arguments, service and a topic arguments,
+which should be strings or \NIL. It returns a list of all matching
+services as a list of lists of a service and a topic name.  Some
+examples:
+\begin{verbatim}
+> (dde-services "progman")
+(("PROGMAN"f "PROGMAN") ("SHELL" "APPPROPERTIES") ("FOLDERS" "APPPROPERTIES"))
+> (dde-services)
+(("XLISP-STAT" "XLISP-STAT") ("XLISP-STAT" "SYSTEM") ("PROGMAN" "PROGMAN")
+ ("SHELL" "APPPROPERTIES") ("FOLDERS" "APPPROPERTIES"))
+> (dde-services "shell")
+(("PROGMAN" "PROGMAN") ("SHELL" "APPPROPERTIES") ("FOLDERS" "APPPROPERTIES"))
+
+\end{verbatim}
+
+This DDE interface is experimental and may change. For the moment it
+seems adequate for providing configuring the integration of WXLS into
+Windows during setup.
+
+\subsubsection{A Higher-Level DDE Client Interface}
+I have recently added a few higher level functions to simplify acting
+as a DDE client.  These functions are patterned after the DDE client
+interface in VBA.  The available functions are \lfun{dde-execute},
+\lfun{dde-request}, and \lfun{dde-poke}.
+
+\lfun{dde-execute} takes a conversation descriptor and a command
+string as arguments. It returns \TRUE\ on success and \NIL\ on
+failure.
+
+\lfun{dde-request} takes a conversation descriptor and an item string
+as arguments.  It also accepts the \lkeyword{binary} keyword argument.
+On success it returns a string or a binary array, depending on the
+binary argument; on failure it returns \NIL.
+
+\lfun{dde-poke} takes a conversation descriptor, an item string, and a
+value as arguments.  The value can be any Lisp object; if it is not a
+string it is converted to one using \lfun{format} with the \verb|~s|
+directive.
+
+\lfun{dde-services} takes optional service and topic names and returns
+a list of all matching service-topic pairs.
+
+As an example, here is how to interact with an Excel document.  THIs
+assumes that Excel is running.  This is adapted from an example
+provided by Russell Lenth.
+
+First, you can ask Excel to load a spread sheet:
+\begin{verbatim}
+> (setf chan (dde-connect "excel" "system"))
+0 
+> (dde-execute chan "[Open(\"fred.xls\")]")
+T
+> (dde-disconnect chan)
+T
+\end{verbatim}
+Next, open a connection to the spread sheet and ask for the contents
+of the first column:
+\begin{verbatim}
+> (setf chan (dde-connect "excel" "[fred.xls]Sheet1"))
+0
+> (dde-request chan "c1")
+"HELLO\r
+2\r
+"
+\end{verbatim}
+Finally, place a new value is row 1, column 3, retrieve row 1, and
+close the connection:
+\begin{verbatim}
+ > (dde-poke 0 "r1c3" 5)
+T
+> (dde-request 0 "r1")
+"HELLO\t3\t5\r
+"
+> (dde-disconnect chan)
+T 
+\end{verbatim}
+
+\subsubsection{Customizing the DDE Server}
+The DDE server has been redesigned to allow customization via an
+object-based interface.  This is still very much experimental.
+Details are given
+\htmladdnormallinkfoot{elsewhere}{http://www.stat.umn.edu/\~{}luke/xls/projects/win32/dde.html}.
+
+\subsection{Using XLISP-STAT With NT Emacs on Win32}
+The Win32 distribution now includes a command line client
+\texttt{xlsclient}.  This client reads expressions from standard
+input, uses DDE to ask XLISP-STAT to evaluate the expressions and
+print any results, and then uses DDE to retrieve the output, which is
+then displayed on standard output.  The main purpose of this client is
+to allow XLISP-STAT to be run under NT Emacs.  The client assumes that
+XLISP-STAT is already running; it does not try to start XLISP-STAT
+itself; you must do that before using the client.
+
+To use this mechanism with the standard inferior Lisp mode, you need
+to tell emacs to use \texttt{xlsclient} as its
+\texttt{inferior-lisp-program}, for example by setting it in your
+\texttt{.emacs} file.  You can then run the client with \texttt{M-x
+run-lisp}.
+
+You can also run XLISP-STAT under \htmladdnormallinkfoot{ESS
+  mode}{http://ess.stat.wisc.edu}.  To do this, during the
+installation process for ESS define the variable
+\texttt{inferior-XLS-program-name} in \texttt{ess-site.el} with
+\begin{verbatim}
+(setq-default inferior-XLS-program-name "xlsclient")
+\end{verbatim}
+using a full path for the client if it is not in your search path.
+
+The DDE-based approach is simple, but has a few drawbacks:
+\begin{itemize}
+\item It is not possible to execute an expression that reads from
+  standard input.  Attempting to read from standard input will give an
+  end of file error message.
+\item It is not possible to interrupt execution of an expression from
+  Emacs.  To interrupt execution you need to switch to the XLISP-STAT
+  listener and signal an interrupt with \texttt{Control-BREAK}.
+\item Special variable bindings and assignments in the listener affect
+  ones in the client and vice versa.
+\end{itemize}
+Most of these issues can only really be resolved properly by having
+proper threads at the Lisp level and having the Listener and the
+command line processed by different threads
+
+But aside from those minor issues, this approach seems to work
+reasonably well.
+
+
+\subsection{Other Functions}
+The function \dcode{msw-free-mem} returns the total amount of free
+global memory that is available in Windows.
+
+The \dcode{system} function takes a command string and an optional
+state argument and \dcode{WinExec}'s the command string. If the
+command starts a windows application then the application starts
+iconified if the state arguments is \dcode{nil} and normal if the
+argument is \dcode{t}, the default. Thus
+\begin{verbatim}
+(system "clock")
+\end{verbatim}
+starts up a clock in normal state and
+\begin{verbatim}
+(system "clock" nil)
+\end{verbatim}
+starts up an iconified clock. The result returned is either \dcode{t}
+if the {\tt WinExec} succeeds or \NIL\ if it fails. On failure,
+a numerical error code is returned as the second value.
+
+The function \dcode{msw-win-help} provides a minimal interface to the
+windows \dcode{WinHelp} function. Two arguments are required, a string
+naming the help file to be used, and a symbol specifying the type of
+help requested. The keyword symbols \lkeyword{help},
+\lkeyword{context}, \lkeyword{index}, \lkeyword{key}, and
+\lkeyword{quit} are currently supported.  Context help requires an
+additional integer argument, and key help requires an additional key
+string. For example,
+\begin{verbatim}
+(msw-win-help "calc.hlp" :index)
+\end{verbatim}
+opens help for the calculator application at the contents section.  No
+Windows help file for \XLS\ is available at this time, but this
+function provides the necessary hook for using such a file if it
+becomes available.
+
+The functions \lfun{msw-tile}, \lfun{msw-cascade},
+\lfun{msw-close-all}, and \lfun{msw-arrange-icons} implement the
+corresponding actions on the Windows menu. These functions take no
+arguments.
+
+The functions \lfun{msw-get-profile-string} and
+\lfun{msw-write-profile-string} can be used to access and modify user
+preference information.  They require three and four arguments,
+respectively. The first and second arguments specify the section and
+item names as strings, and the last argument specifies the preference
+file name. A preference file name of \NIL\ refers to the system
+preference file. For \lfun{msw-write-profile-string} the third
+argument is a new value. This can be a string or \NIL; if it is \NIL,
+the entry is deleted. This function deletes a section if the item
+argument is \NIL.
+
+\subsection{Recompiling the System}
+If you want to recompile the system you can do so, but you have to
+start with a compiled version of the compiler. The system stack
+available under Windows is very small -- only 20K compared to 180K on
+the Macintosh version -- and is not sufficient for recompiling the
+compiler from {\tt .lsp} files. You can recompile the compiler as long
+as you start with a compiled version.
+
+\section*{References}
+\begin{description}
+\item[]
+Microsoft Corporation, (1990). {\em Microsoft Windows Guide to
+Programming}.  Redmond, WA: Microsoft.
+\item[]
+Tierney, L. (1990). {\em LISP-STAT: An Object-Oriented Environment for
+Statistical Computing and Dynamic Graphics}. New York, NY: Wiley.
+\end{description}
+
+\end{document}

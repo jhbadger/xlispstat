@@ -1,0 +1,56 @@
+This the Macintosh distribution of XLISP-STAT Release 3. This
+distribution is available for anonymous ftp from ftp.stat.umn.edu in
+directory pub/xlispstat/.
+
+You need to obtain two self extracting archive files: the appropriate
+application for your system and the support files. The support files
+are in xlispstat-3-??-??-files.sea.hqx, where ?? corresponds to the
+current minor and subminor release numbers, and the applications are
+
+	'XLISP-STAT 3.??.?? PPC' in xlispstat-3-??-??-ppcapp.sea.hqx
+	'XLISP-STAT 3.??.?? 881' in xlispstat-3-??-??-881app.sea.hqx
+	'XLISP-STAT 3.??.?? 020' in xlispstat-3-??-??-020app.sea.hqx
+	'XLISP-STAT 3.??.?? GEN' in xlispstat-3-??-??-genapp.sea.hqx
+
+The GEN application should run on any 68K mac. The 020 application
+requires at least a 68020 processor but no coprocessor. The 881
+application requires both a 68020 or higher processor and a
+coprocessor. The PPC application is a PowerPC native code
+implementation. All versions have been compiled with MetroWerks
+CodeWarrior C. Extracting the support files creates a folder.  After
+extracting your executable, place it in this folder.
+
+Some information on the changes since Release 2 is given in the file
+pub/xlispstat/doc/changes.ps.
+
+You may need to adjust your partition size if you have a large color
+screen or are using more than 256 colors.
+
+A minimal runtime system needs the application and the initial
+workspace, 'xlisp.wks', and any of the files in the Autoload folder
+you want to use. The application, initial workspace, and Autoload
+folder must be placed in the same folder. You can add the 'xlisp.hlp'
+file if you want documentation to be available.
+
+If you want to include any of the 'Autoload' files in the startup
+workspace, load them into a running application and do
+
+	(save-workspace "newxlisp.wks")
+
+This creates a new workspace file and exits. You can then double click
+on this workspace, or you can rename it 'xlisp.wks' to make it the
+default startup workspace (keep a copy of the original one). To load
+the compiler, load the file 'cmpload.fsl' in the 'Autoload' folder.
+
+The lisp sources can be compiled by loading the 'cmpsys.lsp' file in
+the 'Lisp Sources' folder. This will recompile any .lsp file whose
+corresponding .fsl file does not esist or has an earlier modification
+date.
+
+The file xlsx.h is a header file for use with external functions.
+
+Luke Tierney
+School of Statistics
+University of Minnesota
+Minneapolis, MN 55455
+luke@stat.umn.edu

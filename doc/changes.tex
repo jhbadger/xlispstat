@@ -1,0 +1,1953 @@
+\documentclass{article}
+\usepackage{fullpage}
+\usepackage{html}
+
+\title{XLISP-STAT 2.1 Release 3\\Beta Release Notes}
+\author{Luke Tierney\\School of Statistics\\University of Minnesota}
+
+%%**** fix this!!
+\newcommand{\mytilde}{\~{ }}
+
+\newcommand{\param}[1]{{\em $<$#1$>$}}
+
+\newcommand{\funindex}[1]{\index{#1 function@{\tt #1} function}}
+\newcommand{\specindex}[1]{\index{#1 special form@{\tt #1} special form}}
+\newcommand{\macindex}[1]{\index{#1 macro@{\tt #1} macro}}
+\newcommand{\varindex}[1]{\index{#1 variable@{\tt #1} variable}}
+\newcommand{\varstarindex}[1]{\index{#1 variable@{\tt *#1*} variable}}
+\newcommand{\constindex}[1]{\index{#1 constant@{\tt #1} constant}}
+\newcommand{\lkeyindex}[1]{\index{#1 lambda keyword@{\tt \&#1} lambda keyword}}
+\newcommand{\setfindex}[1]{\index{#1 setf form@{\tt #1} setf form}}
+\newcommand{\keywordindex}[1]{\index{#1 keyword@{\tt :#1} keyword}}
+\newcommand{\typeindex}[1]{\index{#1 type@{\tt #1} type}}
+\newcommand{\typelistindex}[1]{\index{#1 type@{\tt (#1)} type}}
+\newcommand{\lfmtdirindex}[1]{\index{#1 format directive@{\tt \mytilde#1} format directive}}
+\newcommand{\lerrtypeindex}[1]{\index{#1 error type@{\tt #1} error type}}
+\newcommand{\lfeatureindex}[1]{\index{#1 feature@{\tt #1} feature}}
+
+\newcommand{\lfun}[1]{{\tt #1}\funindex{#1}}
+\newcommand{\lspec}[1]{{\tt #1}\specindex{#1}}
+\newcommand{\lmac}[1]{{\tt #1}\macindex{#1}}
+\newcommand{\lvar}[1]{{\tt #1}\varindex{#1}}
+\newcommand{\lvarstar}[1]{{\tt *#1*}\varstarindex{#1}}
+\newcommand{\lconst}[1]{{\tt #1}\constindex{#1}}
+\newcommand{\llkey}[1]{{\tt \&#1}\lkeyindex{#1}}
+\newcommand{\lsetf}[1]{{\tt (setf #1)}\setfindex{#1}}
+\newcommand{\lkeyword}[1]{{\tt :#1}\keywordindex{#1}}
+\newcommand{\ltype}[1]{{\tt #1}\typeindex{#1}}
+\newcommand{\ltypelist}[1]{{\tt (#1)}\typelistindex{#1}}
+\newcommand{\lfmtdir}[1]{{\tt \mytilde#1}\lfmtdirindex{#1}}
+\newcommand{\lerrtype}[1]{{\tt #1}\lerrtypeindex{#1}}
+\newcommand{\lfeature}[1]{{\tt #1}\lerrtypeindex{#1}}
+
+\newcommand{\CL}{Common Lisp}
+\newcommand{\XWIN}{{\em X11}}
+\newcommand{\XL}{XLISP}
+\newcommand{\TAXL}{XLISP-PLUS 2.1g}
+\newcommand{\XLS}{XLISP-STAT}
+\newcommand{\NIL}{{\tt nil}}
+\newcommand{\TRUE}{{\tt t}}
+
+\newenvironment{note}{\begin{quotation}\noindent\em{}}{\end{quotation}}
+\newenvironment{warning}{\begin{quotation}\noindent\em{}}{\end{quotation}}
+\begin{htmlonly}
+\newenvironment{note}{\begin{quotation}}{\end{quotation}}
+\newenvironment{warning}{\begin{quotation}}{\end{quotation}}
+\end{htmlonly}
+
+\newenvironment{CLSpec}[2]{%
+  \begin{trivlist}%
+  \item[]%
+    {#1} \hfill [{\em {#2}}]\\ \begin{latexonly}\em{}}%
+  {\end{trivlist}}
+
+\makeindex
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+\section{Introduction}
+This note outlines some of the changes in the new \XLS\ release from
+Release 2. There are a large number of minor changes, mostly in the
+basic \XL\ system. These changes move the basic \XL\ closer to \CL, and
+include the addition of packages, multiple values, other improvements
+from \TAXL, and a byte code compiler. Wherever possible, changes have
+been made in such a way as to maintain backward compatibility. In a
+few, hopefully minor, cases this was not possible; these cases should
+be noted below.
+
+\begin{note}
+If you notice anything that has changed and is not mentioned here,
+please let me know. If any change causes exceptional grief, please let
+me know as well.
+\end{note}
+
+
+\section{Changes to System Features}
+\subsection{Debugging and Evaluation}
+\label{Subsection:Debugging}
+The error handling in \XLS\ is now based on the \CL\ condition system.
+When debugging is turned on, an error enters a break loop. The break
+loop presents a list of the available restarts, and the function
+\lfun{continue} can be used to select a restart:
+\begin{verbatim}
+Error: illegal zero argument
+Break level 2.
+To continue, type (continue n), where n is an option number:
+ 0: Return to break level 1.
+ 1: Return to Lisp Toplevel.
+2>
+\end{verbatim}
+When debugging is not turned on, an indication of the function in
+which the error occurred is printed before the system returns to the
+top level:
+\begin{verbatim}
+Error: illegal zero argument
+Happened in: #<Subr-/: #c49e20>
+>
+\end{verbatim}
+
+The \lfun{baktrace} function now accepts a second optional argument
+that determines whether it prints function arguments or not. Supplying
+\NIL\ as this argument suppresses argument printing. The default value
+for this argument is the value of the special variable
+\lvarstar{baktrace-print-arguments}.
+
+The back trace does not show entries for byte compiled functions or
+internal functions called from byte compiled code.
+
+The old \lfun{step} function has been replaced by a new one from the
+the stepper file included in \TAXL.  Detailed documentation for this
+new \lfun{step} is given in Appendix \ref{Appendix:Stepper}. The
+Macintosh version of \lfun{step} no longer has a dialog interface.
+
+The action taken in response to a user interrupt is now customizable.
+If the value of the special variable \lvarstar{interrupt-action} is
+\NIL, interrupts are ignored. Otherwise, the value should be a
+function of no arguments that is called in response to an interrupt.
+The default value is the \lfun{top-level} function that returns to the
+top level.
+
+Debugging may be affected by the handling of macros. If the special
+variable \lvarstar{displace-macros} is non-\NIL, then macros are spliced
+into the code after they are expanded. This means macros are only
+expanded once and can significantly improve speed of interpreted code.
+But it may make code used in stepping less readable, so it may be
+useful to set this variable to \NIL\ during debugging.
+
+\XL\ can now be more strict in checking for keywords. If
+\lvarstar{strict-keywords} is non-\NIL, then specifying keyword
+arguments not defined for a function signals an error unless the
+function is defined using \llkey{allow-other-keys} or the keyword
+arguments include \lkeyword{allow-other-keys} with a non-\NIL\ value.
+If the value of \lvarstar{strict-keywords} is \NIL, then unmatched
+keywords are always ignored. For now, this is the default setting.
+
+\begin{note}
+  Some graphical control over the system option variables, choosing
+  restarts, etc. is clearly needed.
+\end{note}
+
+\subsection{Top Level and Saved Workspaces}
+It is now possible to save workspaces and customize the initialization
+and top level functions. The function \lfun{save-workspace} takes a
+single argument, the name of the saved workspace file. It closes all
+windows and menus, creates the saved workspace, and exits from the
+system. The workspace file is created with a {\tt .wks} extension.
+
+On UNIX, and eventually MS Windows, a saved workspace can be loaded by
+specifying {\tt -w}{\it file.wks} (with no spaces) as a command line
+argument.  On a Macintosh, you can double click a workspace. If no
+workspace argument is given, the workspace named {\tt xlisp.wks} in the
+startup directory is used if one is available. Otherwise, a file {\tt
+  init.lsp} is loaded. (So {\tt init.lsp} is not loaded if a workspace
+is found). It is currently not possible to load a new workspace once
+the system has started up.
+
+After loading a workspace or the {\tt init.lsp} file, files on the
+command line (or files that where double clicked on the Macintosh) are
+loaded. The command line used to start up \XLS\ is also made available
+as a list of strings in the variable \lvarstar{command-line}. (On the
+Macintosh this variable currently does not contain anything useful.)
+Next, the functions of no arguments in the list that is the value of
+\lvarstar{startup-functions} is called. One of the functions in the
+default value of this variable is responsible for loading the {\tt
+  statinit.lsp} file. Finally, the function \lvarstar{top-level-loop} is
+called. This function is called again each time the system is reset to
+the top level.
+
+The installed versions of xlispstat are now set up to start from a
+default {\tt xlisp.wks} saved workspace rather than by loading a set
+of {\tt .lsp} files. Compiled versions of files needed less frequently
+and help information are still kept in a library and loaded on demand.
+
+\begin{warning}
+  The basic objective here is to make startup and the top level
+  customizable. The details are likely to change somewhat as I get
+  things straightened out on the Mac and Windows versions.
+\end{warning}
+\begin{warning}
+  The ability to save workspaces (and to byte compile files) creates a
+  problem for using \verb|#+| and \verb|#-| to test for runtime
+  properties. These tests occur when a file is read. But a file can be
+  read on a computer with a color display and the definitions can then
+  be used from a saved workspace on a monochrome display, for example.
+  As a result, \verb|#+| and \verb|#-| should only be used for
+  properties, such as the operating system type, that will not change
+  from one invocation to another. Runtime tests, such as the function
+  \lfun{screen-has-color} should be used instead. All system files
+  should have been rewritten with this in mind.
+\end{warning}
+
+\subsection{IEEE NaN's and infinites}
+Three constants are defined to support IEEE NaN's and infinities:
+\begin{center}
+  \begin{tabular}{ccc}
+    \lconst{positive-infinity} & \lconst{negative-infinity} &
+    \lconst{not-a-number}
+  \end{tabular}
+\end{center}
+When printing an infinity or a NaN when \lvarstar{print-escape} is
+\NIL, the appropriate symbol is printed using the {\tt \#.} read
+macro. For example,
+\begin{verbatim}
+> positive-infinity
+#.POSITIVE-INFINITY
+\end{verbatim}
+This insures that all numbers are printed in a readable form, even
+infinities.  All NaN's are printed identically, there is no provision
+for preserving variations among NaN's.
+\begin{note}
+  There is currently no provision for checking for a NaN or infinity.
+  There probably ought to be lisp equivalents of the IEEE-recommended
+  functions {\tt isnan} and {\tt finite}.
+
+  At present the symbols used here are external in the XLISP
+  package.As they are nonstandard, they should probably be internal in
+  a system package.
+\end{note}
+
+\subsection{New Garbage Collector and Memory Requirements}
+The original mark-and-sweep collector of \XL\ has been replaced by an
+in-place two-generation generational collector. This means that there
+are now two types of garbage collections, minor and major ones.  Minor
+collections occur relatively frequently but are very fast.  Major ones
+occur rather rarely in typical usage, and are only marginally slower
+than mark-and-sweep collections. The net effect should be to reduce
+garbage collection pauses significantly.
+
+In addition, the system is more aggressive about allocating more space
+when a substantial fraction of the allocated space is in use. This
+should also reduce the number of collections, but may lead to greater
+process memory growth. The impact on limited memory systems such as a
+Macintosh with a small partition is not clear at this point.
+
+The new garbage collector requires more storage space per Lisp node.
+The overall requirements are increased by around 30\%-50\%. The default
+partition on the Macintosh will therefore be increased to 3M.
+
+\subsection{Missing and Non-Numerical Data in Graphs}
+It is now possible to give plotting functions data sequences that
+contain non-numerical values, such as missing value codes.  Points
+with one or more non-numerical coordinates are marked internally as
+masked. This means they are not drawn and are not considered for the
+calculation of scaling information.
+
+Any non-numerical lisp item can be used as a missing data code, but
+\NIL\ should be avoided since it also represents the empty list and
+can cause confusion in vectorized operations.
+
+\subsection{Working Directories and Directory Function}
+The function \lfun{get-working-directory} returns a string naming the
+current working directory. The function \lfun{set-working-directory}
+sets the working directory to the directory specified by its string
+argument.  If the change of directory succeeds, \TRUE\ is returned.
+Otherwise, \NIL\ is returned.
+
+On the Macintosh these functions will fail if the length of the
+directory name is greater than 255.
+
+A minimal version of the \lfun{directory} function is now available.
+The wildcard character for all versions is {\tt *} -- even for the
+macintosh. By default, \lfun{directory} only lists regular files. If a
+non-\NIL\ value is given for the \lkeyword{all} keyword argument, then
+all files and directories are included. Thus
+\begin{verbatim}
+(directory "*")
+(directory "*" :all t)
+\end{verbatim}
+should list all regular files and all files, respectively, in the
+current working directory.
+
+\subsection{Version Information}
+In addition to the feature \lfeature{xlisp}, starting with release 3.39
+the new version also defines \lfeature{xlisp-plus}. The constants
+\lconst{xls-major-release} and \lconst{xls-minor-release} contain
+the major and minor release numbers of the executable. For release
+3.39, for example, these are 3 and 39, respectively.
+
+\subsection{Content Backgrounds}
+The protocol used by the standard \lkeyword{redraw-content} methods
+has been augmented to support maintaining a background for plot
+contents. Instead of erasing the content area before drawing the
+content, these methods now send the \lkeyword{clear-content} message.
+The default method for this method clears the content area. By
+overriding this method, you can draw any background you want to
+maintain.
+
+Unless you want to handle clearing the background yourself, you should
+begin your method with a call to \lfun{call-next-method}
+
+A simple example: The code
+\begin{verbatim}
+(setf p (plot-points (normal-rand '(10 10))))
+
+(defmeth p :clear-content ()
+  (call-next-method)
+  (send self :frame-rect 50 50 100 100))
+\end{verbatim}
+sets up a plot that contains a rectangle in its background.
+
+This new protocol is still experimental and may change if a better
+design is found.
+
+\section{Changes in Specific Implementations}
+
+\subsection{Changes in the UNIX/X11 Version}
+The initial workspace and the default directory can be specified on
+the commandline as {\tt -w}{\em file.wks} and {\tt -d}{\em dir},
+respectively.
+
+Upon startup of the \XWIN\/ version of \XLS\ the system merges
+resources found in file
+\begin{center}
+  \tt
+  /usr/lib/X11/app-defaults/Xlisp
+\end{center}
+then ones found in the file {\tt Xlisp} in the directory named by the
+environment variable {\tt XAPPLRESDIR}, and finally the resources of
+the display. Resources can thus be specified in all three places, with
+the display's resources having highest precedence.
+
+The functions \lfun{popen} and \lfun{pclose} from {\tt winterp} have
+been added to the UNIX version to allow streams connected to processes
+to be created.
+\begin{note}
+  The interface to these functions may change.
+\end{note}
+
+\subsection{Macintosh Changes and System 7 Support}
+Several options can now be set in a preferences file. This file is a
+text file, is must be called {\bf XLS Preferences}, and it must be
+located in the same folder as the application.  Each line in the file
+represents an option specification. The first word identifies the
+option, the remaining words make up the option data. The option names
+currently supported are
+\begin{center}
+\begin{tabular}{lll}
+{\bf EditFontName} & {\bf EditFontSize} & {\bf EditFontStyle}\\
+{\bf ListenerFontName} & {\bf ListenerFontSize} & {\bf ListenerFontStyle}\\
+{\bf GraphFontName} & {\bf GraphFontSize} & {\bf GraphFontStyle}\\
+{\bf Workspace} & {\bf Color}
+\end{tabular}
+\end{center}
+the {\bf Workspace} entry specifies a default workspace to use. Unless
+specified separately, listener font properties are identical to editor
+font ones. As an example, a preferences file containing the entries
+\begin{verbatim}
+EditFontName Courier
+EditFontSize 12
+Workspace Alliance Drive:MPW:Programs:New XLS:xlisp.wks
+Color off
+\end{verbatim}
+specifies a 12-point bold italic Courier font for editor windows, an
+alternative workspace, and turns color off. Turning color off may be
+useful if the screen size and number of colors used would require too
+much memory for the background buffer.
+
+The dashed line separating system apple menu items from application
+items is now supplied internally -- a dash item is now no longer
+necessary. This should result in a single dash under both System 6 and
+System 7.
+
+Under Macintosh System 7 \XLS\ now continues to operate while in
+background. If the variable \lvarstar{use-notifier} is not \NIL, then
+notification occurs when a modal dialog is to be opened or when the
+system tries to read from the listener. The notification consists of a
+beep, a flashing icon on the system menu, and a diamond marking the
+application name in the system menu.
+
+Minimal support for examining processes on the current computer and
+for sending local or remote apple events is now available. The
+function \lfun{launch-application} takes either a file name string
+argument or an application signature argument and launches the
+corresponding application. By default the application is launched in
+foreground; specifying an optional argument as non-\NIL\ causes the
+application to be launched in background. The value returned is a
+process information record if the launch succeeds, or \NIL\ if the
+launch fails. Process information is currently encoded as a list of
+the process name, process signature, process serial number, time of
+process start and run time of the process. This representation may
+change.
+\begin{note}
+  Currently applications can only be found by signature if they are
+  located on the boot volume.
+\end{note}
+Application signatures used by \lfun{launch-application} are integers
+representing four-character character constants. The function
+\lfun{encode-signature} converts strings with the corresponding string
+of characters to the signature code. For example,
+\begin{verbatim}
+> (encode-signature "X1St")
+1479627636
+\end{verbatim}
+computes the signature code for {\tt X1St}, the signature for \XLS.
+
+A list of process information records for all running processes is
+returned by \lfun{get-process-list}, and \lfun{get-front-process}
+returns the process information for the current front process. The
+\lfun{set-front-process} function takes a process name string,
+signature code, or process information record and makes the
+corresponding process the front process. If the argument is a string
+or integer, then the first process, if any, with the corresponding
+name or signature is used.
+
+\XLS\ now responds to the four required Apple events (Open
+Application, Open Documents, Print Documents, and Quit Application).
+The Print event is ignored. Currently new workspaces can only be
+opened at startup (i.~e. as part of the initial high level event), but
+text files can be opened by double clicking them or dragging them onto
+the \XLS\ icon at any time. In addition, the Do Script event is
+supported (class {\tt 'misc'}, event {\tt 'dosc'}). This event takes a
+direct parameter that is a string and interprets it as a lisp
+expression. The expression is evaluated, the result is printed to a
+string, and the string is returned as the direct parameter of the
+result. For example, if you have the {\tt Alpha} shareware editor,
+then from a Tcl shell window you can send an apple event to a running
+\XLS\ process asking \XLS\ to make a system beep sound:
+\begin{verbatim}
+Alpha.5.55> dosc -c 'X1St' -s "(sysbeep)"
+NIL
+\end{verbatim}
+
+You can also send Apple events to processes on the same or on remote
+computers using the function \lfun{send-apple-event}. At the moment
+this function allows you to send events that contain parameters that
+are strings, integers, or floating point numbers. If a result is
+expected it should contain no required parameters or a required direct
+parameter that can be coerced to a string. In particular, this allows
+Do Script events to be sent to other \XLS\ processes. The
+\lfun{send-apple-event} function has three required parameters, two
+four-character strings specifying the event class and type, and an
+address specifier for the event's receiver. The address can be
+\begin{itemize}
+\item The symbol \TRUE, which means the current application is the
+  target, a self send.
+\item A string representing a process name on the local computer.
+\item An integer representing the signature code of a process on the
+  current computer.
+\item A process information record as returned by
+  \lfun{launch-application} or by \lfun{get-process-list}.
+\item A target specifier as returned by
+  \lfun{browse-apple-event-targets} or by
+  \lfun{get-apple-event-target}.
+\end{itemize}
+Several keyword arguments are also accepted:
+\begin{description}
+\item \lkeyword{data}: Either \NIL, the default, or a string to be
+  used as the direct parameter of the event, or a list of lists.  If a
+  list of lists is used, then the sublists must contain two items, a key
+  string identifying the parameter (such as {\tt "----"} for a direct
+  parameter) and the data item. Data items can be integers, floating
+  point numbers or strings.
+\item \lkeyword{wait-reply}: Wait for a reply if non-\NIL, the default.
+\item \lkeyword{timeout}: The symbol \TRUE\ for the default timeout
+  (about a minute), an integer for a specific value, or \NIL\ for no timeout.
+  If not supplied, the default timeout is used.
+\item \lkeyword{can-switch-layer}: Whether or not the receiver should
+  be allowed to come to the front if it requires interaction.
+\end{description}
+As an example,
+\begin{verbatim}
+(send-apple-event "aevt" "abou" "Finder")
+\end{verbatim}
+sends the Finder an apple event asking it to present its {\bf About
+  This Macintosh} dialog box.
+
+To locate a target on the local machine or a machine on the network
+you can use the interactive \lfun{browse-apple-event-targets}
+function. This function presents a dialog box that lists available
+processes for all Macintoshes on a local network; if the local network
+is connected to an internet the dialog also presents a list of
+AppleTalk zones to choose from. Several keyword arguments are
+available for controlling the appearance of the dialog:
+\begin{description}
+\item \lkeyword{prompt}: A prompt string to show at the top of the dialog.
+\item \lkeyword{application-list-label}: A string to show over the
+  program list item.
+\item \lkeyword{type}: The connection type, which defaults to {\tt
+    "PPCToolBox"}.
+\end{description}
+By default, all targets with suitable permissions are shown. The set
+of targets can also be restricted with two additional keyword
+arguments:
+\begin{description}
+\item \lkeyword{name}: A string specifying the name of the application
+  to link to. Only applications with this name are shown.
+\item \lkeyword{signature}: An integer signature code. Only
+  applications with this signature are shown.
+\end{description}
+You can also locate applications to link to without using a dialog
+box.  The \lfun{get-apple-event-target-list} function returns a list
+of all targets available on a particular machine. By default the local
+machine is examined. Alternatives can be specified by keyword
+arguments:
+\begin{description}
+\item \lkeyword{object}: The name of a macintosh.
+\item \lkeyword{type}: The connection type, which defaults to {\tt
+    "PPCToolBox"}.
+\item \lkeyword{zone}: An AppleTalk zone name. 
+\end{description}
+The function \lfun{get-apple-event-target} returns a single target, or
+\NIL\ if none is found. It requires one argument, an application name
+string or signature code, and also accepts the same keyword arguments
+as \lfun{get-apple-event-target-list}. If there are several possible
+matches for the name or signature given, an arbitrary choice is
+returned.
+
+As an example, suppose an \XLS\ process is running on another
+Macintosh named {\tt "Fred's Macintosh"} and that all permissions are
+suitably set. We can send a {\tt sysbeep} command to this Macintosh
+using the expression
+\begin{verbatim}
+(let* ((sig (encode-signature "X1St"))
+       (target (get-apple-event-target :object "Fred's Macintosh")))
+  (when target
+        (send-apple-event "misc" "dosc" target :data "(sysbeep)")))
+\end{verbatim}
+If successful, the expression returns the string {\tt "NIL"}.
+
+\begin{note}
+  The support included for Apple events is rather minimal. The main
+  reason I have not yet made it more extensive is that I don't know
+  what kinds of events will be most useful for communicating with
+  other applications. If anyone has any ideas or would like to help
+  extending this, please let me know.
+\end{note}
+
+One problem that comes up on the Macintosh is the need to account for
+the screen size. Currently a background bitmap the size and depth of
+the primary screen is allocated within the partition. The size of this
+bitmap is
+\begin{displaymath}
+  \frac{\mbox{width}\times\mbox{height}\times\mbox{depth}}{8}.
+\end{displaymath}
+For a $512\times320$ monochrome display this is fairly trivial, and a
+3M partition should be adequate for most purposes (though this of
+course depends on what is loaded). But for a $1024\times1024$ display
+using 32-bit color, this is 4M. At the moment, this calculation needs
+to be done manually and you need to make adjustments to your partition
+accordingly. I will try to come up with a better solution in the
+future.
+
+The \lfun{open-file-dialog} function now accepts a third optional
+parameter for specifying the file types to show. If this parameter is
+\NIL, all files are shown. If it is a string or a list of strings,
+only files of the corresponding types are shown.The sefault is {\tt
+  "TEXT"}. At present,at most four types can be given; this limitation
+will be removed in the future.
+
+\subsection{Changes in the Microsoft Windows Version}
+The new standard version for Microsoft Windows now requires at least a
+386 processor and Windows version 3.1. This version is still based on
+16 bit windows and hence still has the same limitations on vector
+sizes as previous versions. In addition, a Win32 version is now
+available that removes some of these limitation.
+
+In line with the use on Windows 3.1 as the base, accelerators for the
+edit menu items in WXLS and in LSPEDIT have changed to the ones used
+in the 3.1 accessories Write and Notepad: {\em Ctrl-X} for Cut, {\em
+  Ctrl-C} for Copy, etc.. The interrupt key combination is now {\em
+  Ctrl-Break}. The functions \lfun{open-file-dialog} and
+\lfun{set-file-dialog} now use the new standard Windows open and save
+dialogs and also optionally set the working directory to the directory
+containing the selected file.
+
+The listener has been modified so that is can now hold a more
+reasonable amount of text and should no longer run out of memory.
+
+Modeless dialogs, such as slider dialogs, are now MDI clients rather
+that popup windows.
+
+The need to set environment variables has been eliminated. Instead,
+information about the location of startup files can now be placed in a
+private initialization file, {\tt wxls.ini} for the 16-bit version and
+{\tt wxls32.ini} for the 32-bit version, in the Windows system
+directory. This file can contain several variables in sections {\tt
+[Xlisp]}, {\tt [Listener]}, and {\tt [Graphics]}:
+\begin{center}
+  \begin{tabular}{ll}
+    Section & Variables\\
+    \hline
+    {\tt [Xlisp]} & {\tt Libdir}, {\tt Workspace}\\
+    {\tt [Listener]} & {\tt Font}, {\tt FontSize}\\
+    {\tt [Graphics]} & {\tt Font}, {\tt FontSize}, {\tt Color}\\
+    \hline
+  \end{tabular}
+\end{center}
+The {\tt Libdir} variable should be set to the directory containing
+the executable and runtime files; this should be done at installation
+time by loading {\tt config.lsp}. The {\tt Workspace} variable allows
+an alternate initial workspace to be specified. Both can be overridden
+on the command line by specifying {\tt -d} or {\tt -w} options,
+respectively. The {\tt Color} variable can be used to turn color use
+off if allocating a color background buffer would require too much
+memory. As an example, a {\tt wxls.ini} file containing
+\begin{verbatim}
+[Xlisp]
+Libdir=C:\WXLS
+[Listener]
+Font="Courier New Bold"
+FontSize=13
+[Graphics]
+Color=off
+\end{verbatim}
+specifies a library directory, a listener font, and turns color off.
+
+The initial workspace and the default directory can also be specified
+on the commandline as {\tt -w}{\em file.wks} and {\tt -d}{\em dir},
+respectively.
+
+A very minimal DDE interface is provided. The interface is very simple
+and based on DDEML. As a server, WXLS allows to connections to the
+topic {\tt XLISP-STAT} under the service name {\tt XLISP-STAT}. It
+accepts two kinds of transactions:
+\begin{itemize}
+\item Execute transactions in which the command is a sequence of lisp
+  expressions. The LSPEDIT application sends the current selection as
+  an execute transaction when the {\bf Eval Selection} menu item is
+  chosen.
+\item Request transactions or the item {\tt VALUE}. This returns a
+  string with a printed representation of the value returned by the
+  last expression in the most recent execute transaction of the
+  conversation.
+\end{itemize}
+As a client, there are three functions you can use that correspond
+fairly closely to their DDEML equivalents: \lfun{dde-connect},
+\lfun{dde-disconnect}, and \lfun{dde-client-transaction}.
+
+\lfun{dde-connect} takes two arguments, strings naming a service and
+a topic.  The topic string is optional; it defaults to the service
+string. The return value is a descriptor of the conversation if the
+connection is established, otherwise it is \NIL. At the moment
+conversation descriptors are integer indices into a table, and the
+number of concurrent conversation is limited to 30. This may change.
+
+\lfun{dde-disconnect} takes a conversation descriptor and attempts to
+close the conversation. If successful it returns \TRUE, otherwise \NIL.
+If dde-disconnect is called with no arguments then all currently
+active conversations are terminated. In this case the return value is
+\TRUE\ if any are terminated, \NIL\ if not.
+
+\lfun{dde-client-transaction} requires a conversation descriptor as
+its first argument. The remaining arguments are keyword arguments:
+\begin{description}
+\item \lkeyword{type}: should be \lkeyword{request} or
+  \lkeyword{execute}; default is \lkeyword{execute}.
+\item \lkeyword{data}: a string, currently only used by execute
+  transactions.
+\item \lkeyword{item}: an item name string, currently only used by
+  request transactions.
+\item \lkeyword{timeout}: a positive integer specifying the timeout in
+  milliseconds. The default is 60000.
+\end{description}
+The return value is \TRUE\ if the transaction is successful, \NIL\ if
+not.
+
+As an example, you could have WXLS communicate with WXLS by DDE (why
+you would want to I do not know, but it works):
+\begin{verbatim}
+> (dde-connect "xlisp-stat")
+0
+> (dde-client-transaction 0 :data "(+ 1 2)")
+T
+> (dde-client-transaction 0 :type :request :item "value")
+"3"
+> (dde-disconnect 0)
+T
+\end{verbatim}
+You can also communicate with the program manager:
+\begin{verbatim}
+> (dde-connect "progman")
+0
+> (dde-client-transaction 0 :data "[ShowGroup(Main,1)]")
+T
+> (dde-client-transaction 0 :type :request :item "Groups")
+"Main\r
+Accessories\r
+Applications\r
+Microsoft C/C++ 7.0\r
+Software Development Kit 3.1\r
+Win32 Applications\r
+Adobe\r
+Borland C++ 4.0 Online Books\r
+Borland C++ 4.0\r
+StartUp\r
+Games\r
+Borland C++ 3.1\r
+Pocket Tools\r
+XLISP-STAT Programs\r
+"
+> (dde-disconnect 0)
+T
+\end{verbatim}
+The first transaction is an execute transaction that opens the Main
+group's window. The second is a request that obtains a list of the
+current groups.
+\begin{warning}
+  This DDE interface is experimental and may change. For the moment it
+  seems adequate for providing configuring the integration of WXLS
+  into Windows during setup.
+\end{warning}
+
+The functions \lfun{msw-get-profile-string} and
+\lfun{msw-write-profile-string} can be used to access and modify user
+preference information.  They require three and four arguments,
+respectively. The first and second arguments specify the section and
+item names as strings, and the last argument specifies the preference
+file name. A preference file name of \NIL\ refers to the system
+preference file. For \lfun{msw-write-profile-string} the third
+argument is a new value. This can be a string or \NIL; if it is \NIL,
+the entry is deleted. This function deletes a section if the item
+argument is \NIL.
+
+The function \lfun{msw-win-exec} is a synonym for the \lfun{system}
+function.  On failure it now returns two values: \NIL\ and a numerical
+error code. The \lfun{msw-win-help} function has been modified to use
+keyword symbols to identify help request types.
+
+Both 16-bit and 32-bit versions can use DLL's, but only 16-bit and
+32-bit DLL's, respectively.
+
+\section{Improvements in Common Lisp Support}
+This section outlines changes in \CL\ compatibility. The subsections
+are numbered according to the chapters of Steele \cite{CLtL2}.
+Detailed descriptions of standard functions and macros are given in
+Steele \cite{CLtL2}.
+
+\subsection{Introduction}
+No changes.
+
+\subsection{Data Types}
+Vectors and arrays containing typed elements, such as fixnums or
+floats, are now partially supported. This support will be completed in
+a future release.
+
+Other new data types are hash tables and packages.
+
+\subsection{Scope and Extent}
+\label{Subsection:Scope}
+The handling of \lspec{block}/\lspec{return-from} and
+\lspec{tagbody}/\lspec{go} has been fixed to give the block names and
+go tags lexical scope, in compliance with the \CL\ specification. In
+the previous implementation they had dynamic scope.
+
+\subsection{Type Specifiers}
+The \lfun{typep} function accepts specialized type specifications,
+such as {\tt (member 1 2 3)} or {\tt (vector t *)}. New type names can
+be defined using the \lmac{deftype} macro.
+
+The function \lfun{coerce} has been modified to be more \CL\
+compliant. In particular, it is no longer possible to use it to coerce
+an array to a list. The effect of the old coercion can be achieved
+with the new \lfun{array-to-nested-list} function.
+
+\subsection{Program Structure}
+Special variables are now available. Variables that have been
+proclaimed special using the \lfun{proclaim} function or that were
+defined using \lmac{defvar}, \lmac{defparameter}, or
+\lmac{defconstant} are dynamically scoped in all uses.  It is not
+possible to declare variables special locally, but \lmac{progv} can be
+used for making variables locally special.
+
+The macro \lmac{defvar} now leaves unbound variable unbound if it is
+not given a value argument.
+
+Proper keyword argument handling is now possible; see Section
+\ref{Subsection:Debugging} for more details.
+
+The special form \lspec{eval-when} for controlling time of evaluation
+is now defined. It is defined in accordance with the revised
+definition of Steele \cite{CLtL2}.
+
+\subsection{Predicates}
+The \lfun{functionp} now follows the new specification in Steele
+\cite{CLtL2}.  Only internal functions ({\tt SUBR}'s), byte compiled
+functions, and function closures result in a non-\NIL\ value. In
+particular, \NIL\ is returned for symbols and lambda expressions.
+
+The function \lfun{bit-vector-p} has been added for compatibility with
+some software; it always returns \NIL.
+
+The macros \lmac{and} and \lmac{or} now return multiple values if the
+final expression does.
+
+\subsection{Control Structure}
+As mentioned in Section \ref{Subsection:Scope}, block names and go
+targets are now properly lexically scoped.
+
+A number of functions, macros and special forms have been modified to
+return multiple values when appropriate. These are
+\begin{center}
+\begin{tabular}{llllllll}
+  \lfun{apply} &
+  \lspec{block} &
+  \lmac{case} &
+  \lspec{catch} &
+  \lmac{cond} &
+  \lmac{do} &
+  \lmac{do*} &
+  \lmac{dolist} \\
+  \lmac{dotimes} &
+  \lspec{flet} & 
+  \lfun{funcall} &
+  \lspec{if} &
+  \lspec{labels} &
+  \lspec{let} &
+  \lspec{let*} &
+  \lmac{loop} \\
+  \lspec{macrolet} &
+  \lmac{prog} &
+  \lmac{prog*} &
+  \lspec{progn} &
+  \lspec{progv} &
+  \lmac{unless} & 
+  \lspec{unwind-protect} &
+  \lmac{when}
+\end{tabular}
+\end{center}
+
+Functions can now be defined to return multiple values using the
+\lfun{values} function. If a function is defined as
+\begin{verbatim}
+(defun f (x y) (values x y))
+\end{verbatim}
+then it returns two values:
+\begin{verbatim}
+> (f 1 2)
+1
+2
+\end{verbatim}
+Values beyond the first are ignored when the value of a function is
+passed as an argument:
+\begin{verbatim}
+> (list (f 1 2))
+(1)
+\end{verbatim}
+It is also possible to return no values; the implicit first value when
+used as a function argument is \NIL:
+\begin{verbatim}
+> (values)
+> (list (values))
+(NIL)
+\end{verbatim}
+Returning no values is one way to suppress printing if no meaningful
+value is returned; for example, the \lfun{pprint} function returns no
+values.
+
+Several macros and special forms are available for capturing multiple
+values.  You can collect them in a list with
+\lmac{multiple-value-list},
+\begin{verbatim}
+> (multiple-value-list (f 1 2))
+(1 2)
+\end{verbatim}
+access one specific value by position with \lmac{nth-value},
+\begin{verbatim}
+> (nth-value 0 (f 1 2))
+1
+> (nth-value 1 (f 1 2))
+2
+> (nth-value 2 (f 1 2))
+NIL
+\end{verbatim}
+bind them to variables with \lmac{multiple-value-bind},
+\begin{verbatim}
+> (multiple-value-bind (a b) (f 1 2) (list b a))
+(2 1)
+\end{verbatim}
+or pass them as arguments to a function with \lspec{multiple-value-call},
+\begin{verbatim}
+> (multiple-value-call #'+ (f 1 2))
+3
+\end{verbatim}
+Multiple values can also be produced with \lfun{values-list} and
+captured with \lspec{multiple-value-prog1} and
+\lmac{multiple-value-setq}.
+
+The assignment macros \lmac{psetf} and \lmac{rotatef} and the macro
+\lfun{typecase} are now available.
+
+The assignment macro \lmac{setf} has been re-implemented as a macro,
+both in the interpreter and a compiler. The function
+\lfun{get-setf-method} has been added and is used both by \lmac{setf}
+and by new versions of macros like \lmac{push} and \lmac{incf}. The
+lmac{setf} macro should now work with place forms that use
+\lfun{apply}.
+
+The standard macro version of \lmac{setf} introduces a number of
+temporary variables to avoid multiple evaluation of forms in a setf
+expression. This can slow down interpreted code (it does not affect
+compiled code since unnecessary bindings are optimized out).  To
+reduce the impact of this, the special variable
+\lvarstar{simplify-setf} can be set to a non\NIL\ value. When this
+variable is not \NIL, \lmac{setf} substitutes the value expressions
+for these variables. In principle this can cause multiple evaluation
+of some subform, but it will not for any of the standard setf methods.
+This behavior is equivalent to the behavior of the previous internal
+version of \lmac{setf}. The setault value of \lvarstar{simplify-setf}
+in the interpreter it \TRUE. The compiler should set it to \NIL, but
+does not do so yet.
+
+The function \lfun{special-form-p} has been added. It returns \TRUE\ 
+if its symbol argument has a global function binding that is of type
+{\tt FSUBR}; otherwise it returns \NIL.
+
+\subsection{Macros}
+Macros can now be defined to use the \llkey{environment},
+\llkey{whole} and \llkey{body} lambda list keywords. The functions
+\lfun{macroexpand} and \lfun{macroexpand-1} accept an optional
+environment argument, which should only be an environment captured
+with an \llkey{environment} argument to a macro or an environment
+passed to an evalhook function. Expansion is done using this
+environment if supplied; otherwise, the null environment is used.
+
+Macros allow destructuring in their required arguments, not in any
+other arguments. The macro \lmac{destructuring-bind} is also
+available. The \llkey{whole} lambda keyword may not be used in this
+macro.  Steele \cite{CLtL2} says it may, but I think this is an error.
+
+The \lmac{define-compiler-macro} macro is available for defining
+macros to be expanded only at compile time.
+
+The function \lfun{macro-function} is available. Macros have been
+modified to use a macro function of two arguments, the form to be
+expanded and the environment. \lfun{macro-function} returns this
+function when its symbol argument names a macro.
+
+The functions \lfun{variable-information} and
+\lfun{function-information} for accessing environment information and
+\lfun{augment-environment} for changing environment information have
+been added. The functions \lfun{parse-macro} and \lfun{enclose} are
+also available.
+
+A simple implementation of \lspec{symbol-macrolet} has been added.  It
+has not been extensively tested. It is currently not part of the
+standard initial workspace but set up to be autoloaded when called.
+Code using \lspec{symbol-macrolet} will be completely macro expanded,
+which means some standard macros implemented as special forms in the
+interpreter will be replaced by macros and expanded. The code may
+therefore be a bit slow when interpreted, but speed of compiled code
+will not suffer.
+
+\subsection{Declarations}
+The special form \lspec{declare} is available, but all declarations
+are currently ignored by the interpreter and the compiler, including
+special declarations.
+\begin{note}
+  It may be fairly easy to add proper handling of special declarations
+  to the byte code compiler, but adding it to the interpreter will cut
+  speed unless the code is rewritten in the spirit of macro
+  displacement.
+\end{note}
+
+The function \lfun{proclaim} is available. Currently only special
+proclamations have an effect. There is no portable way to take back a
+special proclamation.
+
+Macros for the special forms \lspec{locally} and \lmac{the} are
+available.  They currently ignore declaration and type information.
+
+\subsection{Symbols}
+The functions \lfun{keywordp}, \lfun{gentemp}, and
+\lfun{get-properties} have been added. The \lfun{getf} function has
+been fixed to search for property identifiers only in even positions
+in a property list, and the \lsetf{getf} form has been added. The
+macro \lmac{remf} has also been added.
+
+The function \lfun{gensym} has not yet been changed to follow the new
+specification, but probably will be.
+
+\subsection{Packages}
+\XL\ now uses the \CL\ package system for name space management. The
+functions \lfun{apropos}, \lfun{apropos-list}, \lfun{intern}, and
+\lfun{unintern} have been modified accordingly.
+
+A package is a collection of symbols, with some symbols considered
+internal and others external, or exported. The system is always ``in''
+some package, the current package, which is the value of the variable
+\lvarstar{package}.  Packages can ``use'' other packages.  When in a
+package, all symbols of that package, internal or external, and all
+external symbols of other packages used by that package are considered
+accessible. Accessible symbols can be referenced by their name and are
+printed using only their name. Inaccessible symbols can still be
+referenced and printed using a package name qualifier and a colon,
+{\tt :}, or double colon, {\tt ::} separator. An external symbol in a
+package is referenced or printed as
+\begin{center}\tt
+\param{package}:\param{name}
+\end{center}
+and an internal symbol as
+\begin{center}\tt
+\param{package}::\param{name}
+\end{center}
+Thus {\tt foo:bar} is the external symbol with name {\tt "BAR"} in the
+package named {\tt "FOO"}, and {\tt foo::baz} is the internal symbol
+with name {\tt "BAZ"} in the {\tt "FOO"} package.
+
+The default package is the package named {\tt "USER"}. This package
+has several nicknames that can be used to refer to it:
+\begin{verbatim}
+> (package-nicknames "USER")
+("CL-USER" "COMMON-LISP-USER")
+\end{verbatim}
+It uses the {\tt "XLISP"} package,
+\begin{verbatim}
+(package-use-list "USER")
+(#<Package XLISP>)
+> (package-nicknames "XLISP")
+("CL" "COMMON-LISP" "LISP")
+\end{verbatim}
+Another standard package is the {\tt "KEYWORD"} package. Keywords are
+placed in this package as internal symbols and are made constants with
+values equal to themselves. Symbols in this package are always
+referenced and printed as a colon followed by the symbol name. So {\tt
+  :test} is the symbol with name {\tt "TEST"} in the keyword package.
+
+Packages are usually constructed using the \lmac{defpackage} macro.
+The current package is usually set with the \lmac{in-package} macro.
+Both typically appear in a file, followed by some export commands. For
+example, a file containing the lines
+\begin{verbatim}
+(defpackage "MYPACK" (:use "XLISP"))
+
+(in-package "MYPACK")
+
+(export '(a b))
+
+(defun a () ...)
+(defun b () ...)
+(defun c () ...)
+(defun d () ...)
+\end{verbatim}
+constructs a new package {\tt "MYPACK"} with external symbols {\tt a}
+and {\tt b} and internal symbols {\tt c} and {\tt d}. It is not
+necessary to save and restore the old package since the \lfun{load}
+function restores the current package to the value it had before the
+load.
+
+When a package other than the {\tt "USER"} package is the current
+package, the standard listener top level loop adds the package name to
+the prompt:
+\begin{verbatim}
+> (in-package "XLISP"")
+#<Package XLISP>
+XLISP> (in-package "USER")
+#<Package USER>
+>
+\end{verbatim}
+
+Other functions and macros to support the use of packages are
+\begin{center}
+  \begin{tabular}{llll}
+    \lfun{delete-package} &
+    \lfun{do-all-symbols} &
+    \lmac{do-external-symbols} &
+    \lmac{do-symbols} \\
+    \lfun{find-all-symbols} &
+    \lfun{find-package} &
+    \lfun{find-symbol} &
+    \lfun{import} \\
+    \lfun{list-all-packages} &
+    \lfun{make-package} &
+    \lfun{package-name} &
+    \lfun{package-shadowing-symbols} \\
+    \lfun{package-used-by-list} &
+    \lfun{package-valid-p} &
+    \lfun{packagep} &
+    \lfun{rename-package} \\
+    \lfun{shadow} &
+    \lfun{shadowing-import} &
+    \lfun{symbol-package} &
+    \lfun{unexport} \\
+    \lfun{unuse-package} &
+    \lfun{use-package}
+  \end{tabular}
+\end{center}
+
+\begin{warning}
+  Details of the assignment of system and statistical symbols to
+  packages and of package naming are likely to change in the near
+  future and should not be relied upon.
+\end{warning}
+
+\subsection{Numbers}
+The functions \lfun{ceiling}, \lfun{floor}, \lfun{round}, and
+\lfun{truncate} now return two values in accordance with the \CL\ 
+specification. The second value is the remainder of the operation.
+\begin{note}
+  The vectorized version only returns one value for a compound
+  argument.  This is consistent with the idea that the vectorization
+  can be defined with a mapping function. It is not clear whether this
+  is the right decision, and it may change.
+\end{note}
+
+The functions \lfun{make-random-state} and \lfun{random-state-p} have
+been changed to use new random number generators; see Section
+\ref{Subsection:Random}
+
+The following vectorized arithmetic functions have been added:
+\begin{center}
+  \begin{tabular}{llllllllll}
+    \lfun{ash} &
+    \lfun{asinh} &
+    \lfun{atanh} &
+    \lfun{cosh} &
+    \lfun{cis} &
+    \lfun{lcm} &
+    \lfun{logtest} &
+    \lfun{signum} &
+    \lfun{sinh} &
+    \lfun{tanh}
+  \end{tabular}
+\end{center}
+The macros \lmac{decf} and \lmac{incf} have also been added.
+
+\subsection{Characters}
+The function \lfun{alpha-char-p} has been added.
+
+\subsection{Sequences}
+Sequence functions have been improved and expanded. The following
+functions have been modified to operate on lists and all vector types,
+including strings:
+\begin{center}
+  \begin{tabular}{llllllll}
+    \lfun{concatenate} &
+    \lfun{copy-seq} &
+    \lfun{count} &
+    \lfun{elt} &
+    \lfun{find} &
+    \lfun{every} &
+    \lfun{map} &
+    \lfun{notany} \\
+    \lfun{notevery} &
+    \lfun{some} &
+    \lfun{position} &
+    \lfun{reduce} &
+    \lfun{remove-duplicates} &
+    \lfun{subseq}
+  \end{tabular}
+\end{center}
+The following functions have been added:
+\begin{center}
+  \begin{tabular}{llllll}
+    \lfun{count-if} &
+    \lfun{count-if-not} &
+    \lfun{delete-duplicates} &
+    \lfun{fill} &
+    \lfun{find-if} &
+    \lfun{find-if-not} \\
+    \lfun{map-into} &
+    \lfun{nreverse} &
+    \lfun{position-if} &
+    \lfun{position-if-not} &
+    \lfun{replace} &
+    \lfun{search}
+  \end{tabular}
+\end{center}
+Most keyword arguments specified in Steele \cite{CLtL2} are supported,
+except that not all functions that should support the
+\lkeyword{from-end} keyword yet.
+
+The \lfun{complement} function for negating a predicate has been added.
+
+\subsection{Lists}
+The functions \lfun{mapcan} and \lfun{mapcon} are now functions
+instead of macros.
+
+The following list functions have been added:
+\begin{center}
+  \begin{tabular}{lllll}
+    \lfun{copy-alist} &
+    \lfun{copy-tree} &
+    \lfun{list-length} &
+    \lfun{list*} &
+    \lfun{nintersection} \\
+    \lfun{nreconc} &
+    \lfun{nset-difference} &
+    \lfun{nset-exclusive-or} &
+    \lfun{nsublis} &
+    \lfun{nsubst} \\
+    \lfun{nsubst-if} &
+    \lfun{nsubst-if-not} &
+    \lfun{nunion} &
+    \lfun{pairlis} &
+    \lfun{set-exclusive-or} \\
+    \lfun{eighth} &
+    \lfun{fifth} &
+    \lfun{ninth} &
+    \lfun{seventh} &
+    \lfun{sixth} \\
+    \lfun{tenth} &
+  \end{tabular}
+\end{center}
+Setf forms for the positional accessors \lfun{fifth}, \ldots,
+\lfun{tenth} have also been added.
+
+The macro \lmac{pop} is now available.
+
+\subsection{Hash Tables}
+Hash tables are now provided, with the interface functions
+\begin{center}
+  \begin{tabular}{llll}
+    \lfun{clrhash} &
+    \lfun{gethash} &
+    \lfun{hash-table-count} &
+    \lfun{hash-table-p} \\
+    \lfun{hash-table-rehash-size} &
+    \lfun{hash-table-rehash-threshold} &
+    \lfun{hash-table-size} &
+    \lfun{hash-table-test} \\
+    \lfun{make-hash-table} &
+    \lfun{maphash} &
+    \lfun{remhash} &
+  \end{tabular}
+\end{center}
+Any test predicate is allowed, but the standard ones, \lfun{eq},
+\lfun{eql}, and \lfun{equal} have internal implementations that should
+make them reasonably fast.
+
+\subsection{Arrays}
+Arrays can now be restricted to certain element types. This allows for
+more compact storage of arrays of specialized types. The standard
+element types supported are
+\begin{center}
+  \begin{tabular}{llllll}
+    \ltype{character} &
+    \ltype{fixnum} &
+    \ltype{float} &
+    \ltypelist{complex fixnum} &
+    \ltypelist{complex float}
+  \end{tabular}
+\end{center}
+In addition, the following nonstandard types are supported for
+communicating with C programs:
+\begin{center}
+  \begin{tabular}{llllll}
+    \ltype{c-char} &
+    \ltype{c-short} &
+    \ltype{c-int} &
+    \ltype{c-long} &
+    \ltype{c-float} &
+    \ltype{c-double} \\
+    \ltype{c-complex} &
+    \ltype{c-dcomplex} &
+  \end{tabular}
+\end{center}
+Other types are considered equivalent to {\tt t}.
+
+The \lfun{array-element-type} function returns the element type of an
+array, The \lkeyword{element-type} keyword can be used with
+\lfun{make-array} to construct an array of the specified type.
+
+\begin{note}
+  The support for typed vectors is not yet complete. It is more or
+  less complete for the basic \XL\ system, but has not yet been
+  completely integrated in the statistical code. Eventually the linear
+  algebra routines and the foreign function interface will be changed
+  to rely on these routines in order to minimize conversion to and
+  from C data. The details of the supported types may need to be
+  changed as this evolves.
+\end{note}
+
+The functions \lfun{row-major-aref} and \lfun{svref} have been added.
+
+\begin{note}
+  At present, vectors with fill pointers and adjustable arrays are not
+  supported. One or both may be added.
+\end{note}
+
+\subsection{Strings}
+The functions \lfun{nstring-capitalize}, \lfun{schar},
+\lfun{string-capitalize}, and \lfun{string-search} have been added.
+
+\subsection{Structures}
+The \lmac{defstruct} macro allows constructor, predicate and print
+functions to be specified. Inheritance of other structures through the
+\lfun{include} keyword is supported, and produces proper subtype
+relationships. BOA constructors are not supported.
+
+\subsection{The Evaluator}
+The \lfun{applyhook} function and the \lvarstar{applyhook} variable
+are now available. Both \lfun{eval} and \lfun{evalhook} now use the
+null lexical environment for evaluation.
+
+\subsection{Streams}
+The \lfun{force-output} function now allows arbitrary stream
+arguments.  Simple versions of \lfun{clear-output} and
+\lfun{finish-output} are now available.  The functions
+\lfun{fresh-line} and the corresponding format directive are now
+available.  The functions \lfun{input-stream-p}, \lfun{open-stream-p},
+\lfun{output-stream-p}, and the macro \lmac{with-open-stream} have
+been added.
+
+\subsection{Input/Output}
+Printing of floating point numbers by the \lfun{print} function now
+follows the \CL\ standard. This means floating point numbers always
+contain a decimal point and are generally printed with around 18
+digits on a system with 64-bit double precision floating point
+numbers. This insures that printed numbers can be read back in to
+produce essentially identical values (slightly more digits would be
+needed to insure absolute equality).
+\begin{note}
+  This change may produce output that some find to unreadable. It
+  would be good to be able to control the number of digits used for
+  floating point printing. At present there is a back door mechanism:
+  the variable \lvarstar{float-format} can be set to a C format
+  string, which will then be used. The old printing approach is
+  equivalent to setting this variable to {\tt "\%g"}. I do not know
+  how to implement such an option portably in \CL\ and I am not sure
+  how important it is, since all model summaries and things like
+  \lfun{print-matrix} use \lfun{format}. If this turns out to be
+  useful and important, I will change the mechanism to use a \CL\ 
+  format string instead of a C one.
+\end{note}
+
+Several new print and read control variables are now used. These are
+\begin{center}
+  \begin{tabular}{lll}
+    \lvarstar{print-array} & 
+    \lvarstar{print-case} &
+    \lvarstar{print-circle} \\
+    \lvarstar{print-escape} &
+    \lvarstar{print-gensym} &
+    \lvarstar{print-length} \\
+    \lvarstar{print-level} &
+    \lvarstar{print-readably} &
+    \lvarstar{read-suppress}
+  \end{tabular}
+\end{center}
+Two nonstandard variables are also used. If
+\lvarstar{print-symbol-package} is non-\NIL, all symbols are printed
+with package qualifiers. The variable \lvarstar{readtable-case} can be
+used to set the case of the readtable.
+\begin{note}
+  The readtable case should be part of the readtable; this will
+  probably be changed to comply with \CL.
+\end{note}
+
+The functions \lfun{read}, \lfun{read-char}, \lfun{read-byte}, and
+\lfun{read-line} now support {\tt eof-error-p} arguments.
+
+The reader now uses the keyword package as the default package while
+processing a features expression specified with the {\tt \#+} or {\tt
+  \#-} read macros.  This means that {\tt \#+fred} and {\tt \#+:fred}
+are equivalent. The standard symbols in the \lvarstar{features} list
+have been changed to keyword symbols.
+
+The \lfun{format} function has been changed to handle the \lfmtdir{E},
+\lfmtdir{F}, and \lfmtdir{G} directives in accordance with the \CL\
+specification. A number of format directives have been added.  The new
+format directives are
+\begin{center}
+  \begin{tabular}{ll}
+    \lfmtdir{O}, \lfmtdir{X} & octal and hexadecimal output\\
+    \lfmtdir{\&} & fresh line\\
+    \lfmtdir{T} & tabulate\\
+    \lfmtdir{(}, \lfmtdir{)} & case conversion\\
+    \lfmtdir{*} & argument skipping\\
+    \lfmtdir{?} & indirection\\
+    \lfmtdir{[}, \lfmtdir{;}, \lfmtdir{]} & conditional expression\\
+    \lfmtdir{\{}, \lfmtdir{\}} & iteration\\
+    \lfmtdir{|} & page separator
+  \end{tabular}
+\end{center}
+
+Very minimal implementations of the following functions have been added:
+\begin{center}
+  \begin{tabular}{llll}
+    \lfun{write} &
+    \lfun{write-line} &
+    \lfun{write-string} &
+    \lfun{write-to-string} \\
+    \lfun{parse-integer} &
+    \lfun{prin1-to-string} &
+    \lfun{princ-to-string} &
+    \lfun{pprint} \\
+    \lfun{read-from-string} &
+  \end{tabular}
+\end{center}
+
+\subsection{File System interface}
+The functions \lfun{delete-file}, \lfun{file-length},
+\lfun{probe-file}, \lfun{truename}, \lfun{rename-file}, and \lfun{file-write-date} have been added.
+
+There is no separate pathname type; pathnames are currently just
+strings.  Minimal versions of the following pathname functions have
+been added:
+\begin{center}
+\begin{tabular}{llll}
+\lfun{make-pathname} &
+\lfun{merge-pathnames} &
+\lfun{namestring} &
+\lfun{parse-namestring} \\
+\lfun{pathname} &
+\lfun{pathname-device} &
+\lfun{pathname-directory} &
+\lfun{pathname-host} \\
+\lfun{pathname-name} &
+\lfun{pathname-type} &
+\lfun{pathname-version}
+\end{tabular}
+\end{center}
+The variable \lvarstar{default-pathname-defaults} is used for default
+values.
+
+\subsection{Errors}
+Error handling now uses the condition system; see Section
+\ref{Subsection:Conditions} for details.
+
+\subsection{Miscellaneous Features}
+The \lfun{step} function has been replaced by a new implementation.
+Details are given in  Appendix \ref{Appendix:Stepper}.
+
+The standard function \lfun{function-lambda-expression} replaces
+\lfun{get-lambda-expression}.
+
+A very rudimentary \lfun{describe} functions is available; it will be
+improved in the future.
+
+A byte code compiler for \XL\ is included in Release 3. For code that
+spend much time in tight loops, the compiler can lead to significant
+speed improvements.
+
+The interface to the compiler is through two functions, \lfun{compile}
+and \lfun{compile-file}. Suppose {\tt f} is defined as
+\begin{verbatim}
+(defun f (x) (+ x 1))
+\end{verbatim}
+Then
+\begin{verbatim}
+> #'f
+#<Closure-F: #c6741c>
+> (compile 'f)
+F
+> #'f
+#<Byte-Code-Closure: #c73644>
+\end{verbatim}
+
+\lfun{compile} can also be used to compile a lambda expression:
+\begin{verbatim}
+> (compile nil '(lambda (x) (+ x 1)))
+#<Byte-Code-Closure: #d77350>
+\end{verbatim}
+
+The function \lfun{compile-file} takes a file name string as its
+required argument.  If the file has no extension, a {\tt .lsp}
+extension is added. It compiles the file into a file with a {\tt .fsl}
+extension.  When \lfun{load} is given a string {\tt "fred"} as its
+argument, it first looks for {\tt "fred.fsl"} and then for {\tt
+"fred.lsp"}. If both are present, the {\tt .fsl} files is used if it
+is newer than the {\tt .lsp} file; otherwise the {\tt .lsp} file is
+used.
+
+\begin{note}
+  Currently the compiler ignores all declarations, including special
+  declarations, and all proclamations other than special ones. Future
+  versions will use inline and optimize declarations to choose among
+  code generation strategies.
+\end{note}
+
+The {\tt .fsl} files produced by the compiler contain ordinary lisp
+expressions that are read in by the reader. Constants are printed out
+with \lvarstar{print-circle} and \lvarstar{print-readably} turned on.
+This should be sufficient, but if things get confused by a lot of
+messing with packages, it may help to also turn on
+\lvarstar{print-symbol-package}. This can be done by supplying the
+\lkeyword{print-symbol-package} keyword argument to
+\lfun{compile-file} with a non-\NIL\ value.
+
+The function \lfun{compiled-function-p} returns true for internal
+compiled functions ({\tt SUBR}'s) or byte compiled functions.
+
+The compiler is based on CPS conversion (see, for example, Friedman,
+Wand and Haynes \cite{FriedmanWandHaynes92}). The design is based on
+the {\em ORBIT}\/ compiler as described in Krantz et
+al.~\cite{KrantzEtAl86} and on Brooks, Gabriel and Steele
+\cite{BrooksGabrielSteele82}.
+\begin{note}
+  At this point the compiler does not do anything special for
+  vectorized arithmetic or anything else statistical. In the future I
+  will explore adding optimizations designed to deal with problems
+  specific to statistical usage. The basic design should make this
+  reasonably easy.
+\end{note}
+
+\subsection{Loop}
+No changes -- not implemented. The subset of loop from Peter Norvig's
+\cite{Norvig92} book should work with at most minor modifications.
+
+\subsection{Pretty Print}
+No changes -- not implemented. The XP pretty pringing package from the
+CMU lisp archives can be made to work with minor modifications.
+
+\subsection{CLOS}
+No changes -- not implemented. The closette subset of CLOS from the
+AMOP book can be made to work with minor modifications.
+
+\subsection{Conditions}
+\label{Subsection:Conditions}
+\XLS\ now uses an implementation of the \CL\ condition system for
+error handling. The functions \lfun{error}, \lfun{cerror},
+\lfun{warn}, and \lfun{signal} signal errors, continuable errors,
+warnings, or general conditions, respectively.
+
+The macro \lmac{ignore-errors} takes an expression argument and
+returns either the values of that expression in the current environment
+if there is no error, or the values \NIL\ and the error condition
+signaled:
+\begin{verbatim}
+> (ignore-errors (values 1 2))
+1
+2
+> (ignore-errors (error ``an error''))
+NIL
+#<Condition SIMPLE-ERROR: 13023072>
+\end{verbatim}
+
+The macros \lfun{assert} and \lfun{check-type} for type and predicate
+checking and the macros \lfun{ccase}, \lfun{ctypecase} signal
+continuable errors. The macros \lmac{check-type}, \lmac{ccase},
+\lmac{ctypecase}, \lfun{ecase}, and \lfun{etypecase} signal errors of
+type \lerrtype{type-error}.
+\begin{warning}
+  At this point the implementations of these macros are bare bones and
+  may not actually provide continuable errors or the right error type
+  but that should be changed soon.
+\end{warning}
+
+Conditions handlers are set up and used with the functions and macros
+\begin{center}
+  \begin{tabular}{lll}
+    \lmac{define-condition} &
+    \lfun{make-condition} &
+    \lmac{handler-bind} \\
+    \lmac{handler-case} &
+    \lmac{with-condition-restarts}
+  \end{tabular}
+\end{center}
+
+Restarts can be manipulated using the following functions and macros:
+\begin{center}
+  \begin{tabular}{llll}
+    \lfun{compute-restarts} &
+    \lfun{find-restart} &
+    \lfun{invoke-restart} &
+    \lfun{invoke-restart-interactively} \\
+    \lfun{muffle-warning} &
+    \lfun{restart-bind} &
+    \lfun{restart-case} &
+    \lfun{restart-name} \\
+    \lfun{store-value} &
+    \lfun{use-value} &
+    \lfun{with-simple-restart}
+  \end{tabular}
+\end{center}
+
+The function \lfun{invoke-debugger} provides a low level interface to
+the debugger.
+
+All standard predefined condition types are implemented, including the
+accessor functions
+\begin{center}
+  \begin{tabular}{ll}
+    \lfun{cell-error-name} &
+    \lfun{simple-condition-format-arguments} \\
+    \lfun{simple-condition-format-string} &
+    \lfun{type-error-datum} \\
+    \lfun{type-error-expected-type} &
+  \end{tabular}
+\end{center}
+Conditions are currently implemented as structures and therefore do
+not support multiple inheritance.
+\begin{warning}
+  For the most part internal errors still signal errors of type
+  \lerrtype{simple-error}. This will be changed eventually. One
+  exception is unbound variable and unbound function errors -- these
+  are already of types \lerrtype{unbound-variable} and
+  \lerrtype{unbound-function}, respectively. This may eventually be
+  used to define a more sophisticated autoload facility.
+\end{warning}
+
+\begin{note}
+  Currently stack overflow errors are not signalled at the system
+  state where they occur, because trying to handle them without any
+  stack space would lead to an infinite error recursion. Instead they
+  are signaled from the most recent \lmac{handler-bind}, in such a way
+  as to insure that a stack overflow in a handler is caught in the
+  next most recent one.
+
+  In the future, I will try to generate low stack errors that allow a
+  limited amount of exploring the system state before a real overflow
+  occurs. I think this can be done fairly easily without a performance
+  penalty, but I'm not sure yet.
+\end{note}
+
+
+\section{Changes in the Statistical System}
+\subsection{New Random Number Generators}
+\label{Subsection:Random}
+Three new generators in addition to the original lagged Fibonacci
+generator are now available. The generators are identified by an
+integer:
+\begin{itemize}
+\item[0] The original XLISP-STAT generator, Marsaglia's portable
+  generator from CMLIB. This is a lagged Fibonacci generator.
+\item[1] L'Ecuyer's \cite{LEcuyer86} version of the Wichmann-Hill
+  \cite{WichmannHill82} generator, also used in Bratley, Fox and
+  Schrage, \cite[program UNIFL]{BratleyFoxSchrage}.
+\item[2] Marsaglia's Super-Duper, as used in {\em S}.
+\item[3] Combined Tausworthe generator of Tezuka and L'Ecuyer
+  \cite{TezukaLEcuyer91}.
+\end{itemize}
+The default generator is generator 1. Generator 0 has a period of
+$2^{32}$. All three new generators have periods on the order of
+$2^{60}$.
+
+Random states are now printed as
+\begin{verbatim}
+> *random-state*
+#$(1 #(2147483562 0 11716 54063))
+\end{verbatim}
+The function \lfun{make-random-state} produces a new seed from the
+current generator when called with the argument {\tt t}. An
+alternate generator can be specified by supplying an appropriate
+integer as a second argument:
+\begin{verbatim}
+> (make-random-state t)
+#$(1 #(2147483562 0 11716 54088))
+> (make-random-state t 2)
+#$(2 #(2147483647 0 0 11715 0 54105))
+\end{verbatim}
+
+When \lfun{make-random-state} is called with an old state vector, a new
+state for generator 0 is returned.
+
+\subsection{Changes in the Object System}
+The object system now uses a method cache that should significantly
+improve dispatch for methods in deep object hierarchies.
+
+To help with compilation, the way in which the current object is
+passed to functions \lfun{slot-value}, \lfun{call-next-method} and
+\lfun{call-next-method} has changed. These functions should only be
+called in the dynamic extent of a method call. Their use outside of
+this scope, for example in a function closure returned by a method, is
+undefined.
+\begin{note}
+  The current implementation uses a dynamic binding to store the
+  current object. This works, but makes tail recursion optimization on
+  methods impossible. I may need to make a major change in which
+  things like \lfun{slot-value} and \lfun{call-next-method} become
+  macros. The main implication of this is that {\tt (apply
+    \#'call-next-method ...)} constructs won't work and will have to
+  be handled by something like an {\tt apply-next-method} macro. Since
+  this is likely to break a fair bit of code I will think about it
+  before doing it, but at this point a change along these lines look
+  fairly likely.
+\end{note}
+\begin{note}
+  A more substantial revision of the object system may occur soon in
+  which the current system remains more or less unchanged but becomes
+  just one possible system among many supported by a metaobject
+  protocol. This should allow experimentation with variations in the
+  object system that might be helpful.
+\end{note}
+
+\subsubsection{Changes in the Linear Algera System}
+Substantial internal changes have been mad in the linear algebra
+system.  These should result in improved performance in fitting large
+regression and generalized linear models.
+
+The overall plan is to eliminate allocation of data structures at the
+internal C level. Instead, data structures for efficient linear
+algebra computations are allocated at the Lisp level as typed arrays.
+These are operated on by low level functions, which in many cases are
+simple front ends to LINPACK or BLAS routines. Standard functions,
+such as \lfun{qr-decomp} are built as Lisp-level wrappers around these
+lower level routines. Once the lower level is cleaned up it will be
+documented so that users have the option of managing their own
+allocation and directly using the low level routines.
+
+
+\subsection{Other Changes}
+The generalized linear model system is now part of the standard
+distribution.  The {\tt :display} methods for all model objects and
+the \lfun{print-matrix} function have been changed to use the new
+\lfmtdir{G} format implementation.
+\begin{note}
+  At the moment the number of digits printed is fixed at 6. I may make
+  this a user-settable option.
+\end{note}
+
+The function \lfun{eigen} is now based on the EISPACK {\tt rs}
+routine.
+
+The function \lfun{reset-system} can be used to reset the state of
+various internal system parameters. If you write your own top level
+loop, you can call this when your loop is restarted if it looks like
+it is needed.
+\begin{note}
+  The need for this function is not quite clear yet -- it may be dropped.
+\end{note}
+
+The function \lfun{system-has-windows} returns non-\NIL\ if a window
+system is available at runtime. This should be used on UNIX systems
+rather than a readtime method, such as {\tt \#+windows}.
+
+\section{Deleted Functions}
+The function \lfun{load-help} and the \XWIN\ support function
+\lfun{make-fake-menu-bar} are no longer generally available. Their
+symbols are internal to the XLISP package.
+
+\begin{warning}
+The assignment of internal symbols to packages is likely to change in
+the near future and should not be relied upon.
+\end{warning}
+
+The functions \lfun{get-lambda-expression}, \lfun{num-to-string}, and
+\lfun{strcat} have been removed since similar \CL\ functions are
+available. You should use \lfun{function-lambda-expression},
+\lfun{prin1-to-string} and \lfun{concatenate} instead.
+
+\appendix
+\section{The Step Function}
+\label{Appendix:Stepper}
+\begin{note}
+  This is a slightly modified version of the file {\tt stepper.doc}
+  from the \TAXL\ distribution.
+\end{note}
+
+The new step debugger, written by Ray Comas ({\tt comas@math.lsa.umich.edu})
+and modified by Tom Almy, was inspired by the {\tt step.lsp} stepper
+included with \XL\ 2.1, originally written by Jonathan Engdahl ({\tt
+  jengdahl} on {\em BIX}).  This version has the ability to set/reset
+breakpoints, and a few bells and whistles.
+ 
+To invoke the stepper:
+\begin{verbatim}
+(step (form with args))
+\end{verbatim}
+The stepper will stop and print every form, then wait for user input.
+Forms are printed compressed, i.e. to a depth and length of 3.  This
+may be changed by assigning the desired depth and length values to
+\lvarstar{stepper-depth} and \lvarstar{stepper-length} before invoking the
+stepper, or from within the stepper via the {\tt .} and {\tt \#}
+commands.
+ 
+For example, suppose you have the following defined:
+\begin{verbatim}
+(defun fib (n)
+  (if (or (eql n 1) (eql n 2))
+      1
+      (+ (fib (- n 2)) (fib (- n 1)))))
+\end{verbatim}
+Then {\tt (step (fib 4))} will produce the following:
+\begin{verbatim}
+0 >==> (fib 4)
+ 1 >==> (if (or (eql n 1) (eql n 2)) 1 ...) :
+\end{verbatim}
+The colon is the stepper's prompt.  For a list of commands, type {\tt h}.
+this produces:
+\begin{verbatim}
+Stepper Commands
+----------------
+ n or space - next form
+ s or <cr>  - step over form
+ f FUNCTION - go until FUNCTION is called
+ b FUNCTION - set breakpoint at FUNCTION
+ b <list>   - set breakpoint at each function in list
+ c FUNCTION - clear breakpoint at FUNCTION
+ c <list>   - clear breakpoint at each function in list
+ c *all*    - clear all breakpoints
+          g - go until a breakpoint is reached
+          u - go up; continue until enclosing form is done
+          w - where am I? -- backtrace
+          t - toggle trace on/off
+          q - quit stepper, continue execution
+          p - pretty-print current form (uncompressed)
+          e - print environment
+   x <expr> - execute expression in current environment
+   r <expr> - execute and return expression
+       # nn - set print depth to nn
+       . nn - set print length to nn
+          h - print this summary
+\end{verbatim}
+Breakpoints may be set with the {\tt b} command.  You may set
+breakpoints at one function, e.g. \verb|b FOO<cr>| sets a breakpoint
+at the function {\tt FOO}, or at various functions at once, e.g.
+\verb|b (FOO FIE FUM)<cr>| sets breakpoints at the functions {\tt
+  FOO}, {\tt FIE}, and {\tt FUM}.  Breakpoints are cleared with the
+{\tt c} command in an analogous way.  Furthermore, a special form of
+the {\tt c} command, \verb|c *all* <cr>|, clears all previously set
+breakpoints.  Breakpoints are remembered from one invocation of step
+to the next, so it is only necessary to set them once in a debugging
+session.
+ 
+The {\tt g} command causes execution to proceed until a breakpoint is
+reached, at which time more stepper commands can be entered.
+ 
+The {\tt f} command sets a temporary breakpoint at one function, and
+causes execution to proceed until that function is called.
+ 
+The {\tt u} command continues execution until the form enclosing the
+current form is done, then re-enters the stepper.
+ 
+The {\tt w} command prints a back trace.
+ 
+The {\tt q} command quits and causes execution to continue
+uninterrupted.
+ 
+Entry and exit to functions are traced after a {\tt g}, {\tt f}, {\tt
+  u}, or {\tt q} command.  To turn off tracing, use the {\tt t}
+command which toggles the trace on/off.  Also, with trace off, the
+values of function parameters are not printed.
+ 
+The {\tt s} command causes the current form to be evaluated.
+ 
+The {\tt n} command steps into the current form.
+ 
+The {\tt .} and {\tt \#} commands change the compression of displayed
+forms.  E.g. in the previous example:
+\begin{verbatim}
+ 1 >==> (if (or (eql n 1) (eql n 2)) 1 ...) : . 2
+ 1 >==> (if (or (eql n ...) ...) ...) :
+\end{verbatim}
+changes the print length to 2, and
+\begin{verbatim}
+ 1 >==> (if (or (eql n ...) ...) ...) : # 2
+ 1 >==> (if (or #\# ...) ...) :
+\end{verbatim}
+changes the print depth to 2.
+ 
+To print the entire form use the {\tt p} command, which pretty-prints
+the entire form.
+ 
+The {\tt e} command causes the current environment to be printed;
+ 
+The {\tt x} command causes an expression to be executed in the current
+environment.  Note that this permits the user to alter values while
+the program is running, and may affect execution of the program.
+ 
+The {\tt r} command causes the value of the given expression to be
+returned, i.e. makes it the return value of the current form.
+
+\begin{note}
+  The stepper will not produce proper printout for \lspec{go} if the
+  jump is outside the most enclosing \lspec{tagbody}, and the tag
+  arguments of \lspec{catch}/\lspec{throw} must either be symbols or
+  quoted symbols.  No attempt is made here to correctly handle tracing
+  of \lspec{unwind-protect}, either.
+\end{note}
+
+\begin{thebibliography}{99}
+\bibitem{BratleyFoxSchrage}
+  {\sc Bratley, P., Fox, B.~L., and Schrage, L.~E.} (1987), {\em A
+    Guide to Simulation\/} (2nd ed.), New York, NY: Springer-Verlag.
+\bibitem{BrooksGabrielSteele82}
+  {\sc Brooks, R.~A., Gabriel, R.~P, and Steele, G.~L.} (1982), ``An
+    optimizing compiler for lexically scoped LISP,'' {\em Proc. Symp.
+      on Compiler Construction, ACM SIGPLAN Notices} 17, 6, 261--275.
+\bibitem{FriedmanWandHaynes92}
+  {\sc Friedman, D.~P, Wand, M. and Haynes, C.~T.} (1992), {\em
+  Essentials of Programming Languages}, Cambridge, MA: MIT Press.
+\bibitem{KrantzEtAl86}
+  {\sc Krantz, D.~A., Kelsey, R., Rees, J.~A., Hudak, P., Philbin, J.,
+    and Adams, N.~I.} (1986), ``Orbit: An optimizing compiler for
+    Scheme,'' {\em Proc. SIGPLAN '86 Symp. on Compiler Construction,
+      SIGPLAN Notices} 21, 7, 219--223.
+\bibitem{LEcuyer86}
+  {\sc L'Ecuyer, P.} (1986), ``Efficient and portable combined random
+  number generators,'' {\em Communications of the ACM}\/ 31, 742--749.
+\bibitem{Norvig92}
+  {\sc Norvig, P.} (1992), {\em Paradigms of Artificial Intelligence
+  Programming: Case Studies in Common Lisp}, San Mateo, CA: Morgan
+  Kaufmann.
+\bibitem{CLtL2}
+  {\sc Steele, Guy L.} (1990), {\em Common Lisp: The Language}, 
+  second edition, Bedford, MA: Digital Press.
+\bibitem{TezukaLEcuyer91}
+  {\sc Tezuka, S. and L'Ecuyer, P.} (1991), ``Efficient and port\-able
+  combined Tauseworthe random number generators,'' {\em ACM
+    Transactions on Modeling and Computer Simulation}\/ 1, 99-112.
+\bibitem{WichmannHill82}
+  {\sc Wichmann, B.~A. and Hill, I.~D.} (1982) ``An efficient and
+  portable pseudo-random number generator,'' (Corr: V33 p123), {\em
+    Applied Statistics}\/ 31, 188--190.
+\end{thebibliography}
+
+\input{changes.ind}
+\end{document}
+
+Stuff to Unexport:
+==================
+%SET-AREF
+%SET-GET
+%SET-GETHASH
+%SET-SYMBOL-FUNCTION
+%SET-SYMBOL-PLIST
+%SET-SYMBOL-VALUE
+BYTE-CODE-CLOSE
+COERCE-TO-MACRO
+CPS-ANY-REFERENCES-P
+CPS-CALL-NODE-ARGS
+CPS-CALL-NODE-FUNCTION
+CPS-CALL-NODE-P
+CPS-FIND-REFERENCES
+CPS-LAMBDA-NODE-ARGLIST
+CPS-LAMBDA-NODE-BODY
+CPS-LAMBDA-NODE-LAMBDA-LIST
+CPS-LAMBDA-NODE-NAME
+CPS-LAMBDA-NODE-P
+CPS-LEAF-NODE-COUNT
+CPS-LEAF-NODE-P
+CPS-LEAF-NODE-VALUE
+CPS-NODE-CHILDREN
+CPS-NODE-INTERNAL
+CPS-NODE-NOTE
+CPS-NODE-PARENT
+CPS-NODE-SIMPLIFIED-P
+CPS-NODE-TRANSFORM
+CPS-SET-LAMBDA-NODE-ARGLIST
+CPS-SET-LAMBDA-NODE-LAMBDA-LIST
+CPS-SET-LAMBDA-NODE-NAME
+CPS-SET-LEAF-NODE-COUNT
+CPS-SET-LEAF-NODE-VALUE
+CPS-SET-NODE-CHILDREN
+CPS-SET-NODE-NOTE
+CPS-SET-NODE-PARENT
+CPS-SET-NODE-SIMPLIFIED
+DYNAMIC-VALUE
+MAKE-BYTE-CODE
+MAKE-CPS-NODE
+MARK-AS-SPECIAL
+PACKAGE-OBARRAY
+  GET-INTERNAL-GC-TIME & New\\
+  GET-LAMBDA-NAME & New?\\
+  SPECIALP & New\\
+  STACK-VALUE & New \\
+
+
+
+
+

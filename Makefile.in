@@ -1,0 +1,85 @@
+##############################################################################
+##############################################################################
+##
+##                       Configuration Parameters
+##
+##############################################################################
+##############################################################################
+#
+# XLSLIB -- directory for xlisp executable, startup, example, and help files
+# BINDIR -- directory for xlispstat shell script
+#
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+XLSLIB=${prefix}/lib/xlispstat
+BINDIR=${exec_prefix}/bin
+
+SHELL = /bin/sh
+
+###############################################################################
+###############################################################################
+###                                                                         ###
+###                      DO NOT EDIT BELOW THIS LINE                        ###
+###                                                                         ###
+###############################################################################
+###############################################################################
+
+XLSINCDIR = src/include
+LSPDIR = src/lsp
+CDIR = src/c
+
+LIBS = ${EXTRALIBS} -lm
+
+xlispstat: setup.shell xlisp.wks
+	./setup.shell xlispstat ${XLSLIB}
+	chmod a+x xlispstat
+
+xlisp.wks: xlisp ${LSPDIR}/xlisp.wks
+	rm -f xlisp.wks
+	cp ${LSPDIR}/xlisp.wks xlisp.wks
+${LSPDIR}/xlisp.wks:
+	(cd ${LSPDIR}; ${MAKE} xlisp.wks)
+
+xlisp: ${CDIR}/xlisp
+	rm -f xlisp
+	cp ${CDIR}/xlisp ./xlisp
+${CDIR}/xlisp:
+	(cd ${CDIR}; make xlisp)
+
+install: installexecs installlsp
+
+installexecs: xlispstat xlisp installdirs
+	-cp xlispstat ${BINDIR}/xlispstat
+	-cp xlisp ${XLSLIB}
+
+installlsp: xlisp.wks xlisp.hlp installdirs
+	-cp xlisp.wks ${XLSLIB}
+	-cp xlisp.hlp ${XLSLIB}
+	-cp Autoload/_autoidx.lsp Autoload/*.fsl ${XLSLIB}/Autoload
+	-cp Data/*.lsp ${XLSLIB}/Data
+	-cp Examples/*.lsp ${XLSLIB}/Examples
+
+installdirs:
+	-mkdir -p ${BINDIR}
+	-mkdir -p ${XLSLIB}
+	-mkdir ${XLSLIB}/Data
+	-mkdir ${XLSLIB}/Examples
+	-mkdir ${XLSLIB}/Autoload
+
+clean:
+	rm -f *~ Autoload/*.fsl
+	(cd ${CDIR}; ${MAKE} clean)
+	(cd ${LSPDIR}; ${MAKE} clean)
+
+cleanall: clean
+	rm -f xlisp xlisp.wks xlispstat shlibconfig.sh
+	(cd ${CDIR}; ${MAKE} cleanall)
+	(cd ${LSPDIR}; ${MAKE} cleanall)
+
+distclean: cleanall
+	rm -f config.cache config.status config.log Makefile
+	rm -f src/include/xlconfig.h
+	(cd ${CDIR}; ${MAKE} distclean)
+	(cd ${LSPDIR}; ${MAKE} distclean)

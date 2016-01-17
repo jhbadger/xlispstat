@@ -1,0 +1,2 @@
+EXPORTS
+	xlsock__init=_xlsock__init

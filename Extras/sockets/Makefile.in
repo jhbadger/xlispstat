@@ -1,0 +1,38 @@
+SHELL = /bin/sh
+CC = @CC@
+SHLIB_CFLAGS = @SHLIB_CFLAGS@
+SHLIB_LD = @SHLIB_LD@
+SHLIB_LD_LIBS = @SHLIB_LD_LIBS@
+LIBDIR = @LIBDIR@
+INCDIR = @INCDIR@
+
+CMPCMD = ${LIBDIR}/xlisp -w${LIBDIR}/xlisp.wks
+INSTDIR = ${LIBDIR}/Autoload/Extras/sockets
+
+COPTFLAGS = -g
+CFLAGS = $(COPTFLAGS) -I${INCDIR} ${SHLIB_CFLAGS}
+
+all: xlsock.dll sock.fsl
+
+install: all
+	-mkdir -p ${INSTDIR}
+	cp xlsock.dll sock.fsl _autoidx.lsp ${INSTDIR}
+
+xlsock.dll: xlsock.o sock.o
+	${SHLIB_LD} -o xlsock.dll xlsock.o sock.o ${SHLIB_LD_LIBS}
+
+sock.fsl: sock.lsp
+	echo "(compile-file \"sock.lsp\") (exit)" | ${CMPCMD}
+
+echotest: echotest.o sock.o
+	$(CC) -o echotest echotest.o sock.o
+
+echoserv: echoserv.o sock.o
+	$(CC) -o echoserv echoserv.o sock.o
+
+clean:
+	rm -f *.o echotest echoserv lib.exp
+
+veryclean: clean
+	rm -f Makefile sock.fsl xlsock.dll config.* 
+

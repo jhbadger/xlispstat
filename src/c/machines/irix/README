@@ -1,0 +1,38 @@
+configure set things up for dynamic loading on
+
+	uname -a => IRIX demo 5.2 04091117 IP22 mips
+
+To compile with cc I used
+
+GRAPHSYS = X11WINDOWS
+X11INCDIR_FLAG=
+X11LIBDIR_FLAG=
+
+UCFLAGS = -O -Olimit 2000
+ULDFLAGS =
+
+EXTRALIBS=-ldl
+EXTRAOBJS=
+
+IEEE_FLAG=-DIEEEFP
+ANSI_FLAG=-DANSI
+
+FOREIGN_FLAG = -DFOREIGNCALL
+FOREIGN_FILE = sysvr4-foreign.h
+
+CC = cc
+LDCC = $(CC)
+
+
+Dynamic loading uses the shared library machanism. To load the example
+foo.c, compile foo.c with
+
+	cc -c foo.c
+
+then do
+
+	ld -o libfoo.so -shared foo.o
+
+Then you can load with (dyn-load "libfoo.so"). You may have to make
+sure the current directory is in your library search path for this to
+work.

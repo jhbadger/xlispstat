@@ -1,0 +1,75 @@
+On a Decstation 3100 running Ultrix 4.2a,
+
+	uname -a => ULTRIX nokomis.stat.umn.edu 4.2 0 RISC
+
+and release 3.35 the following worked. The configure shell script
+should set up a Makefile with these settings:
+
+GRAPHSYS = X11WINDOWS
+X11INCDIR_FLAG =
+X11LIBDIR_FLAG =
+
+UCFLAGS = -O -Olimit 2000
+ULDFLAGS = -Wl,-D -Wl,c00000
+
+EXTRALIBS =
+EXTRAOBJS =
+
+IEEE_FLAG = -DIEEEFP
+ANSI_FLAG =
+
+FOREIGN_FLAG = -DFOREIGNCALL
+FOREIGN_FILE = pmax-foreign.h
+
+CC = cc
+LDCC = $(CC)
+
+You need -Olimit 2000 to insure the byte code interpreter is
+optimized, use.
+
+Dynamic loading is supported. Code that is to be loaded dynamically
+must be compiled with the `-G 0' flag.
+
+If you want to display xlispstat on a DECstation running ULTRIX 4.0
+you may run into two bugs in the ULTRIX X servers:
+
+	On monochrome 3100's plot-points produces strange-looking
+	symbols. This is caused by a bug in the server response to an
+	XDrawPoints request.
+
+	On greyscale 5000's (and possibly other machines) exiting
+	from xlispstat causes an infinite loop of error messages.
+	This is due to a bug in handling XFreeColor requests.
+
+To fix these problems, uncomment the defines of the variables
+SERVER_COLOR_FREE_PROBLEM and DRAWPOINTSBUG in the file
+StX11options.h.
+
+If you plan on using DEC's dxwm window manager there is another
+problem: modal dialog windows do not appear. This seems to be due to
+lack of ICCCM compliance in dxwm (and improper ICCCM compliance in
+xlispstat). You can cure this by turning ICCCM compliance off in
+xlispstat. You can do this in three ways:
+
+	1) You can set USE_ICCCM_DEFAULT to FALSE in StX11options.h and
+	recompile the system.
+
+	2) You can set the icccm resource to off with a line like
+
+		xlisp*icccm: off
+
+	in the .Xdefaults file
+
+	3) You can use the expression
+
+		(x11-options :icccm nil)
+
+	in xlispstat.
+
+If you are only going to use xlispstat on DECstations runing dxwm then
+1) is probably the simplest choice. If you may display xlispstat on
+other workstations or other window managers then it may be better to
+set the icccm resource in a resource file used when dxwm starts up.
+
+The version of StX11options.h provided in this directory here should
+work for a DECstation running Ultrix 4.0 and the dxwm window manager.

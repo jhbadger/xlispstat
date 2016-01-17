@@ -1,0 +1,2 @@
+EXPORTS
+	wrapptrs__init=_wrapptrs__init

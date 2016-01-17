@@ -1,0 +1,60 @@
+The following works on SunOS 4.1,
+
+	uname -a => SunOS quetelet 4.1.3 3 sun4
+
+I think it will work on 4.0 also, but if not, see the sunos3
+directory. The configure script should set up a Makefile with these
+settings (except for the X11 stuf, chich depends on your local setup).
+
+GRAPHSYS = X11WINDOWS
+X11INCDIR_FLAG=-I/usr/openwin/include
+X11LIBDIR_FLAG=-L/usr/openwin/lib
+
+UCFLAGS = -O -DMEMMOVE=memcpy
+ULDFLAGS = 
+
+EXTRALIBS=-ldl
+EXTRAOBJS=
+
+IEEE_FLAG=-DIEEEFP
+ANSI_FLAG=
+
+FOREIGN_FLAG = -DFOREIGNCALL
+FOREIGN_FILE = sysvr4-foreign.h
+
+CC = cc
+LDCC = $(CC)
+
+The -DMEMMOVE=memcpy is a hack since memmove does not seem to be
+available. You do not need it on Solaris 2.0. If you compile with the
+ANSI compiler acc (I think that is what it is usually called, unless
+you have just replaces cc), use
+
+ANSI_FLAG=-DANSI
+CC=acc
+	
+You may also be able to drop the memmove define.
+
+On sun3 hardware you may want to add an appropriate floating point
+flag, such as -f68881, to UCFLAGS.
+
+
+Dynamic loading uses the shared librayr system. To load the example in foo.c,
+compile it with cc -c foo.c and then do
+
+	ld -o libfoo.so foo.o
+
+to create a shared library file. Then
+
+	(dyn-load "libfoo.so")
+
+should load it.
+
+
+				 NOTE
+
+Thee appears to be a bug in the standard c compiler's optimizer in
+4.1.3.  I have added a workaround for one problem this bug causes, but
+there may be others. It may be necessary on this OS version at least
+to turn off optimization or to use gcc.
+

@@ -1,0 +1,41 @@
+I no longer have access to a Sun 3 running SunOS 3.x, so this is
+somewhat speculative. But I think you should be able to use the
+following. The configure script should set up a Makefile with these
+settings (except possibly for the X11 stuff which depends on your
+local setup):
+
+GRAPHSYS = X11WINDOWS
+X11INCDIR_FLAG=
+X11LIBDIR_FLAG=
+
+UCFLAGS = -O
+ULDFLAGS = -x
+
+EXTRALIBS=
+EXTRAOBJS=
+
+IEEE_FLAG=-DIEEEFP
+ANSI_FLAG=
+
+FOREIGN_FLAG = -DFOREIGNCALL
+FOREIGN_FILE = bsd-foreign.h
+
+CC = cc
+LDCC = $(CC)
+
+You may want to add an appropriate floating point flag, such as
+-f68881, to UCFLAGS.
+
+FOr SunOS 4.1 (and possibly 4.0) see the sunos4 directory. For Solaris
+see the solaris directory. If sunos4 does not work for some reason (it
+may not for versions before 4.1), you can use the approach used here,
+but you need to add
+
+	-Bstatic
+
+to the ULDFLAGS variable in the Makefile to disable shared labraries.
+To use Sun's OpenLook vesion of X11 distributed with OS 4.1 and up
+you may need to use
+
+X11INCDIR_FLAG = -I/usr/openwin/include
+X11LIBDIR_FLAG = -L/usr/openwin/lib

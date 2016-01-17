@@ -1,0 +1,36 @@
+Configure set things up properly on
+
+	uname -a => HP-UX desire A.09.01 A 9000/715 2015081272 two-user license
+
+To compile with cc on a snake with HPUX 9.0 I used
+
+GRAPHSYS = X11WINDOWS
+X11INCDIR_FLAG=
+X11LIBDIR_FLAG=
+
+UCFLAGS = -O -Aa -D_HPUX_SOURCE
+ULDFLAGS = -Wl,-E
+
+EXTRALIBS=-ldld
+EXTRAOBJS=
+
+IEEE_FLAG=-DIEEEFP
+ANSI_FLAG=-DANSI
+
+FOREIGN_FLAG = -DFOREIGNCALL
+FOREIGN_FILE = hpux-foreign.h
+
+CC = cc
+LDCC = $(CC)
+
+
+Dynamic loading uses the shared library mechanism.  To load the
+example function in foo.c, compile foo.c with the +z or +Z flags and
+then create a shared object, say, libfoo.so with
+
+	ld -o libfoo.so -b foo.o
+
+Then load using (dyn-load "libfoo.so").
+
+If you build the system with gcc, make sure you get the math library
+that includes the `finite' function.

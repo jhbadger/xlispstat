@@ -1,0 +1,56 @@
+On a Scorpion running Solaris,
+
+	uname -a => SunOS laplace 5.3 Generic_101318-41 sun4d sparc
+
+I used the following. The configure shell script should set up a
+Makefile with these settings (except possibly for the X11 stuff, which
+depends on your local setup).
+
+GRAPHSYS = X11WINDOWS
+X11INCDIR_FLAG=-I/usr/openwin/include
+X11LIBDIR_FLAG=-L/usr/openwin/lib
+
+UCFLAGS = -O
+ULDFLAGS =
+
+EXTRALIBS=-ldl
+EXTRAOBJS=
+
+IEEE_FLAG=-DIEEEFP
+ANSI_FLAG=
+
+FOREIGN_FLAG = -DFOREIGNCALL
+FOREIGN_FILE = sysvr4-foreign.h
+
+CC = cc
+LDCC = $(CC)
+
+If you compile with the ANSI compiler cc, set CC to the appropriate
+name and use
+
+ANSI_FLAG=-DANSI
+
+On sun3 hardware you may want to add an appropriate floating point
+flag, such as -f68881, to UCFLAGS. Adding something like -fast
+may also be useful.
+
+Dynamic loading uses the shared library system. To load the example in
+foo.c, compile it with cc -c foo.c and then do
+
+	ld -G -o libfoo.so foo.o
+
+to create a shared library file. Then
+
+	(dyn-load "libfoo.so")
+
+should load it. You may need to use "./libfoo.o" or make sure the
+current directory is on the LD_LIBRARY_PATH.
+
+Anthony Rossinis suggest that to build with nonstandard X libraries
+you can use something, such as X11R6.3 under Solaris 2.5.x, you can
+
+	make EXTRALIBS='-ldl -lsocket' LDCC='LD_RUN_PATH=/apps/X11R6.3/lib gcc'
+
+(assuming an initial configure --with-gcc --prefix=/blah/blah
+command, else use cc instead for the LDCC command).
+

@@ -1,0 +1,5 @@
+These files, together with ../ledit.[ch] and ../winutils.[ch] allow
+you to build lspedit. lspedit can be built as a 16 bit or a 32 bit
+application -- just comment out the appropriate definitions of BCC and
+BRS in the makefile.
+

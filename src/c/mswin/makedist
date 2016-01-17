@@ -1,0 +1,114 @@
+DISTROOT=\users\luke\tmp
+PKZIPDIR=\users\luke\pkzip
+
+!if $d(WIN16)
+  DIST=$(DISTROOT)\dist
+  EXENAME=wxls
+  ZIPNAME=$(DISTROOT)\wxlszip
+!else
+  DIST=$(DISTROOT)\dist32
+  EXENAME=wxls32
+  ZIPNAME=$(DISTROOT)\wxls32zp
+!endif
+
+AUTOFSLDIR=..\..\lsp
+LSPSRCDIR=..\..\lsp
+CMPSRCDIR=..\..\lsp\compiler
+DATADIR=..\..\..\Data
+EXAMPLEDIR=..\..\..\Examples
+XLSHOME=..\..\..
+INCDIR=..\..\include
+
+AUTOFSLFILES=$(AUTOFSLDIR)\cmpload.fsl $(AUTOFSLDIR)\oneway.fsl \
+	$(AUTOFSLDIR)\nonlin.fsl $(AUTOFSLDIR)\maximize.fsl \
+	$(AUTOFSLDIR)\bayes.fsl $(AUTOFSLDIR)\stepper.fsl \
+	$(AUTOFSLDIR)\glim.fsl
+SOURCES=$(LSPSRCDIR)\init.lsp $(LSPSRCDIR)\common.lsp \
+ 	$(LSPSRCDIR)\common2.lsp $(LSPSRCDIR)\common3.lsp \
+	$(LSPSRCDIR)\help.lsp $(LSPSRCDIR)\objects.lsp \
+	$(LSPSRCDIR)\stats.lsp $(LSPSRCDIR)\linalg.lsp \
+	$(LSPSRCDIR)\dialogs.lsp $(LSPSRCDIR)\graphics.lsp \
+	$(LSPSRCDIR)\graph2.lsp $(LSPSRCDIR)\graph3.lsp \
+	$(LSPSRCDIR)\regress.lsp $(LSPSRCDIR)\menus.lsp \
+	$(LSPSRCDIR)\loadfsl.lsp $(LSPSRCDIR)\conditns.lsp \
+	$(LSPSRCDIR)\pathname.lsp $(LSPSRCDIR)\cmpload.lsp \
+	$(LSPSRCDIR)\oneway.lsp $(LSPSRCDIR)\nonlin.lsp \
+	$(LSPSRCDIR)\maximize.lsp $(LSPSRCDIR)\bayes.lsp \
+	$(LSPSRCDIR)\stepper.lsp $(LSPSRCDIR)\glim.lsp \
+	$(LSPSRCDIR)\cmpsys.lsp $(LSPSRCDIR)\shlib.lsp $(LSPSRCDIR)\dde.lsp
+CMPSOURCES=$(CMPSRCDIR)\backquot.lsp $(CMPSRCDIR)\cmpmacro.lsp \
+           $(CMPSRCDIR)\convert.lsp $(CMPSRCDIR)\cells.lsp \
+           $(CMPSRCDIR)\simplify.lsp $(CMPSRCDIR)\lift.lsp \
+           $(CMPSRCDIR)\gencode.lsp $(CMPSRCDIR)\peephole.lsp \
+           $(CMPSRCDIR)\assemble.lsp $(CMPSRCDIR)\cmpfront.lsp
+
+zip: copydist
+	-del $(ZIPNAME).exe
+	-$(PKZIPDIR)\pkzip -pr $(ZIPNAME).zip $(DIST)\*.*
+	$(PKZIPDIR)\zip2exe $(ZIPNAME)
+	del $(ZIPNAME).zip
+
+copydist: copycore copyautoload copysources copycmpsources copydata copyexamples
+
+copycore:
+	-md $(DIST)
+	-md $(DIST)\Data
+	-md $(DIST)\Examples
+	-md $(DIST)\Autoload
+	-md $(DIST)\compiler
+	-md $(DIST)\lspsrc
+	-md $(DIST)\lspsrc\compiler
+	copy $(XLSHOME)\xlisp.hlp $(DIST)
+	copy $(EXENAME).exe $(DIST)
+	copy xlisp.wks $(DIST)
+	copy xlsx.h $(DIST)
+	copy $(INCDIR)\xlshlib.h $(DIST)
+	copy $(INCDIR)\xlwrap.h $(DIST)
+	copy xlsx.c $(DIST)
+	copy $(XLSHOME)\copying $(DIST)
+	copy readme.win $(DIST)\readme
+	copy config.lsp $(DIST)
+	copy lspedit\lspedit.exe $(DIST)
+	-copy xlsclient\xlsclient.exe $(DIST)\xlsclien.exe
+	copy wxls.tex $(DIST)
+	copy $(XLSHOME)\autoload\_autoidx.lsp $(DIST)\Autoload
+	copy $(CMPSRCDIR)\*.fsl $(DIST)\compiler
+
+copyautoload: $(AUTOFSLFILES)
+	&copy $** $(DIST)\Autoload
+
+copysources: $(SOURCES)
+	&copy $** $(DIST)\lspsrc
+
+copycmpsources: $(CMPSOURCES)
+	&copy $** $(DIST)\lspsrc\compiler
+
+copydata:
+	copy $(DATADIR)\absorbtion.lsp $(DIST)\Data\absorbti.lsp
+	copy $(DATADIR)\aircraft.lsp $(DIST)\Data
+	copy $(DATADIR)\book.lsp $(DIST)\Data
+	copy $(DATADIR)\car-prices.lsp $(DIST)\Data\car-pric.lsp
+	copy $(DATADIR)\diabetes.lsp $(DIST)\Data
+	copy $(DATADIR)\heating.lsp $(DIST)\Data
+	copy $(DATADIR)\iris.lsp $(DIST)\Data
+	copy $(DATADIR)\leukemia.lsp $(DIST)\Data
+	copy $(DATADIR)\metabolism.lsp $(DIST)\Data\metaboli.lsp
+	copy $(DATADIR)\oxygen.lsp $(DIST)\Data
+	copy $(DATADIR)\puromycin.lsp $(DIST)\Data\puromyci.lsp
+	copy $(DATADIR)\randu.lsp $(DIST)\Data
+	copy $(DATADIR)\stackloss.lsp $(DIST)\Data\stacklos.lsp
+	copy $(DATADIR)\tutorial.lsp $(DIST)\Data
+
+copyexamples:
+	copy $(EXAMPLEDIR)\abrasiondemo.lsp $(DIST)\Examples\abrasion.lsp
+	copy $(EXAMPLEDIR)\addbox.lsp $(DIST)\Examples
+	copy $(EXAMPLEDIR)\addhandrotate.lsp $(DIST)\Examples\addhandr.lsp
+	copy $(EXAMPLEDIR)\bcdemo.lsp $(DIST)\Examples
+	copy $(EXAMPLEDIR)\dataprotos.lsp $(DIST)\Examples\dataprot.lsp
+	copy $(EXAMPLEDIR)\fstat.lsp $(DIST)\Examples
+	copy $(EXAMPLEDIR)\inspect.lsp $(DIST)\Examples
+	copy $(EXAMPLEDIR)\plotcontrols.lsp $(DIST)\Examples\plotcont.lsp
+	copy $(EXAMPLEDIR)\regdemo.lsp $(DIST)\Examples
+	copy $(EXAMPLEDIR)\rotatedemo.lsp $(DIST)\Examples\rotatede.lsp
+	copy $(EXAMPLEDIR)\tour.lsp $(DIST)\Examples
+	copy $(EXAMPLEDIR)\tourdemo.lsp $(DIST)\Examples

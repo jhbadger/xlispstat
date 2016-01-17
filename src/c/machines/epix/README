@@ -1,0 +1,35 @@
+This is one weird box. The configure script required some major
+hacking.  On the U of Mn's box running UMIPS 1.4.3 I used the
+following, and set up configure to reproduce these settings. My
+defaults were bsd43; if you use sysv defaults you may need to do set
+CC to 'cc -systype bsd43'.
+
+GRAPHSYS = X11WINDOWS
+X11INCDIR_FLAG = -I/usr/RISCwindows4.0/include
+X11LIBDIR_FLAG = -L/usr/RISCwindows4.0/lib
+
+UCFLAGS = -O -Olimit 2000 -DMEMMOVE=memcpy -DNODIFFTIME
+ULDFLAGS = -Wl,-D -Wl,c00000
+
+EXTRALIBS =  -lmld
+EXTRAOBJS =  isnan.o getcwd.o remove.o ctype.o
+
+IEEE_FLAG = -DIEEEFP
+ANSI_FLAG = -DANSI
+
+FOREIGN_FLAG = -DFOREIGNCALL
+FOREIGN_FILE = epix-foreign.h
+
+CC = cc
+LDCC = $(CC)
+
+The configure script also digs the three files getcwd.o, remove.o,
+ctype.o out of /lib/libc.a. I have no idea why i needed to do this
+instead of putting -lc in as the last library to search, but doing
+that causes crashes.
+
+Finally, configure copies isnan.c from this directory to the main
+source directory.
+
+Dynamic loading seems to work, but requires compiling the code to be
+loaded with -G.

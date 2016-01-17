@@ -1,0 +1,6 @@
+This directory contains Lisp and C files for compiling and running
+XLISP-STAT on the Macintosh with Metrowerks CodeWarrior.
+
+The 68K Metrowerks project uses 68020/68881 code generation. To
+compile for 68K without 881 code generation, set the appropriate flags
+in the Preferences dialogs.

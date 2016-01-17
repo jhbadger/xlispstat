@@ -1,0 +1,1052 @@
+\documentstyle{article}
+
+\newcommand{\refitem}[1]{%
+  \begin{list}%
+        {}%
+        {\setlength{\leftmargin}{.25in}\setlength{\itemindent}{-.25in}}
+  \item #1%
+  \end{list}}
+
+\setlength{\textwidth}{6in}
+\setlength{\textheight}{8.75in}
+\setlength{\topmargin}{-0.25in}
+\setlength{\oddsidemargin}{0.25in}
+
+% This command enables hyphenation if \tt mode by changed \hyphencharacter
+% in the 10 point typewriter font. To work in other point sizes it would
+% have to be redefined. It may be Bator to just make the change globally 
+% and have it apply to anything that is set in \tt mode
+\newcommand{\dcode}[1]{{\tt #1}}
+
+\newcommand{\param}[1]{$\langle${\em #1\/}$\rangle$}
+\newcommand{\protoimage}[1]{\begin{picture}(100,20)\put(0,0){\makebox(100,20){\tt #1}}\put(50,10){\oval(100,20)}\end{picture}}
+\newcommand{\wprotoimage}[1]{\begin{picture}(120,20)\put(0,0){\makebox(120,20){\tt #1}}\put(60,10){\oval(120,20)}\end{picture}}
+
+\title{Generalized Linear Models in Lisp-Stat}
+\author{Luke Tierney}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+This note outlines a simple system for fitting generalized linear
+models in Lisp-Stat. Three standard models are implemented:
+\begin{itemize}
+\item Poisson regression models
+\item Binomial regression models
+\item Gamma regression models
+\end{itemize}
+The model prototypes inherit from the linear regression model
+prototype. By default, each model uses the canonical link for its
+error structure, but alternate link structures can be specified.
+
+The next section outlines the basic use of the generalized linear
+model objects. The third section describes a few functions for
+handling categorical independent variables. The fourth section gives
+further details on the structure of the model prototypes, and
+describes how to define new models and link structures. The final
+section illustrates several ways of fitting more specialized models,
+using the Bradley-Terry model as an example.
+
+\section{Basic Use of the Model Objects}
+Three functions are available for constructing generalized linear
+model objects.  These functions are called as
+\begin{flushleft}\tt
+(poissonreg-model \param{x} \param{y} [\param{keyword arguments ...}])\\
+(binomialreg-model \param{x} \param{y} \param{n} [\param{keyword arguments ...}])\\
+(gammareg-model \param{x} \param{y} \param{keyword arguments ...})
+\end{flushleft}
+The \param{x} and \param{y} arguments are as for the
+\dcode{regression-model} function. The sample size parameter \param{n}
+for binomial models can be either an integer or a sequence of integers
+the same length as the response vector. All optional keyword
+arguments accepted by the \dcode{regression-model} function are
+accepted by these functions as well. Four additional keywords are
+available:
+\dcode{:link}, \dcode{:offset}, \dcode{:verbose}, and \dcode{:pweights}.
+The keyword \dcode{:link} can be used to specify an alternate link
+structure. Available link structures include
+\begin{center}
+\begin{tabular}{llll}
+\tt identity-link & \tt log-link    & \tt inverse-link & \tt sqrt-link\\
+\tt logit-link    & \tt probit-link & \tt cloglog-link
+\end{tabular}
+\end{center}
+By default, each model uses its canonical link structure.  The
+\dcode{:offset} keyword can be used to provide an offset value, and
+the keyword \dcode{:verbose} can be given the value \dcode{nil} to
+suppress printing of iteration information. A prior weight vector
+should be specified with the \dcode{:pweights} keyword rather than the
+\dcode{:weights} keyword.
+
+As an example, we can examine a data set that records the number of
+months prior to an interview when individuals remember a stressful
+event (originally from Haberman, \cite[p. 2]{JKL}):
+\begin{verbatim}
+> (def months-before (iseq 1 18))
+MONTHS-BEFORE
+> (def event-counts '(15 11 14 17 5 11 10 4 8 10 7 9 11 3 6 1 1 4))
+EVENTS-RECALLED
+\end{verbatim}
+The data are multinomial, and we can fit a log-linear Poisson model to
+see if there is any time trend:
+\begin{verbatim}
+> (def m (poissonreg-model months-before event-counts))
+Iteration 1: deviance = 26.3164
+Iteration 2: deviance = 24.5804
+Iteration 3: deviance = 24.5704
+Iteration 4: deviance = 24.5704
+
+Weighted Least Squares Estimates:
+
+Constant                  2.80316   (0.148162)
+Variable 0             -0.0837691   (0.0167996)
+
+Scale taken as:                 1
+Deviance:                 24.5704
+Number of cases:               18
+Degrees of freedom:            16
+\end{verbatim}
+
+Residuals for the fit can be obtained using the \dcode{:residuals}
+message:
+\begin{verbatim}
+> (send m :residuals)
+(-0.0439191 -0.790305 ...)
+\end{verbatim}
+A residual plot can be obtained using
+\begin{verbatim}
+(send m :plot-residuals)
+\end{verbatim}
+The \dcode{:fit-values} message returns $X\beta$, the linear predictor
+without any offset. The \dcode{:fit-means} message returns fitted mean
+response values. Thus the expression
+\begin{verbatim}
+(let ((p (plot-points months-before event-counts)))
+  (send p :add-lines months-before (send m :fit-means)))
+\end{verbatim}
+constructs a plot of raw counts and fitted means against time.
+
+To illustrate fitting binomial models, we can use the leukemia survival
+data of Feigl and Zelen \cite[Section 2.8.3]{LS} with the survival
+time converted to a one-year survival indicator:
+\begin{verbatim}
+> (def surv-1 (if-else (> times-pos 52) 1 0))
+SURV-1
+> surv-1
+(1 1 1 1 0 1 1 0 0 1 1 0 0 0 0 0 1)
+\end{verbatim}
+The dependent variable is the base 10 logarithm of the white blood
+cell counts divided by 10,000:
+\begin{verbatim}
+> transformed-wbc-pos
+(-1.46968 -2.59027 -0.84397 -1.34707 -0.510826 0.0487902 0 0.530628 -0.616186
+ -0.356675 -0.0618754 1.16315 1.25276 2.30259 2.30259 1.64866 2.30259)
+\end{verbatim}
+A binomial model for these data can be constructed by
+\begin{verbatim}
+> (def lk (binomialreg-model transformed-wbc-pos surv-1 1))
+Iteration 1: deviance = 18.2935
+Iteration 2: deviance = 18.0789
+Iteration 3: deviance = 18.0761
+Iteration 4: deviance = 18.0761
+
+Weighted Least Squares Estimates:
+
+Constant                 0.372897   (0.590934)
+Variable 0              -0.985803   (0.508426)
+
+Scale taken as:                 1
+Deviance:                 18.0761
+Number of cases:               17
+Degrees of freedom:            15
+\end{verbatim}
+This model uses the logit link, the canonical link for the binomial
+distribution. As an alternative, the expression
+\begin{verbatim}
+(binomialreg-model transformed-wbc-pos surv-1 1 :link probit-link)
+\end{verbatim}
+returns a model using a probit link.
+
+The \dcode{:cooks-distances} message helps to highlight the last
+observation for possible further examination:
+\begin{verbatim}
+> (send lk :cooks-distances)
+(0.0142046 0.00403243 0.021907 0.0157153 0.149394 0.0359723 0.0346383
+ 0.0450994 0.174799 0.0279114 0.0331333 0.0347883 0.033664 0.0170441 
+ 0.0170441 0.0280411 0.757332)
+\end{verbatim}
+This observation also stands out in the plot produced by
+\begin{verbatim}
+(send lk :plot-bayes-residuals)
+\end{verbatim}
+
+\section{Tools for Categorical Variables}
+Four functions are provided to help construct indicator vectors for
+categorical variables. As an illustration, a data set used by Bishop,
+Fienberg, and Holland examines the relationship between occupational
+classifications of fathers and sons. The classes are
+\begin{center}
+\begin{tabular}{|c|l|}
+\hline
+Label & Description\\
+\hline
+A     & Professional, High Administrative\\
+S     & Managerial, Executive, High Supervisory\\
+I     & Low Inspectional, Supervisory\\
+N     & Routine Nonmanual, Skilled Manual\\
+U     & Semi- and Unskilled Manual\\
+\hline
+\end{tabular}
+\end{center}
+The counts are given by
+\begin{center}
+\begin{tabular}{|c|rrrrr|}
+\hline
+       & \multicolumn{5}{c|}{Son}\\
+\hline
+Father &  A &   S &   I &   N &   U \\
+\hline
+ A     & 50 &  45 &   8 &  18 &   8 \\
+ S     & 28 & 174 &  84 & 154 &  55 \\
+ I     & 11 &  78 & 110 & 223 &  96 \\
+ N     & 14 & 150 & 185 & 714 & 447 \\
+ U     &  3 &  42 &  72 & 320 & 411 \\
+\hline
+\end{tabular}
+\end{center}
+
+We can set up the occupation codes as
+\begin{verbatim}
+(def occupation '(a s i n u))
+\end{verbatim}
+and construct the son's and father's code vectors for entering the
+data row by row as
+\begin{verbatim}
+(def son (repeat occupation 5))
+(def father (repeat occupation (repeat 5 5)))
+\end{verbatim}
+The counts can then be entered as
+\begin{verbatim}
+(def counts '(50  45   8  18   8 
+              28 174  84 154  55 
+              11  78 110 223  96
+              14 150 185 714 447
+               3  42  72 320 411))
+\end{verbatim}
+
+To fit an additive log-linear model, we need to construct level
+indicators.  This can be done using the function \dcode{indicators}:
+\begin{verbatim}
+> (indicators son)
+((0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0)
+ (0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0)
+ (0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0)
+ (0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1))
+\end{verbatim}
+The result is a list of indicator variables for the second through the fifth
+levels of the variable \dcode{son}. By default, the first level is dropped.
+To obtain indicators for all five levels, we can supply the \dcode{:drop-first}
+keyword with value \dcode{nil}:
+\begin{verbatim}
+> (indicators son :drop-first nil)
+((1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0)
+ (0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0)
+ (0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0)
+ (0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0)
+ (0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1))
+\end{verbatim}
+
+To produce a readable summary of the fit, we also need some labels:
+\begin{verbatim}
+> (level-names son :prefix 'son)
+("SON(S)" "SON(I)" "SON(N)" "SON(U)")
+\end{verbatim}
+By default, this function also drops the first level. This can again be
+changed by supplying the \dcode{:drop-first} keyword argument as
+\dcode{nil}:
+\begin{verbatim}
+> (level-names son :prefix 'son :drop-first nil)
+("SON(A)" "SON(S)" "SON(I)" "SON(N)" "SON(U)")
+\end{verbatim}
+The value of the \dcode{:prefix} keyword can be any Lisp expression.
+For example, instead of the symbol \dcode{son} we can use the string
+\dcode{"Son"}:
+\begin{verbatim}
+> (level-names son :prefix "Son")
+("Son(S)" "Son(I)" "Son(N)" "Son(U)")
+\end{verbatim}
+
+Using indicator variables and level labels, we can now fit an additive
+model as
+\begin{verbatim}
+> (def mob-add
+       (poissonreg-model
+        (append (indicators son) (indicators father)) counts
+        :predictor-names (append (level-names son :prefix 'son)
+                                 (level-names father :prefix 'father))))
+
+Iteration 1: deviance = 1007.97
+Iteration 2: deviance = 807.484
+Iteration 3: deviance = 792.389
+Iteration 4: deviance = 792.19
+Iteration 5: deviance = 792.19
+
+Weighted Least Squares Estimates:
+
+Constant                  1.36273   (0.130001)
+SON(S)                    1.52892   (0.10714)
+SON(I)                    1.46561   (0.107762)
+SON(N)                    2.60129   (0.100667)
+SON(U)                    2.26117   (0.102065)
+FATHER(S)                 1.34475   (0.0988541)
+FATHER(I)                 1.39016   (0.0983994)
+FATHER(N)                 2.46005   (0.0917289)
+FATHER(U)                 1.88307   (0.0945049)
+
+Scale taken as:                 1
+Deviance:                  792.19
+Number of cases:               25
+Degrees of freedom:            16
+\end{verbatim}
+Examining the residuals using  
+\begin{verbatim}
+(send mob-add :plot-residuals)
+\end{verbatim}
+shows that the first cell is an outlier -- the model does not fit this
+cell well.
+
+To fit a saturated model to these data, we need the cross products of
+the indicator variables and also a corresponding set of labels. The
+indicators are produced with the \dcode{cross-terms} function
+\begin{verbatim}
+> (cross-terms (indicators son) (indicators father))
+((0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
+ (0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0)
+ ...)
+\end{verbatim}
+and the names with the \dcode{cross-names} function:
+\begin{verbatim}
+> (cross-names (level-names son :prefix 'son)
+               (level-names father :prefix 'father))
+("SON(S).FATHER(S)" "SON(S).FATHER(I)" ...)
+\end{verbatim}
+The saturated model can now be fit by
+\begin{verbatim}
+> (let ((s (indicators son))
+        (f (indicators father))
+        (sn (level-names son :prefix 'son))
+        (fn (level-names father :prefix 'father)))
+    (def mob-sat
+         (poissonreg-model (append s f (cross-terms s f)) counts 
+                           :predictor-names
+                           (append sn fn (cross-names sn fn)))))
+
+Iteration 1: deviance = 5.06262e-14
+Iteration 2: deviance = 2.44249e-15
+
+Weighted Least Squares Estimates:
+
+Constant                  3.91202   (0.141421)
+SON(S)                  -0.105361   (0.20548)
+SON(I)                   -1.83258   (0.380789)
+SON(N)                   -1.02165   (0.274874)
+SON(U)                   -1.83258   (0.380789)
+FATHER(S)               -0.579818   (0.236039)
+FATHER(I)                -1.51413   (0.33303)
+FATHER(N)                -1.27297   (0.302372)
+FATHER(U)                -2.81341   (0.594418)
+SON(S).FATHER(S)          1.93221   (0.289281)
+SON(S).FATHER(I)          2.06417   (0.382036)
+SON(S).FATHER(N)          2.47694   (0.346868)
+SON(S).FATHER(U)          2.74442   (0.631953)
+SON(I).FATHER(S)          2.93119   (0.438884)
+SON(I).FATHER(I)          4.13517   (0.494975)
+SON(I).FATHER(N)          4.41388   (0.470993)
+SON(I).FATHER(U)          5.01064   (0.701586)
+SON(N).FATHER(S)           2.7264   (0.343167)
+SON(N).FATHER(I)          4.03093   (0.41346)
+SON(N).FATHER(N)          4.95348   (0.385207)
+SON(N).FATHER(U)          5.69136   (0.641883)
+SON(U).FATHER(S)          2.50771   (0.445978)
+SON(U).FATHER(I)          3.99903   (0.496312)
+SON(U).FATHER(N)          5.29608   (0.467617)
+SON(U).FATHER(U)          6.75256   (0.693373)
+
+Scale taken as:                 1
+Deviance:              3.37508e-14
+Number of cases:               25
+Degrees of freedom:             0
+\end{verbatim}
+
+\section{Structure of the Generalized Linear Model System}
+\subsection{Model Prototypes}
+The model objects are organized into several prototypes, with the
+general prototype \dcode{glim-proto} inheriting from
+\dcode{regression-model-proto}, the prototype for normal linear
+regression models. The inheritance tree is shown in Figure
+\ref{GLIMTree}.
+\begin{figure}
+\begin{center}
+\begin{picture}(400,160)
+\put(140,140){\wprotoimage{regression-model-proto}}
+\put(150,70){\protoimage{glim-proto}}
+\put(0,0){\protoimage{poissonreg-proto}}
+\put(150,0){\protoimage{binomialreg-proto}}
+\put(300,0){\protoimage{gammareg-proto}}
+\put(200,140){\line(0,-1){50}}
+\put(200,70){\line(-3,-1){150}}
+\put(200,70){\line(3,-1){150}}
+\put(200,70){\line(0,-1){50}}
+\end{picture}
+\end{center}
+\caption{Hierarchy of generalized linear model prototypes.}
+\label{GLIMTree}
+\end{figure}
+This inheritance captures the reasoning by analogy to the linear case
+that is the basis for many ideas in the analysis of generalized linear
+models. The fitting strategy uses iteratively reweighted least squares
+by changing the weight vector in the model and repeatedly calling the
+linear regression \dcode{:compute} method.
+
+Convergence of the iterations is determined by comparing the relative
+change in the coefficients and the change in the deviance to cutoff
+values. The iteration terminates if either change falls below the
+corresponding cutoffs. The cutoffs are set and retrieved by the
+\dcode{:epsilon} and \dcode{:epsilon-dev} methods. The default values
+are given by
+\begin{verbatim}
+> (send glim-proto :epsilon)
+1e-06
+> (send glim-proto :epsilon-dev)
+0.001
+\end{verbatim}
+A limit is also imposed on the number of iterations. The limit can be set
+and retrieved by the \dcode{:count-limit} message. The default value
+is given by
+\begin{verbatim}
+> (send glim-proto :count-limit)
+30
+\end{verbatim}
+
+The analogy captured in the inheritance of the \dcode{glim-proto}
+prototype from the normal linear regression prototype is based
+primarily on the computational process, not the modeling process. As a
+result, several accessor methods inherited from the linear regression
+object refer to analogous components of the computational process,
+rather than analogous components of the model. Two examples are the
+messages \dcode{:weights} and \dcode{:y}. The weight vector in the
+object returned by \dcode{:weights} is the final set of weights
+obtained in the fit; prior weights can be set and retrieved with the
+\dcode{:pweights} message. The value returned by the \dcode{:y}
+message is the artificial dependent variable
+\begin{displaymath}
+z = \eta + (y - \mu) \frac{d\eta}{d\mu}
+\end{displaymath}
+constructed in the iteration; the actual dependent variable can be
+obtained and changed with the \dcode{:yvar} message.
+
+The message \dcode{:eta} returns the current linear predictor values,
+including any offset. The \dcode{:offset} message sets and retrieves
+the offset value. For binomial models, the \dcode{:trials} message
+sets and retrieves the number of trials for each observation.
+
+The scale factor is set and retrieved with the \dcode{:scale} message.
+Some models permit the estimation of a scale parameter. For these
+models, the fitting system uses the \dcode{:fit-scale} message to
+obtain a new scale value. The message \dcode{:estimate-scale}
+determines and sets whether the scale parameter is to be estimated or
+not.
+
+Deviances of individual observations, the total deviance, and the mean
+deviance are returned by the messages \dcode{:deviances},
+\dcode{:deviance} and \dcode{:mean-deviance}, respectively. The
+\dcode{:deviance} and \dcode{:mean-deviance} methods adjusts for
+omitted observations, and the denominator for the mean deviance is
+adjusted for the degrees of freedom available.
+
+Most inherited methods for residuals, standard errors, etc., should
+make sense at least as approximations. For example, residuals returned
+by the inherited \dcode{:residuals} message correspond to the Pearson
+residuals for generalized linear models. Other forms of residuals are
+returned by the messages
+\begin{center}
+\begin{tabular}{lll}
+\tt :chi-residuals & \tt :deviance-residuals & \tt :g2-residuals\\
+\tt :raw-residuals & \tt :standardized-chi-residuals & \tt :standardized-deviance-residuals.
+\end{tabular}
+\end{center}
+
+\subsection{Error Structures}
+The error structure of a generalized linear model affects four methods
+and two slots The methods are called as
+\begin{flushleft}\tt
+(send \param{m} :initial-means)\\
+(send \param{m} :fit-variances \param{mu})\\
+(send \param{m} :fit-deviances  \param{mu})\\
+(send \param{m} :fit-scale)
+\end{flushleft}
+The \dcode{:initial-means} method should return an initial estimate of
+the means for the iterative search. The default method simply returns
+the dependent variable, but for some models this may need to be
+adjusted to move the initial estimate away from a boundary. For
+example, the method for the Poisson regression model can be defined as
+\begin{verbatim}
+(defmeth poissonreg-proto :initial-means () (pmax (send self :yvar) 0.5))
+\end{verbatim}
+which insures that initial mean estimates are at least 0.5.
+
+The \dcode{:fit-variances} \dcode{:fit-deviances} methods return the
+values on the variance and deviance functions for a specified vector
+of means. For the Poisson regression model, these methods can be
+defined as
+\begin{verbatim}
+(defmeth poissonreg-proto :fit-variances (mu) mu)
+\end{verbatim}
+and
+\begin{verbatim}
+(defmeth poissonreg-proto :fit-deviances (mu)
+  (flet ((log+ (x) (log (if-else (< 0 x) x 1))))
+    (let* ((y (send self :yvar))
+           (raw-dev (* 2 (- (* y (log+ (/ y mu))) (- y mu))))
+           (pw (send self :pweights)))
+      (if pw (* pw raw-dev) raw-dev))))
+\end{verbatim}
+The local function \dcode{log+} is used to avoid taking the logarithm
+of zero.
+
+The final message, \dcode{:fit-scale}, is only used by the
+\dcode{:display} method. The default method returns the mean deviance.
+
+The two slots related to the error structure are
+\dcode{estimate-scale} and \dcode{link}. If the value of the
+\dcode{estimate-scale} slot is not \dcode{nil}, then a scale estimate
+is computed and printed by the \dcode{:dislay} method. The
+\dcode{link} slot holds the link object used by the model. The Poisson
+model does not have a scale parameter, and the canonical link is the
+logit link. These defaults can be set by the expressions
+\begin{verbatim}
+(send poissonreg-proto :estimate-scale nil)
+(send poissonreg-proto :link log-link)
+\end{verbatim}
+
+The \dcode{glim-proto} prototype itself uses normal errors and an
+identity link. Other error structures can be implemented by
+constructing a new prototype and defining appropriate methods and
+default slot values.
+
+\subsection{Link Structures}
+The link function $g$ for a generalized linear model relates the
+linear predictor $\eta$ to the mean response $\mu$ by
+\begin{displaymath}
+\eta = g(\mu).
+\end{displaymath}
+Links are implemented as objects.
+Table \ref{Links} lists the pre-defined link functions, along with
+the expressions used to return link objects.
+\begin{table}
+\caption{Link Functions and Expression for Obtaining Link Objects}
+\label{Links}
+\begin{center}
+\begin{tabular}{lccl}
+\hline
+Link & Formula & Domain & Expression\\
+\hline
+Identity    & $\mu$      & $(-\infty, \infty)$ & \tt identity-link \\
+Logarithm   & $\log \mu$ & $(0, \infty)$     & \tt log-link\\
+Inverse     & $ 1/\mu$   & $(0, \infty)$ & \tt inverse-link\\
+Square Root & $\sqrt{\mu}$ & $(0, \infty)$ & \tt sqrt-link\\
+Logit       & $\log\frac{\mu}{1-\mu}$ & $[0,1]$ & \tt logit-link\\
+Probit      & $\Phi^{-1}(\mu)$ & $[0,1]$ & \tt probit-link\\
+Compl. log-log & $\log(-\log(1-\mu))$ & $[0,1]$ & \tt cloglog-link\\
+Power       & $\mu^{k}$ & $(0, \infty)$ & \tt (send power-link-proto :new \param{k})\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+With one exception, the pre-defined links require no parameters.
+These link objects can therefore be shared among models. The exception
+is the power link. Links for binomial models are defined for $n = 1$
+trials and assume $0 < \mu < 1$.
+
+Link objects inherit from the \dcode{glim-link-proto} prototype.  The
+\dcode{log-link} object, for example, is constructed by
+\begin{verbatim}
+(defproto log-link () () glim-link-proto)
+\end{verbatim}
+Since this prototype can be used directly in model objects, the
+convention of having prototype names end in \dcode{-proto} is not
+used. The \dcode{glim-link-proto} prototype provides a \dcode{:print}
+method that should work for most link functions. The \dcode{log-link}
+object prints as
+\begin{verbatim}
+> log-link
+#<Glim Link Object: LOG-LINK>
+\end{verbatim}
+
+The \dcode{glim-proto} computing methods assume that a link object
+responds to three messages:
+\begin{flushleft}\tt
+(send \param{link} :eta \param{mu})\\
+(send \param{link} :means \param{eta})\\
+(send \param{link} :derivs \param{mu})
+\end{flushleft}
+The \dcode{:eta} method returns a sequence of linear predictor values
+for a particular mean sequence. The \dcode{:means} method is the
+inverse of \dcode{:eta}: it returns mean values for specified values
+of the linear predictor. The \dcode{:derivs} method returns the values of
+\begin{displaymath}
+\frac{d\eta}{d\mu}
+\end{displaymath}
+at the specified mean values. As an example, for the \dcode{log-link}
+object these three methods are defined as
+\begin{verbatim}
+(defmeth log-link :eta (mu) (log mu))
+(defmeth log-link :means (eta) (exp eta))
+(defmeth log-link :derivs (mu) (/ mu))
+\end{verbatim}
+
+Alternative link structures can be constructed by setting up a new
+prototype and defining appropriate \dcode{:eta}, \dcode{:means}, and
+\dcode{:derivs} methods. Parametric link families can be implemented by
+providing one or more slots for holding the parameters. The power link
+is an example of a parametric link family. The power link prototype
+is defined as
+\begin{verbatim}
+(defproto power-link-proto '(power) () glim-link-proto)
+\end{verbatim}
+The slot \dcode{power} holds the power exponent. An accessor method
+is defined by
+\begin{verbatim}
+(defmeth power-link-proto :power () (slot-value 'power))
+\end{verbatim}
+and the \dcode{:isnew} initialization method is defined to require a
+power argument:
+\begin{verbatim}
+(defmeth power-link-proto :isnew (power) (setf (slot-value 'power) power))
+\end{verbatim}
+Thus a power link for a particular exponent, say the exponent 2, can
+be constructed using the expression
+\begin{verbatim}
+(send power-link-proto :new 2)
+\end{verbatim}
+
+To complete the power link prototype, we need to define the three
+required methods. They are defined as
+\begin{verbatim}
+(defmeth power-link-proto :eta (mu) (^ mu (send self :power)))
+\end{verbatim}
+\begin{verbatim}
+(defmeth power-link-proto :means (eta) (^ eta (/ (slot-value 'power))))
+\end{verbatim}
+and
+\begin{verbatim}
+(defmeth power-link-proto :derivs (mu)
+  (let ((p (slot-value 'power)))
+    (* p (^ mu (- p 1)))))
+\end{verbatim}
+The definition of the \dcode{:means} method could be improved to allow
+negative arguments when the power is an odd integer. Finally, the
+\dcode{:print} method is redefined to reflect the value of the
+exponent:
+\begin{verbatim}
+(defmeth power-link-proto :print (&optional (stream t))
+  (format stream ``#<Glim Link Object: Power Link (~s)>'' (send self :power)))
+\end{verbatim}
+Thus a square link prints as
+\begin{verbatim}
+> (send power-link-proto :new 2)
+#<Glim Link Object: Power Link (2)>
+\end{verbatim}
+
+\section{Fitting a Bradley-Terry Model}
+Many models used in categorical data analysis can be viewed as
+special cases of generalized linear models. One example is the
+Bradley-Terry model for paired comparisons. The Bradley-Terry model
+deals with a situation in which $n$ individuals or items are compared
+to one another in paired contests.  The model assumes there are
+positive quantities $\pi_{1}, \ldots, \pi_{n}$, which can be assumed
+to sum to one, such that
+\begin{displaymath}
+P\{\mbox{$i$ beats $j$}\} = \frac{\pi_{i}}{\pi_{i} + \pi_{j}}.
+\end{displaymath}
+If the competitions are assumed to be mutually independent, then the
+probability $p_{ij} = P\{\mbox{$i$ beats $j$}\}$ satisfies the logit
+model
+\begin{displaymath}
+\log\frac{p_{ij}}{1-p_{ij}} = \phi_{i} - \phi_{j}
+\end{displaymath}
+with $\phi_{i} = \log \pi_{i}$. This model can be fit to a particular
+set of data by setting up an appropriate design matrix and response
+vector for a binomial regression model. For a single data set this can
+be done from scratch. Alternatively, it is possible to construct
+functions or prototypes that allow the data to be specified in a more
+convenient form. Furthermore, there are certain specific questions
+that can be asked for a Bradley-Terry model, such as what is the
+estimated value of $P\{\mbox{$i$ beats $j$}\}$? In the object-oriented
+framework, it is very natural to attach methods for answering such
+questions to individual models or to a model prototype.
+
+To illustrate these ideas, we can fit a Bradley-Terry model to the
+results for the eastern division of the American league for the 1987
+baseball season \cite{Agresti}. Table \ref{WinsLosses} gives the results
+of the games within this division.
+\begin{table}
+\caption{Results of 1987 Season for American League Baseball Teams}
+\label{WinsLosses}
+\begin{center}
+\begin{tabular}{lccccccc}
+\hline
+Winning & \multicolumn{7}{c}{Losing Team}\\
+\cline{2-8}
+Team & Milwaukee & Detroit & Toronto & New York & Boston &
+Cleveland & Baltimore\\
+\hline
+Milwaukee & -  & 7  & 9  & 7  &  7  & 9 & 11\\
+Detroit   & 6  & -  & 7  & 5  & 11  & 9 &  9\\
+Toronto   & 4  & 6  & -  & 7  &  7  & 8 & 12\\
+New York  & 6  & 8  & 6  & -  &  6  & 7 & 10\\
+Boston    & 6  & 2  & 6  & 7  &  -  & 7 & 12\\
+Cleveland & 4  & 4  & 5  & 6  &  6  & - &  6\\
+Baltimore & 2  & 4  & 1  & 3  &  1  & 7 &  -\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+The simplest way to enter this data is as a list, working through the
+table one row at a time:
+\begin{verbatim}
+(def wins-losses '( -  7  9  7  7  9 11
+                    6  -  7  5 11  9  9
+                    4  6  -  7  7  8 12
+                    6  8  6  -  6  7 10
+                    6  2  6  7  -  7 12
+                    4  4  5  6  6  -  6
+                    2  4  1  3  1  7  -))
+\end{verbatim}
+The choice of the symbol \dcode{-} for the diagonal entries is
+arbitrary; any other Lisp item could be used. The team names will also
+be useful as labels:
+\begin{verbatim}
+(def teams '("Milwaukee" "Detroit" "Toronto" "New York"
+             "Boston" "Cleveland" "Baltimore"))
+\end{verbatim}
+
+To set up a model, we need to extract the wins and losses from the
+\dcode{wins-losses} list. The expression
+\begin{verbatim}
+(let ((i (iseq 1 6)))
+  (def low-i (apply #'append (+ (* 7 i) (mapcar #'iseq i)))))
+\end{verbatim}
+constructs a list of the indices of the elements in the lower
+triangle:
+\begin{verbatim}
+> low-i
+(7 14 15 21 22 23 28 29 30 31 35 36 37 38 39 42 43 44 45 46 47)
+\end{verbatim}
+The wins can now be extracted from the \dcode{wins-losses} list using
+\begin{verbatim}
+> (select wins-losses low-i)
+(6 4 6 6 8 6 6 2 6 7 4 4 5 6 6 2 4 1 3 1 7)
+\end{verbatim}
+Since we need to extract the lower triangle from a number of lists, we
+can define a function to do this as
+\begin{verbatim}
+(defun lower (x) (select x low-i))
+\end{verbatim}
+Using this function, we can calculate the wins and save them in a
+variable \dcode{wins}:
+\begin{verbatim}
+(def wins (lower wins-losses))
+\end{verbatim}
+
+To extract the losses, we need to form the list of the entries for the
+transpose of our table.  The function \dcode{split-list} can be used
+to return a list of lists of the contents of the rows of the original
+table.  The \dcode{transpose} function transposes this list of lists,
+and the \dcode{append} function can be applied to the result to
+combine the lists of lists for the transpose into a single list:
+\begin{verbatim}
+(def losses-wins (apply #'append (transpose (split-list wins-losses 7))))
+\end{verbatim}
+The losses are then obtained by
+\begin{verbatim}
+(def losses (lower losses-wins))
+\end{verbatim}
+Either \dcode{wins} or \dcode{losses} can be used as the response for
+a binomial model, with the trials given by
+\begin{verbatim}
+(+ wins losses)
+\end{verbatim}
+
+When fitting the Bradley-Terry model as a binomial regression model
+with a logit link, the model has no intercept and the columns of the
+design matrix are the differences of the row and column indicators for
+the table of results.  Since the rows of this matrix sum to zero if
+all row and column levels are used, we can delete one of the levels,
+say the first one. Lists of row and column indicators are set up by
+the expressions
+\begin{verbatim}
+(def rows (mapcar #'lower (indicators (repeat (iseq 7) (repeat 7 7)))))
+(def cols (mapcar #'lower (indicators (repeat (iseq 7) 7))))
+\end{verbatim}
+The function \dcode{indicators} drops the first level in constructing
+its indicators. The function \dcode{mapcar} applies \dcode{lower} to
+each element of the indicators list and returns a list of the results.
+Using these two variables, the expression
+\begin{verbatim}
+(- rows cols)
+\end{verbatim}
+constructs a list of the columns of the design matrix.
+
+We can now construct a model object for this data set:
+\begin{verbatim}
+> (def wl (binomialreg-model (- rows cols)
+                             wins
+                             (+ wins losses)
+                             :intercept nil
+                             :predictor-names (rest teams)))
+Iteration 1: deviance = 16.1873
+Iteration 2: deviance = 15.7371
+
+Weighted Least Squares Estimates:
+
+Detroit                 -0.144948   (0.311056)
+Toronto                 -0.286871   (0.310207)
+New York                -0.333738   (0.310126)
+Boston                  -0.473658   (0.310452)
+Cleveland               -0.897502   (0.316504)
+Baltimore                -1.58134   (0.342819)
+
+Scale taken as:                 1
+Deviance:                 15.7365
+Number of cases:               21
+Degrees of freedom:            15
+\end{verbatim}
+
+To fit to a Bradley-Terry model to other data sets, we can repeat this
+process.  As an alternative, we can incorporate the steps used here
+into a function:
+\begin{verbatim}
+(defun bradley-terry-model (counts &key labels)
+  (let* ((n (round (sqrt (length counts))))
+         (i (iseq 1 (- n 1)))
+         (low-i (apply #'append (+ (* n i) (mapcar #'iseq i))))
+         (p-names (if labels
+                      (rest labels) 
+                      (level-names (iseq n) :prefix "Choice"))))
+    (labels ((tr (x)
+               (apply #'append (transpose (split-list (coerce x 'list) n))))
+             (lower (x) (select x low-i))
+             (low-indicators (x) (mapcar #'lower (indicators x))))
+      (let ((wins (lower counts))
+            (losses (lower (tr counts)))
+            (rows (low-indicators (repeat (iseq n) (repeat n n))))
+            (cols (low-indicators (repeat (iseq n) n))))
+        (binomialreg-model (- rows cols)
+                           wins 
+                           (+ wins losses)
+                           :intercept nil
+                           :predictor-names p-names)))))
+\end{verbatim}
+This function defines the function \dcode{lower} as a local function.
+The local function \dcode{tr} calculates the list of the elements in
+the transposed table, and the function \dcode{low-indicators} produces
+indicators for the lower triangular portion of a categorical variable.
+The \dcode{bradley-terry-model} function allows the labels for the
+contestants to be specified as a keyword argument. If this argument is
+omitted, reasonable default labels are constructed. Using this
+function, we can construct our model object as
+\begin{verbatim}
+(def wl (bradley-terry-model wins-losses :labels teams))
+\end{verbatim}
+
+The definition of this function could be improved to allow some of the
+keyword arguments accepted by \dcode{binomialreg-model}.
+
+Using the fit model object, we can estimate the probability of Boston
+$(i = 4)$ defeating New York $(j = 3)$:
+\begin{verbatim}
+> (let* ((phi (cons 0 (send wl :coef-estimates)))
+         (exp-logit (exp (- (select phi 3) (select phi 4)))))
+    (/ exp-logit (+ 1 exp-logit)))
+0.534923
+\end{verbatim}
+To be able to easily calculate such an estimate for any pairing, we can
+give our model object a method for the \dcode{:success-prob} message
+that takes two indices as arguments:
+\begin{verbatim}
+(defmeth wl :success-prob (i j)
+  (let* ((phi (cons 0 (send self :coef-estimates)))
+         (exp-logit (exp (- (select phi i) (select phi j)))))
+    (/ exp-logit (+ 1 exp-logit))))
+\end{verbatim}
+Then
+\begin{verbatim}
+> (send wl :success-prob 4 3)
+0.465077
+\end{verbatim}
+
+If we want this method to be available for other data sets, we can
+construct a Bradley-Terry model prototype by
+\begin{verbatim}
+(defproto bradley-terry-proto () () binomialreg-proto)
+\end{verbatim}
+and add the \dcode{:success-prob} method to this prototype:
+\begin{verbatim}
+(defmeth bradley-terry-proto :success-prob (i j)
+  (let* ((phi (cons 0 (send self :coef-estimates)))
+         (exp-logit (exp (- (select phi i) (select phi j)))))
+    (/ exp-logit (+ 1 exp-logit))))
+\end{verbatim}
+If we modify the \dcode{bradley-terry-model} function to use this prototype
+by defining the function as
+\begin{verbatim}
+(defun bradley-terry-model (counts &key labels)
+  (let* ((n (round (sqrt (length counts))))
+         (i (iseq 1 (- n 1)))
+         (low-i (apply #'append (+ (* n i) (mapcar #'iseq i))))
+         (p-names (if labels
+                      (rest labels) 
+                      (level-names (iseq n) :prefix "Choice"))))
+    (labels ((tr (x)
+               (apply #'append (transpose (split-list (coerce x 'list) n))))
+             (lower (x) (select x low-i))
+             (low-indicators (x) (mapcar #'lower (indicators x))))
+      (let ((wins (lower counts))
+            (losses (lower (tr counts)))
+            (rows (low-indicators (repeat (iseq n) (repeat n n))))
+            (cols (low-indicators (repeat (iseq n) n))))
+        (send bradley-terry-proto :new
+              :x (- rows cols)
+              :y wins
+              :trials (+ wins losses)
+              :intercept nil
+              :predictor-names p-names)))))
+\end{verbatim}
+then the \dcode{:success-prob} metod is available immediately for a
+model constructed using this function:
+\begin{verbatim}
+> (def wl (bradley-terry-model wins-losses :labels teams))
+Iteration 1: deviance = 16.1873
+Iteration 2: deviance = 15.7371
+...
+> (send wl :success-prob 4 3)
+0.465077
+\end{verbatim}
+
+The \dcode{:success-prob} method can be improved in a number of ways.
+As one example, we might want to be able to obtain standard errors in
+addition to estimates. A convenient way to provide for this
+possibility is to have our method take an optional argument. If this
+argument is \dcode{nil}, the default, then the method just returns the
+estimate. If the argument is not \dcode{nil}, then the method returns
+a list of the estimate and its standard error. 
+
+To calculate the standard error, it is easier to start with the logit
+of the probability, since the logit is a linear function of the model
+coefficients. The method defined as
+\begin{verbatim}
+(defmeth bradley-terry-proto :success-logit (i j &optional stdev)
+  (let ((coefs (send self :coef-estimates)))
+    (flet ((lincomb (i j)
+             (let ((v (repeat 0 (length coefs))))
+               (if (/= 0 i) (setf (select v (- i 1)) 1))
+               (if (/= 0 j) (setf (select v (- j 1)) -1))
+               v)))
+      (let* ((v (lincomb i j))
+             (logit (inner-product v coefs))
+             (var (if stdev (matmult v (send self :xtxinv) v))))
+        (if stdev (list logit (sqrt var)) logit)))))
+\end{verbatim}
+returns the estimate or a list of the estimate and approximate
+standard error of the logit:
+\begin{verbatim}
+> (send wl :success-logit 4 3)
+-0.13992
+> (send wl :success-logit 4 3 t)
+(-0.13992 0.305583)
+\end{verbatim}
+The logit is calculated as a linear combination of the coefficients; a
+list representing the linear combination vector is constructed by the
+local function \dcode{lincomb}.
+
+Standard errors for success probabilities can be computed form the
+results of \dcode{:success-logit} using the delta method:
+\begin{verbatim}
+(defmeth bradley-terry-proto :success-prob (i j &optional stdev)
+  (let* ((success-logit (send self :success-logit i j stdev))
+         (exp-logit (exp (if stdev (first success-logit) success-logit)))
+         (p (/ exp-logit (+ 1 exp-logit)))
+         (s (if stdev (* p (- 1 p) (second success-logit)))))
+    (if stdev (list p s) p)))
+\end{verbatim}
+For our example, the results are
+\begin{verbatim}
+> (send wl :success-prob 4 3)
+0.465077
+> (send wl :success-prob 4 3 t)
+(0.465077 0.0760231)
+\end{verbatim}
+
+These methods can be improved further by allowing them to accept
+sequences of indices instead of only individual indices.
+
+\section*{Acknowledgements}
+I would like to thank Sandy Weisberg for many helpful comments and
+suggestions, and for providing the code for the glim residuals
+methods.
+
+%\section*{Notes}
+%On the DECstations you can load the generalized linear model
+%prototypes with the expression
+%\begin{verbatim}
+%(load-example "glim")
+%\end{verbatim}
+%This code seems to work reasonably on the examples I have tried, but
+%it is not yet thoroughly debugged.
+
+\begin{thebibliography}{99}
+\bibitem{Agresti}
+{\sc Agresti, A.} (1990), {\em Categorical Data Analysis}, New York,
+NY: Wiley.
+
+\bibitem{JKL}
+{\sc Lindsey, J. K.} (1989), {\em The Analysis of Categorical Data
+Using GLIM}, Springer Lecture Notes in Statistics No.  56, New York,
+NY: Springer.
+
+\bibitem{GLIM}
+{\sc McCullagh, P. and Nelder, J. A.} (1989), {\em Generalized Linear
+Models}, second edition, London: Chapman and Hall.
+
+\bibitem{LS}
+{\sc Tierney, L.} (1990), {\em Lisp-Stat: An Object-Oriented
+Environment for Statistical Computing and Dynamic Graphics}, New York,
+NY: Wiley.
+\end{thebibliography}
+\end{document}
+
+
+
+
+\begin{table}
+\caption{Wins/Losses by Home and Away Team, 1987}
+\begin{tabular}{lccccccc}
+\hline
+Home & \multicolumn{7}{c}{Away Team}\\
+\cline{2-8}
+Team & Milwaukee & Detroit & Toronto & New York & Boston &
+Cleveland & Baltimore\\
+\hline
+Milwaukee &  -  & 4-3 & 4-2 & 4-3 & 6-1 & 4-2 & 6-0\\
+Detroit   & 3-3 &  -  & 4-2 & 4-3 & 6-0 & 6-1 & 4-3\\
+Toronto   & 2-5 & 4-3 &  -  & 2-4 & 4-3 & 4-2 & 6-0\\
+New York  & 3-3 & 5-1 & 2-5 &  -  & 4-3 & 4-2 & 6-1\\
+Boston    & 5-1 & 2-5 & 3-3 & 4-2 &  -  & 5-2 & 6-0\\
+Cleveland & 2-5 & 3-3 & 3-4 & 4-3 & 4-2 & -   & 2-4\\
+Baltimore & 2-5 & 1-5 & 1-6 & 2-4 & 1-6 & 3-4 &  - \\
+\hline
+\end{tabular}
+\end{table}

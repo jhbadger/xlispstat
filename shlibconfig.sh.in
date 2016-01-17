@@ -1,0 +1,17 @@
+# This sh shell script (adapted form Tcl 8.0's tclConfig.sh) is
+# generated automatically by the configure script.  It will create
+# shell variables for the configuration variables needed for shared
+# libraries.
+
+# C compiler to use for compilation.
+CC='@CC@'
+
+# Flags to pass to cc when compiling the components of a shared library:
+SHLIB_CFLAGS='@SHLIB_CFLAGS@'
+
+# Base command to use for combining object files into a shared library:
+SHLIB_LD='@SHLIB_LD@'
+
+# Libraries, if any, to be included when linking shared libraries:
+SHLIB_LD_LIBS='@SHLIB_LD_LIBS@'
+

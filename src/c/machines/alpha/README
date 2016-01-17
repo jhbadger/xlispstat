@@ -1,0 +1,43 @@
+configure set things up properly on
+
+	uname -a => OSF1 jupiter.stat.wisc.edu V1.3 111 alpha
+
+To compile on an Alpha running OSF/1 I used
+
+GRAPHSYS = X11WINDOWS
+X11INCDIR_FLAG=
+X11LIBDIR_FLAG=
+
+UCFLAGS = -O -std -ieee_with_no_inexact -Olimit 2000
+ULDFLAGS =
+
+EXTRALIBS= -ldnet_stub
+EXTRAOBJS=
+
+IEEE_FLAG=-DIEEEFP
+ANSI_FLAG=-DANSI
+
+FOREIGN_FLAG = -DFOREIGNCALL
+FOREIGN_FILE = sysvr4-foreign.h
+
+CC = cc
+LDCC = $(CC)
+
+
+You can also use -ieee_with_inecact, but floating point performance
+seems quite a bit slower. Using neither ieee option may give slightly
+better performance, but you have to turn off IEEE_FLAG and don't get
+proper ieee handling of infinities, etc..
+
+To compile with gcc, I think you also need to turn IEEE_FLAG off,
+unless there is some way to tell gcc to do th equivalent of
+-ieee_with_no_inexact.
+
+Dynamic loading is done using shared libraries. To make the example in
+foo.c into a shared library, compile it with cc -c foo.c and then do
+
+	ld -shared -o libfoo.so foo.o -lc
+
+You can then use (dyn-load "libfoo.so"). You may need to use
+"./libfoo.so" if the current directory isn't on your library search
+path.

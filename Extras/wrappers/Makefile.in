@@ -1,0 +1,40 @@
+SHELL = /bin/sh
+CC = @CC@
+SHLIB_CFLAGS = @SHLIB_CFLAGS@
+SHLIB_LD = @SHLIB_LD@
+SHLIB_LD_LIBS = @SHLIB_LD_LIBS@
+LIBDIR = @LIBDIR@
+INCDIR = @INCDIR@
+
+CMPCMD = ${LIBDIR}/xlisp -w${LIBDIR}/xlisp.wks
+INSTDIR = ${LIBDIR}/Autoload/Extras/wrappers
+
+COPTFLAGS = -g
+CFLAGS = $(COPTFLAGS) -I${INCDIR} ${SHLIB_CFLAGS}
+
+all: wrap.fsl wrapptrs.dll wrapptrs.fsl
+
+install: all
+	-mkdir -p ${INSTDIR}
+	cp wrapptrs.dll wrapptrs.fsl wrap.fsl _autoidx.lsp ${INSTDIR}
+
+wrapptrs.dll: wrapptrs.o
+	${SHLIB_LD} -o wrapptrs.dll wrapptrs.o ${SHLIB_LD_LIBS}
+
+wrapptrs.fsl: wrapptrs.lsp
+	echo "(compile-file \"wrapptrs.lsp\") (exit)" | ${CMPCMD}
+
+wrap.fsl: wrap.lsp
+	echo "(compile-file \"wrap.lsp\") (exit)" | ${CMPCMD}
+
+wrapptrs.c wrapptrs.lsp: wrapptrs.wrp wrap.fsl
+	echo "(use-package \"C-WRAPPERS\") (make-wrappers \"wrapptrs.wrp\")" | ${CMPCMD} wrap
+
+#**** tests?
+
+clean:
+	rm -f *.o lib.exp
+
+veryclean: clean
+	rm -f Makefile *.fsl *.dll config.* wrapptrs.c wrapptrs.lsp
+

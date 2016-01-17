@@ -1,0 +1,136 @@
+[Tom Almy comments: 
+  The program did not correctly handle RETURN (as reported by Martin Glanvill,
+  mcg@waikato.ac.nz). In the process of fixing the the problem it was
+  discovered that the nexting printout did not work properly for all return,
+  return-from, throw, and many cases of go. This version has been fixed for
+  hopefully all of the above, although go will still not produce proper
+  printout if the jump is outside the most enclosing tagbody, and the tag
+  arguments of catch/throw must either be symbols or quoted symbols.
+  I'm making no attempt here to correctly handle tracing of unwind-protect, 
+  either!
+
+  Tom Almy  5/92
+]
+
+
+This is the latest version of my stepper.   I posted an early version of
+it about a year ago;  this differs from the old one as follows:
+  o  May change both print depth and print length of forms
+	(old version only allowed print depth to be changed)
+  o  Uses 'get-key' for user input, (in particular this is PC specific,
+	I only use XLISP on PC's;  I use KCL on real computers)
+  o  New 'u' command (execute until enclosing form returns)
+  o  New 'r' command (use a given expression as the return value
+	for the current form)
+  o  Correct handling of '(go label)' statements
+  o  Uses *debug-io* to determine output stream
+ 
+The attached listing is a step debugger inspired by the "step.lsp"
+stepper included with XLISP 2.1, originally written by Jonathan Engdahl
+(jengdahl on BIX).  This version has the ability to set/reset
+breakpoints, and a few bells and whistles.
+ 
+To invoke the stepper:
+	(step (form with args))
+ 
+The stepper will stop and print every form, then wait for user input.
+Forms are printed compressed, i.e. to a depth and length of 3.  This
+may be changed by assigning the desired depth and length values to
+*pdepth* and *plen* before invoking the stepper, or from within the
+stepper via the . and # commands.
+ 
+For example, suppose you have the following defined:
+ 
+(defun fib (n)
+  (if (or (eql n 1) (eql n 2))
+      1
+      (+ (fib (- n 2)) (fib (- n 1)))))
+ 
+Then (step (fib 4)) will produce the following:
+ 
+0 >==> (fib 4)
+ 1 >==> (if (or (eql n 1) (eql n 2)) 1 ...) :
+ 
+The colon is the stepper's prompt.  For a list of commands, type h.
+this produces:
+ 
+Stepper Commands
+----------------
+ n or space - next form
+ s or <cr>  - step over form
+ f FUNCTION - go until FUNCTION is called
+ b FUNCTION - set breakpoint at FUNCTION
+ b <list>   - set breakpoint at each function in list
+ c FUNCTION - clear breakpoint at FUNCTION
+ c <list>   - clear breakpoint at each function in list
+ c *all*    - clear all breakpoints
+          g - go until a breakpoint is reached
+          u - go up; continue until enclosing form is done
+          w - where am I? -- backtrace
+          t - toggle trace on/off
+          q - quit stepper, continue execution
+          p - pretty-print current form (uncompressed)
+          e - print environment
+   x <expr> - execute expression in current environment
+   r <expr> - execute and return expression
+       # nn - set print depth to nn
+       . nn - set print length to nn
+          h - print this summary
+ 
+Breakpoints may be set with the b command.  You may set breakpoints at
+one function, e.g. b FOO<cr> sets a breakpoint at the function FOO,
+or at various functions at once, e.g. b (FOO FIE FUM)<cr> sets
+breakpoints at the functions FOO, FIE, and FUM.  Breakpoints are cleared
+with the c command in an analogous way.  Furthermore, a special form of
+the c command, c *all* <cr>, clears all previously set breakpoints.
+Breakpoints are remembered from one invocation of step to the next, so
+it is only neccessary to set them once in a debugging session.
+ 
+The g command causes execution to proceed until a breakpoint is reached,
+at which time more stepper commands can be entered.
+ 
+The f command sets a temporary breakpoint at one function, and causes
+execution to proceed until that function is called.
+ 
+The u command continues execution until the form enlosing the current
+form is done, then re-enters the stepper.
+ 
+The w command prints a back trace.
+ 
+The q command quits and causes execution to continue uninterrupted.
+ 
+Entry and exit to functions are traced after a g, f, u, or q command.  To
+turn off tracing, use the t command which toggles the trace on/off.
+Also, with trace off, the values of function parameters are not printed.
+ 
+The s command causes the current form to be evaluated.
+ 
+The n command steps into the current form.
+ 
+The . and # commands change the compression of displayed forms.  E.g. in the
+previous example:
+ 
+ 1 >==> (if (or (eql n 1) (eql n 2)) 1 ...) : . 2
+ 1 >==> (if (or (eql n ...) ...) ...) :
+ 
+changes the print length to 2, and
+ 
+ 1 >==> (if (or (eql n ...) ...) ...) : # 2
+ 1 >==> (if (or #\# ...) ...) :
+ 
+changes the print depth to 2.
+ 
+To print the entire form use the p command, which pretty-prints the
+entire form.
+ 
+The e command causes the current environment to be printed;
+ 
+The x command causes an expression to be executed in the current
+environment.  Note that this permits the user to alter values while
+the program is running, and may affect execution of the program.
+ 
+The r command causes the value of the given expression to be returned,
+i.e. makes it the return value of the current form.
+
+Enjoy,
+      Ray

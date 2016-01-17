@@ -1,0 +1,40 @@
+; Wildcard Pattern matching algorithm
+; * matches any substring (zero or more characters)
+; ? matches any character
+; ~c matches c
+
+(defun match (pattern list)
+       (labels ((match1 (pattern suspect)
+		      (cond ((null pattern) (null suspect))
+			    ((null suspect) (equal pattern '(:mult)))
+			    ((eq (first pattern) :single)
+			     (match1 (cdr pattern) (cdr suspect)))
+			    ((eq (first pattern) :mult)
+			     (if (null (rest pattern))
+				 t 
+				 (do ((p (rest pattern))
+				      (l suspect (cdr l)))
+				     ((or (null l) (match1 p l)) 
+				      (not (null l))))))
+			    ((eq (first pattern) (first suspect))
+			     (match1 (rest pattern) (rest suspect)))
+			    (t nil)))
+	      (explode (list) 
+		       (cond ((null list) nil)
+			     ((eq (first list) #\*) 
+			      (cons :mult (explode (rest list))))
+			     ((eq (first list) #\?) 
+			      (cons :single (explode (rest list))))
+			     ((eq (first list) #\~) 
+			      (cons (second list)
+				    (explode (rest (rest list)))))
+			     (t (cons (first list) (explode (rest list)))))))
+	     (let ((pat (explode (coerce pattern 'cons))))
+		  (mapcan #'(lambda (x) (when (match1 pat (coerce x 'cons))
+					      (list x)))
+			  list))))
+
+(setq l (sort (apply #'nconc (map 'cons 
+			    #'(lambda (x) (mapcar #'string x)) 
+			    *obarray*))
+	      #'string<))

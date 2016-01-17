@@ -1,0 +1,49 @@
+SHELL = /bin/sh
+CC = @CC@
+SHLIB_CFLAGS = @SHLIB_CFLAGS@
+SHLIB_LD = @SHLIB_LD@
+SHLIB_LD_LIBS = @SHLIB_LD_LIBS@
+LIBDIR = @LIBDIR@
+INCDIR = @INCDIR@
+
+CMPCMD = ${LIBDIR}/xlisp -w${LIBDIR}/xlisp.wks
+WRPCMD = ${CMPCMD} ../wrappers/wrap
+INSTDIR = ${LIBDIR}/Autoload/Extras/regexp
+
+COPTFLAGS = -g
+CFLAGS = $(COPTFLAGS) -I${INCDIR} ${SHLIB_CFLAGS}
+
+REOBJS = @REOBJS@
+
+all: regexp.dll regexp.fsl
+
+install: all
+	-mkdir -p ${INSTDIR}
+	cp regexp.dll regexp.fsl _autoidx.lsp ${INSTDIR}
+
+regexp.dll: regexp.o ${REOBJS}
+	${SHLIB_LD} -o regexp.dll regexp.o ${REOBJS} ${SHLIB_LD_LIBS}
+
+regexp.fsl: regexp.lsp
+	echo "(compile-file \"regexp.lsp\") (exit)" | ${CMPCMD}
+
+regexp.c regexp.lsp: regexp.wrp
+	echo "(wrap:make-wrappers \"regexp.wrp\")" | ${WRPCMD}
+
+rtest: rtest.o ${REOBJS}
+	$(CC) -o rtest rtest.o ${REOBJS}
+
+regcomp.o: regex/regcomp.c
+	$(CC) -Iregex $(CFLAGS) -c regex/regcomp.c
+regerror.o: regex/regerror.c
+	$(CC) -Iregex $(CFLAGS) -c regex/regerror.c
+regexec.o: regex/regexec.c
+	$(CC) -Iregex $(CFLAGS) -c regex/regexec.c
+regfree.o: regex/regfree.c
+	$(CC) -Iregex $(CFLAGS) -c regex/regfree.c
+
+clean:
+	rm -f *.o lib.exp rtest
+
+veryclean: clean
+	rm -f Makefile regexp.c regexp.lsp regexp.fsl regexp.dll config.* 
